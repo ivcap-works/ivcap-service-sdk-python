@@ -1,0 +1,7 @@
+{
+  "msg": "07/07-15:06:09",
+  "width": 640,
+  "height": 480,
+  "background": "/Users/ott030/src/IVCAP/ivcap-sdk-python/sdk_service/examples/text_on_image/backgrounds/js.png",
+  "$schema": "urn:testing:schema:simple-python-service"
+}
