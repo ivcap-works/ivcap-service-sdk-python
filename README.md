@@ -18,7 +18,7 @@ Interested in contributing? Check out the contributing guidelines. Please note t
 
 ## License
 
-`ivcap_sdk_service` was created by Max Ott <max.ott@csiro.au>, Tim Erwin <tim.erwin@csiro.au>. It is licensed under the terms of a Proprietary license.
+`ivcap_sdk_service` was created by Max Ott <max.ott@csiro.au>, Tim Erwin <tim.erwin@csiro.au>. See [LICENSE](./LICENSE) for licensing terms.
 
 ## Credits
 
