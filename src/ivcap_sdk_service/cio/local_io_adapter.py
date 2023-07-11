@@ -219,6 +219,9 @@ class LocalCollection(Collection):
         else:
             return DirectoryIter(self._path, self._adapter)
 
+    def __repr__(self):
+        return f"<LocalCollection path={self._path}>"
+
 class SingleFileIter:
     def __init__(self, path: str, adapter: IOAdapter) -> None:
         self._path = path
@@ -231,6 +234,9 @@ class SingleFileIter:
         else:
             self._already_served = True
             return self._adapter.read_local(self._path)
+
+    def __repr__(self):
+        return f"<LocalCollectionIter path={self._path}>"
 
 class DirectoryIter:
     def __init__(self, path: str, adapter: IOAdapter) -> None:

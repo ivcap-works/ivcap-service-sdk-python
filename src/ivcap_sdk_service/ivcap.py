@@ -9,14 +9,11 @@ from __future__ import annotations
 #
 from argparse import ArgumentParser
 from typing import Callable, Dict, Any, Optional, Sequence, Union, cast
-from urllib.parse import urlparse
-
-#from .utils import json_dump
 
 from .cio.io_adapter import IOAdapter, IOReadable, IOWritable, OnCloseF
 
 from .logger import sys_logger as logger
-from .config import Config, Resource
+from .config import Config
 from .itypes import MetaDict, SupportedMimeTypes, Url, MissingParameterValue, UnsupportedMimeType
 
 SCHEMA_KEY = '$schema'
@@ -51,7 +48,7 @@ def deliver_data(
     metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None, 
     seekable=False,
     on_close: Optional[OnCloseF] = None
-):
+) -> str:
     """Deliver a result of this service
 
     Args:
@@ -68,12 +65,15 @@ def deliver_data(
         NotImplementedError: Raised when no saver function is defined for 'type'
 
     Returns:
-        None
+        URL of published artifact
     """
 
     global DELIVERED
 
+    _url = None
     def _on_close(url):
+        nonlocal _url
+        _url = url
         mt = mime_type.value if isinstance(mime_type, SupportedMimeTypes) else mime_type
         m = dict(name=name, url=url, mime_type=mt, meta=metadata)
         DELIVERED.append(m)
@@ -102,6 +102,7 @@ def deliver_data(
             collection_name=collection_name, metadata=metadata, seekable=seekable, on_close=_on_close)
         else:
             raise UnsupportedMimeType(mime_type)
+    return _url
 
 def register_saver(mime_type: str, obj_type: Any, saverF: SaverF):
     """Register a 'saver' function used in 'deliver' for a specific data type.

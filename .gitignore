@@ -5,6 +5,10 @@ cache/
 **/cache
 
 # Byte-compiled / optimized / DLL files
+**/__pycache__
+src/
+src/ivcap_sdk_service/__pycache__/
+__pycache__
 __pycache__/
 *.py[cod]
 *$py.class
