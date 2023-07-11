@@ -9,14 +9,11 @@ from __future__ import annotations
 #
 from argparse import ArgumentParser
 from typing import Callable, Dict, Any, Optional, Sequence, Union, cast
-from urllib.parse import urlparse
-
-#from .utils import json_dump
 
 from .cio.io_adapter import IOAdapter, IOReadable, IOWritable, OnCloseF
 
 from .logger import sys_logger as logger
-from .config import Config, Resource
+from .config import Config
 from .itypes import MetaDict, SupportedMimeTypes, Url, MissingParameterValue, UnsupportedMimeType
 
 SCHEMA_KEY = '$schema'
