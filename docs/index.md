@@ -5,7 +5,7 @@
 :maxdepth: 1
 :hidden:
 
-overview.md
+Overview <overview.md>
 contributing.md
 conduct.md
 autoapi/index
