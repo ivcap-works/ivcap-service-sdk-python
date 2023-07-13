@@ -1,0 +1,255 @@
+:py:mod:`ivcap_sdk_service.cio.io_adapter`
+==========================================
+
+.. py:module:: ivcap_sdk_service.cio.io_adapter
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ivcap_sdk_service.cio.io_adapter._IOBase
+   ivcap_sdk_service.cio.io_adapter.IOReadable
+   ivcap_sdk_service.cio.io_adapter.IOWritable
+   ivcap_sdk_service.cio.io_adapter.IO_ReadWritable
+   ivcap_sdk_service.cio.io_adapter.Collection
+   ivcap_sdk_service.cio.io_adapter.Collection
+   ivcap_sdk_service.cio.io_adapter.IOAdapter
+
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   ivcap_sdk_service.cio.io_adapter.OnCloseF
+
+
+.. py:class:: _IOBase
+
+
+   Bases: :py:obj:`abc.ABC`
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: mode
+      :type: str
+      :abstractmethod:
+
+
+   .. py:property:: name
+      :type: str
+      :abstractmethod:
+
+
+   .. py:property:: closed
+      :type: bool
+      :abstractmethod:
+
+
+   .. py:method:: close() -> None
+      :abstractmethod:
+
+
+   .. py:method:: readable() -> bool
+      :abstractmethod:
+
+
+   .. py:method:: seek(offset: int, whence: int = io.SEEK_SET) -> int
+      :abstractmethod:
+
+
+   .. py:method:: seekable() -> bool
+      :abstractmethod:
+
+
+   .. py:method:: tell() -> int
+      :abstractmethod:
+
+
+   .. py:method:: writable() -> bool
+      :abstractmethod:
+
+
+   .. py:method:: close() -> None
+      :abstractmethod:
+
+
+
+.. py:class:: IOReadable
+
+
+   Bases: :py:obj:`_IOBase`
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: as_local_file
+      :type: str
+      :abstractmethod:
+
+
+   .. py:method:: read(n: int = -1) -> AnyStr
+      :abstractmethod:
+
+
+   .. py:method:: readline(limit: int = -1) -> AnyStr
+      :abstractmethod:
+
+
+   .. py:method:: readlines(hint: int = -1) -> List[AnyStr]
+      :abstractmethod:
+
+
+
+.. py:class:: IOWritable
+
+
+   Bases: :py:obj:`_IOBase`
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:method:: write(s: AnyStr) -> int
+      :abstractmethod:
+
+
+   .. py:method:: writelines(lines: List[AnyStr]) -> None
+      :abstractmethod:
+
+
+   .. py:method:: truncate(size: int = None) -> int
+      :abstractmethod:
+
+
+   .. py:method:: flush() -> None
+      :abstractmethod:
+
+
+
+.. py:class:: IO_ReadWritable
+
+
+   Bases: :py:obj:`IOReadable`, :py:obj:`IOWritable`
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+
+.. py:class:: Collection
+
+
+   Bases: :py:obj:`abc.ABC`
+
+   A collection of artifacts
+
+   :param ABC: _description_
+   :type ABC: _type_
+
+   .. py:property:: name
+      :type: str
+      :abstractmethod:
+
+
+
+.. py:class:: Collection
+
+
+   Bases: :py:obj:`abc.ABC`
+
+   A collection of artifacts
+
+
+   .. py:property:: name
+      :type: str
+      :abstractmethod:
+
+
+
+.. py:data:: OnCloseF
+
+   
+
+.. py:class:: IOAdapter
+
+
+   Bases: :py:obj:`abc.ABC`
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:method:: read_artifact(artifact_id: str, binary_content=True, no_caching=False, seekable=False) -> IOReadable
+      :abstractmethod:
+
+      Return a readable file-like object providing the content of an artifact
+
+      :param artifact_id: ID of artifact to read
+      :type artifact_id: str
+      :param binary_content: If true content is expected to be of binary format otherwise text is expected. Defaults to True.
+      :type binary_content: bool, optional
+      :param no_caching: If true, content is not cached nor read from cache. Defaults to False.
+      :type no_caching: bool, optional
+      :param seekable: If true, returned readable should be seekable
+      :type seekable: bool, optional
+
+      :returns: The content of the artifact as a file-like object
+      :rtype: IOReadable
+
+
+   .. py:method:: artifact_readable(artifact_id: str) -> bool
+      :abstractmethod:
+
+      Return true if artifact exists and is readable
+
+      :param artifact_id: ID of artifact
+      :type artifact_id: str
+
+      :returns: True if artifact can be read
+      :rtype: bool
+
+
+   .. py:method:: write_artifact(mime_type: str, name: Optional[str] = None, collection_name: Optional[str] = None, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, on_close: Optional[OnCloseF] = None) -> IOWritable
+      :abstractmethod:
+
+      Returns a IOWritable to create a new artifact. It needs to be closed
+      in order to be persisted. If `on_close` is provided it is called with the
+      artifactID.
+
+      :param mime_type: _description_
+      :type mime_type: str
+      :param name: Optional name. Defaults to None.
+      :type name: Optional[str], optional
+      :param collection_name: Optional collection name. Defaults to None.
+      :type collection_name: Optional[str], optional
+      :param metadata: Key/value pairs (or list of key/value pairs) to add as metadata. Defaults to {}.
+      :type metadata: Optional[MetaDict | List[MetaDict]], optional
+      :param seekable: If true, writable should be seekable (needed for NetCDF). Defaults to False.
+      :type seekable: bool, optional
+      :param on_close: Called with assigned artifact ID. Defaults to None.
+      :type on_close: Optional[OnCloseF], optional
+
+      :returns: A file-like object to write deliver artifact content - needs to be closed
+      :rtype: IOWritable
+
+
+   .. py:method:: get_collection(collection_urn: str) -> Collection
+      :abstractmethod:
+
+      Return a collection representing a set of artifacts
+
+      :param collection_urn: Collection identifies
+      :type collection_urn: URN
+
+      :returns: An instance of a collection object appropriate for
+                the current context
+      :rtype: Collection
+
+
+

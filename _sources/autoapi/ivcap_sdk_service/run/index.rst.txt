@@ -1,0 +1,38 @@
+:py:mod:`ivcap_sdk_service.run`
+===============================
+
+.. py:module:: ivcap_sdk_service.run
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   ivcap_sdk_service.run.run
+   ivcap_sdk_service.run._print_banner
+   ivcap_sdk_service.run.register_service
+   ivcap_sdk_service.run.wait_for_data_proxy
+   ivcap_sdk_service.run.run_service
+
+
+
+.. py:function:: run(args: Dict, handler: Callable[[Dict], int]) -> int
+
+
+.. py:function:: _print_banner(service: ivcap_sdk_service.service.Service)
+
+
+.. py:function:: register_service(service: ivcap_sdk_service.service.Service, handler: Callable[[Dict], int])
+
+
+.. py:function:: wait_for_data_proxy()
+
+
+.. py:function:: run_service(service: ivcap_sdk_service.service.Service, args: Sequence[str], handler: Callable[[Dict], int]) -> int
+
+

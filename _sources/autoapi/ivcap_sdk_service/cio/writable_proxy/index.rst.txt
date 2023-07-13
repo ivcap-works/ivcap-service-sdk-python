@@ -1,0 +1,98 @@
+:py:mod:`ivcap_sdk_service.cio.writable_proxy`
+==============================================
+
+.. py:module:: ivcap_sdk_service.cio.writable_proxy
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ivcap_sdk_service.cio.writable_proxy.WritableProxy
+
+
+
+
+.. py:class:: WritableProxy(storage_url: str, mime_type: str, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, name: Optional[str] = None, is_seekable=False, on_close: Optional[Callable[[str, str], str]] = None, encoding=None)
+
+
+   Bases: :py:obj:`ivcap_sdk_service.cio.io_adapter.IOWritable`
+
+   A class which implements the IOWritable interface for writing data. It additionally
+   persists the data on disk.
+
+   ...
+
+   :param name: _description_
+   :type name: str
+   :param on_close: _description_. Defaults to None.
+   :type on_close: Callable[[IO[bytes], None]]
+   :param is_binary: _description_. Defaults to True.
+   :type is_binary: bool, optional
+   :param use_temp_file: _description_. Defaults to True.
+   :type use_temp_file: bool, optional
+   :param encoding: _description_. Defaults to None.
+   :type encoding: _type_, optional
+
+   .. py:property:: closed
+      :type: bool
+
+
+   .. py:property:: mode
+      :type: str
+
+
+   .. py:property:: name
+      :type: str
+
+
+   .. py:method:: seek(offset, whence=io.SEEK_SET)
+
+      Change stream position by offset
+
+
+   .. py:method:: seekable() -> bool
+
+
+   .. py:method:: tell() -> int
+
+      Return current stream position
+
+
+   .. py:method:: write(bytes_obj: AnyStr) -> int
+
+
+   .. py:method:: writelines(lines: List[AnyStr]) -> None
+
+
+   .. py:method:: writable() -> bool
+
+
+   .. py:method:: truncate(size: int = None) -> int
+
+
+   .. py:method:: readable() -> bool
+
+
+   .. py:method:: flush() -> None
+
+
+   .. py:method:: close()
+
+
+   .. py:method:: _upload() -> str
+
+
+   .. py:method:: _upload_metadata(metadata: Sequence[ivcap_sdk_service.itypes.MetaDict], artifactID: str, url: str) -> None
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+

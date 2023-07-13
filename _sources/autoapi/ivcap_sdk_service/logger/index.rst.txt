@@ -1,0 +1,39 @@
+:py:mod:`ivcap_sdk_service.logger`
+==================================
+
+.. py:module:: ivcap_sdk_service.logger
+
+
+Module Contents
+---------------
+
+.. py:data:: DEF_LEVEL
+
+   
+
+.. py:data:: _format
+   :value: '%(levelname)s %(asctime)s %(name)s %(message)s'
+
+   
+
+.. py:data:: _datefmt
+   :value: '%Y-%m-%dT%H:%M:%S%z'
+
+   
+
+.. py:data:: _formatter
+
+   
+
+.. py:data:: _console
+
+   
+
+.. py:data:: logger
+
+   
+
+.. py:data:: sys_logger
+
+   
+

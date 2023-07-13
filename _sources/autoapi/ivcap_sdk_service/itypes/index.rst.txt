@@ -1,0 +1,102 @@
+:py:mod:`ivcap_sdk_service.itypes`
+==================================
+
+.. py:module:: ivcap_sdk_service.itypes
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ivcap_sdk_service.itypes.SupportedMimeTypes
+
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   ivcap_sdk_service.itypes.Url
+   ivcap_sdk_service.itypes.MetaDict
+   ivcap_sdk_service.itypes.FilePath
+   ivcap_sdk_service.itypes.ServiceArgs
+
+
+.. py:class:: SupportedMimeTypes
+
+
+   Bases: :py:obj:`enum.Enum`
+
+   Generic enumeration.
+
+   Derive from this class to define new enumerations.
+
+   .. py:attribute:: NETCDF
+      :value: 'application/netcdf'
+
+      
+
+   .. py:attribute:: PNG
+      :value: 'image/png'
+
+      
+
+   .. py:attribute:: JPEG
+      :value: 'image/jpeg'
+
+      
+
+
+.. py:data:: Url
+
+   
+
+.. py:data:: MetaDict
+
+   
+
+.. py:data:: FilePath
+
+   
+
+.. py:data:: ServiceArgs
+
+   
+
+.. py:exception:: MissingParameterValue(name: str, message: str = None)
+
+
+   Bases: :py:obj:`Exception`
+
+   Common base class for all non-exit exceptions.
+
+   .. py:attribute:: name
+      :type: str
+
+      
+
+   .. py:attribute:: message
+      :type: Optional[str]
+
+      
+
+
+.. py:exception:: UnsupportedMimeType(mime_type: str)
+
+
+   Bases: :py:obj:`Exception`
+
+   Common base class for all non-exit exceptions.
+
+   .. py:attribute:: mime_type
+      :type: str
+
+      
+
+

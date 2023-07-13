@@ -1,0 +1,93 @@
+:py:mod:`ivcap_sdk_service.cio.readable_proxy`
+==============================================
+
+.. py:module:: ivcap_sdk_service.cio.readable_proxy
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ivcap_sdk_service.cio.readable_proxy.ReadableProxy
+
+
+
+
+.. py:class:: ReadableProxy(url: str, name=None, on_close: Callable[[IO[bytes]], None] = None, is_binary=True, encoding=None, cache: Optional[ivcap_sdk_service.cio.io_adapter.IOWritable] = None)
+
+
+   Bases: :py:obj:`ivcap_sdk_service.cio.io_adapter.IOReadable`
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: closed
+      :type: bool
+
+
+   .. py:property:: mode
+      :type: str
+
+
+   .. py:property:: name
+      :type: str
+
+
+   .. py:method:: as_local_file() -> str
+
+
+   .. py:method:: writable() -> bool
+
+
+   .. py:method:: readable() -> bool
+
+
+   .. py:method:: readline(limit: int = -1) -> AnyStr
+
+
+   .. py:method:: readlines(hint: int = -1) -> List[AnyStr]
+
+
+   .. py:method:: seek(offset, whence=io.SEEK_SET)
+
+      Change stream position by offset
+
+
+   .. py:method:: seekable() -> bool
+
+
+   .. py:method:: tell() -> int
+
+      Return current stream position
+
+
+   .. py:method:: read(n: int = -1) -> AnyStr
+
+
+   .. py:method:: close()
+
+
+   .. py:method:: _get_file_obj()
+
+
+   .. py:method:: _open_file_obj()
+
+      Open and ensure that the local file object is properly "filled".
+
+      If the content is from an external source, ensure that it is fully
+      downloaded into `_file_obj`.
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+   .. py:method:: to_json()
+
+
+

@@ -1,0 +1,114 @@
+{
+    "cells": [
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "# Example usage\n",
+                "\n",
+                "To use `ivcap_service` in a project:"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 1,
+            "metadata": {},
+            "outputs": [
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "0.2.0\n"
+                    ]
+                }
+            ],
+            "source": [
+                "import ivcap_sdk_service\n",
+                "\n",
+                "print(ivcap_sdk_service.__version__)"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": 2,
+            "metadata": {},
+            "outputs": [
+                {
+                    "name": "stdout",
+                    "output_type": "stream",
+                    "text": [
+                        "INFO 2023-07-11T17:05:35+1000 ivcap IVCAP Service 'HelloWorld' ?/? (sdk 0.2.0/#?) built on ?.\n",
+                        "INFO 2023-07-11T17:05:35+1000 ivcap Starting order 'None' for service 'HelloWorld' on node 'None'\n"
+                    ]
+                },
+                {
+                    "name": "stderr",
+                    "output_type": "stream",
+                    "text": [
+                        "usage: ipykernel_launcher.py [-h] --msg STRING [--times INT]\n",
+                        "ipykernel_launcher.py: error: the following arguments are required: --msg\n"
+                    ]
+                },
+                {
+                    "ename": "SystemExit",
+                    "evalue": "2",
+                    "output_type": "error",
+                    "traceback": [
+                        "An exception has occurred, use %tb to see the full traceback.\n",
+                        "\u001b[0;31mSystemExit\u001b[0m\u001b[0;31m:\u001b[0m 2\n"
+                    ]
+                },
+                {
+                    "name": "stderr",
+                    "output_type": "stream",
+                    "text": [
+                        "/opt/homebrew/Caskroom/miniconda/base/envs/ivcap-service/lib/python3.9/site-packages/IPython/core/interactiveshell.py:3561: UserWarning: To exit: use 'exit', 'quit', or Ctrl-D.\n",
+                        "  warn(\"To exit: use 'exit', 'quit', or Ctrl-D.\", stacklevel=1)\n"
+                    ]
+                }
+            ],
+            "source": [
+                "from typing import Dict\n",
+                "from ivcap_sdk_service import Service, Parameter, PythonWorkflow, Type, register_service\n",
+                "import logging\n",
+                "\n",
+                "SERVICE = Service(\n",
+                "    name = \"HelloWorld\",\n",
+                "    description = \"Simple service which does a few simple things\",\n",
+                "    parameters = [\n",
+                "        Parameter(name=\"msg\", type=Type.STRING, description=\"Message to echo\"),\n",
+                "        Parameter(name=\"times\", type=Type.INT, default=2, description=\"Times to repeat\"),\n",
+                "    ],\n",
+                "    workflow = PythonWorkflow(min_memory='2Gi')\n",
+                ")\n",
+                "\n",
+                "def hello_world(args: Dict, logger: logging):\n",
+                "    for i in range(args.times):\n",
+                "        logger.info(f\"({i + 1}) Hello {args.msg}\")\n",
+                "\n",
+                "register_service(SERVICE, hello_world)"
+            ]
+        }
+    ],
+    "metadata": {
+        "kernelspec": {
+            "display_name": "Python 3",
+            "language": "python",
+            "name": "python3"
+        },
+        "language_info": {
+            "codemirror_mode": {
+                "name": "ipython",
+                "version": 3
+            },
+            "file_extension": ".py",
+            "mimetype": "text/x-python",
+            "name": "python",
+            "nbconvert_exporter": "python",
+            "pygments_lexer": "ipython3",
+            "version": "3.9.16"
+        }
+    },
+    "nbformat": 4,
+    "nbformat_minor": 4
+}

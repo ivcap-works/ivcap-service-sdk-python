@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ivcap_sdk_service.service &mdash; ivcap_sd_service  documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            ivcap_sd_service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../conduct.html">Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">ivcap_sd_service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ivcap_sdk_service.service</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ivcap_sdk_service.service</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (c) 2023 Commonwealth Scientific and Industrial Research Organisation (CSIRO). All rights reserved.</span>
+<span class="c1"># Use of this source code is governed by a BSD-style license that can be</span>
+<span class="c1"># found in the LICENSE file. See the AUTHORS file for names of contributors.</span>
+<span class="c1">#</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
+<span class="kn">from</span> <span class="nn">dataclass_wizard</span> <span class="kn">import</span> <span class="n">JSONWizard</span><span class="p">,</span> <span class="n">json_field</span>
+<span class="kn">from</span> <span class="nn">argparse</span> <span class="kn">import</span> <span class="n">ArgumentParser</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Any</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
+
+<span class="kn">from</span> <span class="nn">.verifiers</span> <span class="kn">import</span> <span class="n">verify_artifact</span><span class="p">,</span> <span class="n">verify_collection</span><span class="p">,</span> <span class="n">ArtifactAction</span><span class="p">,</span> <span class="n">CollectionAction</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">read_yaml_no_dates</span>
+
+<div class="viewcode-block" id="Option"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.Option">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Option</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Defines one option of a `Parameter` of type `OPTION`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">value</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Type"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.Type">[docs]</a><span class="k">class</span> <span class="nc">Type</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Enumerates the different types of service `Parameters`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">STRING</span> <span class="o">=</span> <span class="s1">&#39;string&#39;</span>
+    <span class="n">INT</span> <span class="o">=</span> <span class="s1">&#39;int&#39;</span>
+    <span class="n">FLOAT</span> <span class="o">=</span> <span class="s1">&#39;float&#39;</span>
+    <span class="n">BOOL</span> <span class="o">=</span> <span class="s1">&#39;bool&#39;</span>
+    <span class="n">OPTION</span> <span class="o">=</span> <span class="s1">&#39;option&#39;</span>
+    <span class="n">ARTIFACT</span> <span class="o">=</span> <span class="s1">&#39;artifact&#39;</span>
+    <span class="n">COLLECTION</span> <span class="o">=</span> <span class="s1">&#39;collection&#39;</span></div>
+
+<div class="viewcode-block" id="Parameter"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.Parameter">[docs]</a><span class="nd">@dataclass</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">Parameter</span><span class="p">(</span><span class="n">JSONWizard</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Defines a `Service` parameter</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Parameter._"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.Parameter._">[docs]</a>    <span class="k">class</span> <span class="nc">_</span><span class="p">(</span><span class="n">JSONWizard</span><span class="o">.</span><span class="n">Meta</span><span class="p">):</span>
+        <span class="n">skip_defaults</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">Type</span>
+    <span class="n">options</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Option</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">default</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">help</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">optional</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">constant</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="Parameter.__post_init__"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.Parameter.__post_init__">[docs]</a>    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># &#39;default&#39; is supposed to be a string</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_to_str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Parameter.to_dict"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.Parameter.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">Type</span><span class="o">.</span><span class="n">BOOL</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">default</span><span class="p">:</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;optional&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">d</span></div>
+
+<div class="viewcode-block" id="Parameter._to_str"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.Parameter._to_str">[docs]</a>    <span class="k">def</span> <span class="nf">_to_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">v</span> <span class="o">!=</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">type</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">v</span></div></div>
+
+<div class="viewcode-block" id="Workflow"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.Workflow">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Workflow</span><span class="p">(</span><span class="n">JSONWizard</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Defines the workflow associated with a `Service`&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="Workflow._"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.Workflow._">[docs]</a>    <span class="k">class</span> <span class="nc">_</span><span class="p">(</span><span class="n">JSONWizard</span><span class="o">.</span><span class="n">Meta</span><span class="p">):</span>
+        <span class="n">skip_defaults</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span></div>
+
+<div class="viewcode-block" id="BasicWorkflow"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.BasicWorkflow">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">BasicWorkflow</span><span class="p">(</span><span class="n">Workflow</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Defines an IVCAP &#39;Service&#39; workflow consisting of a single container</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        image (str): Name of docker image [&#39;IVCAP_CONTAINER&#39;, &#39;@CONTAINER@&#39;]</span>
+<span class="sd">        command (str): Path to init executable/script</span>
+<span class="sd">        min_memory (int): Min memory requirement in ???</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;basic&quot;</span>
+    <span class="n">image</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;IVCAP_CONTAINER&#39;</span><span class="p">,</span> <span class="s1">&#39;@CONTAINER@&#39;</span><span class="p">)</span>
+    <span class="n">command</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">min_memory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="BasicWorkflow.to_dict"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.BasicWorkflow.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">basic</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;command&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span>
+            <span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_memory</span><span class="p">:</span>
+            <span class="n">basic</span><span class="p">[</span><span class="s1">&#39;memory&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;request&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_memory</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;basic&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;basic&#39;</span><span class="p">:</span> <span class="n">basic</span>
+        <span class="p">}</span></div></div>
+
+<div class="viewcode-block" id="PythonWorkflow"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.PythonWorkflow">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">PythonWorkflow</span><span class="p">(</span><span class="n">BasicWorkflow</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Defines an IVCAP &#39;Service&#39; workflow consisting of a single python script</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        image (str): Name of docker image [&#39;IVCAP_CONTAINER&#39;, &#39;@CONTAINER@&#39;]</span>
+<span class="sd">        script (str): Path to main python script [&#39;/app/service.py&#39;]</span>
+<span class="sd">        min_memory (int): Min memory requirement in ???</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+   
+    <span class="n">script</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;/app/service.py&#39;</span>
+
+<div class="viewcode-block" id="PythonWorkflow.def_workflow"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.PythonWorkflow.def_workflow">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">def_workflow</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span> 
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="PythonWorkflow.to_dict"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.PythonWorkflow.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;basic&#39;</span><span class="p">][</span><span class="s1">&#39;command&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;python&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">script</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">d</span></div></div>
+
+<div class="viewcode-block" id="Service"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.Service">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">Service</span><span class="p">(</span><span class="n">JSONWizard</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Defines an IVCAP service with all it&#39;s necessary components</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        id(URN): Service URN [&#39;IVCAP_SERVICE_ID&#39;, &#39;@SERVICE_ID@&#39;]</span>
+<span class="sd">        name(str): Human friendly service name</span>
+<span class="sd">        description(str): Detailed description of this service</span>
+<span class="sd">        providerID(URN): Provider URN [&#39;IVCAP_PROVIDER_ID&#39;, &#39;@PROVIDER_ID@&#39;]</span>
+<span class="sd">        accountID(URN): Account URN [&#39;IVCAP_ACCOUNT_ID&#39;, &#39;@ACCOUNT_ID@&#39;]</span>
+<span class="sd">        parameters(List[Parameter]): List of parameters for this service</span>
+<span class="sd">        workflow(Workflow): Workflow to use when executing the service [PythonWorkflow]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># class _(JSONWizard.Meta):</span>
+    <span class="c1">#     skip_defaults = True</span>
+
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;IVCAP_SERVICE_ID&#39;</span><span class="p">,</span> <span class="s1">&#39;@SERVICE_ID@&#39;</span><span class="p">)</span>
+    <span class="n">providerID</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">json_field</span><span class="p">(</span><span class="s1">&#39;provider-id&#39;</span><span class="p">,</span> <span class="nb">all</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;IVCAP_PROVIDER_ID&#39;</span><span class="p">,</span> <span class="s1">&#39;@PROVIDER_ID@&#39;</span><span class="p">))</span>
+    <span class="n">accountID</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">json_field</span><span class="p">(</span><span class="s1">&#39;account-id&#39;</span><span class="p">,</span> <span class="nb">all</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;IVCAP_ACCOUNT_ID&#39;</span><span class="p">,</span> <span class="s1">&#39;@ACCOUNT_ID@&#39;</span><span class="p">))</span>
+    <span class="n">parameters</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Parameter</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+    <span class="n">description</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">workflow</span><span class="p">:</span> <span class="n">Workflow</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="n">PythonWorkflow</span><span class="o">.</span><span class="n">def_workflow</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Service.from_file"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.Service.from_file">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_file</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">serviceFile</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pd</span> <span class="o">=</span> <span class="n">read_yaml_no_dates</span><span class="p">(</span><span class="n">serviceFile</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">pd</span><span class="p">)</span></div>
+
+    <span class="c1"># this function is NOT calling the &#39;to_dict&#39; of referenced JSONWizard classes</span>
+<div class="viewcode-block" id="Service.to_dict"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.Service.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;parameters&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">))</span>
+        <span class="n">d</span><span class="p">[</span><span class="s1">&#39;workflow&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">workflow</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">d</span></div>
+
+<div class="viewcode-block" id="Service.to_yaml"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.Service.to_yaml">[docs]</a>    <span class="k">def</span> <span class="nf">to_yaml</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Service.append_arguments"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.Service.append_arguments">[docs]</a>    <span class="k">def</span> <span class="nf">append_arguments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ap</span><span class="p">:</span> <span class="n">ArgumentParser</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArgumentParser</span><span class="p">:</span>
+        <span class="n">type2type</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="n">Type</span><span class="o">.</span><span class="n">STRING</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">Type</span><span class="o">.</span><span class="n">INT</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+            <span class="n">Type</span><span class="o">.</span><span class="n">FLOAT</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+            <span class="n">Type</span><span class="o">.</span><span class="n">BOOL</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="c1"># optionals = []</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="ow">and</span> <span class="n">p</span><span class="o">.</span><span class="n">type</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;A service parameter needs at least a name and a type - </span><span class="si">{</span><span class="n">p</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;cre:&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;ivcap:&#39;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">args</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">required</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">Type</span><span class="o">.</span><span class="n">OPTION</span><span class="p">:</span>
+                <span class="n">ca</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">options</span><span class="p">))</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;choices&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ca</span>      
+            <span class="k">elif</span> <span class="n">p</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">Type</span><span class="o">.</span><span class="n">ARTIFACT</span><span class="p">:</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">verify_artifact</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;metavar&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;URN&quot;</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ArtifactAction</span>
+                <span class="k">pass</span>
+            <span class="k">elif</span> <span class="n">p</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">Type</span><span class="o">.</span><span class="n">COLLECTION</span><span class="p">:</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">verify_collection</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;metavar&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;URN&quot;</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">CollectionAction</span>
+                <span class="k">pass</span>
+            <span class="k">elif</span> <span class="n">p</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">Type</span><span class="o">.</span><span class="n">BOOL</span><span class="p">:</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]</span> <span class="o">=</span><span class="s1">&#39;store_true&#39;</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;required&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">type</span><span class="p">)</span> <span class="o">==</span> <span class="n">Type</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wrong type declaration for &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; - use enum &#39;Type&#39;&quot;</span><span class="p">)</span>
+                   
+                <span class="n">t</span> <span class="o">=</span> <span class="n">type2type</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">type</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">t</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported type &#39;</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">type</span><span class="si">}</span><span class="s2">&#39; for &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;metavar&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">type</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">default</span><span class="p">:</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">default</span>
+            <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">description</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">default</span><span class="p">:</span>
+                    <span class="n">args</span><span class="p">[</span><span class="s1">&#39;help&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="s2"> [</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">default</span><span class="si">}</span><span class="s2">]&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">args</span><span class="p">[</span><span class="s1">&#39;help&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">description</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">optional</span><span class="p">:</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;required&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">optional</span>
+                <span class="c1"># optionals.append(name)</span>
+            <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">constant</span> <span class="ow">or</span> <span class="n">p</span><span class="o">.</span><span class="n">default</span><span class="p">:</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;required&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">ap</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;--</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ap</span></div></div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, CSIRO.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

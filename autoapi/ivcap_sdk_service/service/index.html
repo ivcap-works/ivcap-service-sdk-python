@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ivcap_sdk_service.service &mdash; ivcap_sd_service  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="prev" title="ivcap_sdk_service.savers" href="../savers/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            ivcap_sd_service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../conduct.html">Code of Conduct</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ivcap_sdk_service</span></code></a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../index.html#subpackages">Subpackages</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../itypes/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ivcap_sdk_service.itypes</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../ivcap/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ivcap_sdk_service.ivcap</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../logger/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ivcap_sdk_service.logger</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../run/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ivcap_sdk_service.run</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../savers/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ivcap_sdk_service.savers</span></code></a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ivcap_sdk_service.service</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#package-contents">Package Contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ivcap_sd_service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ivcap_sdk_service</span></code></a></li>
+      <li class="breadcrumb-item active"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ivcap_sdk_service.service</span></code></li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/autoapi/ivcap_sdk_service/service/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-ivcap_sdk_service.service">
+<span id="ivcap-sdk-service-service"></span><h1><a class="reference internal" href="#module-ivcap_sdk_service.service" title="ivcap_sdk_service.service"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ivcap_sdk_service.service</span></code></a><a class="headerlink" href="#module-ivcap_sdk_service.service" title="Permalink to this heading"></a></h1>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<section id="classes">
+<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.service.Option" title="ivcap_sdk_service.service.Option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Option</span></code></a></p></td>
+<td><p>Defines one option of a <cite>Parameter</cite> of type <cite>OPTION</cite></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.service.Type" title="ivcap_sdk_service.service.Type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Type</span></code></a></p></td>
+<td><p>Enumerates the different types of service <cite>Parameters</cite></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.service.Parameter" title="ivcap_sdk_service.service.Parameter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Parameter</span></code></a></p></td>
+<td><p>Defines a <cite>Service</cite> parameter</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.service.Workflow" title="ivcap_sdk_service.service.Workflow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Workflow</span></code></a></p></td>
+<td><p>Defines the workflow associated with a <cite>Service</cite></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.service.BasicWorkflow" title="ivcap_sdk_service.service.BasicWorkflow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BasicWorkflow</span></code></a></p></td>
+<td><p>Defines an IVCAP 'Service' workflow consisting of a single container</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.service.PythonWorkflow" title="ivcap_sdk_service.service.PythonWorkflow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PythonWorkflow</span></code></a></p></td>
+<td><p>Defines an IVCAP 'Service' workflow consisting of a single python script</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.service.Service" title="ivcap_sdk_service.service.Service"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Service</span></code></a></p></td>
+<td><p>Defines an IVCAP service with all it's necessary components</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py class">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Option">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.service.</span></span><span class="sig-name descname"><span class="pre">Option</span></span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/service.html#Option"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.service.Option" title="Permalink to this definition"></a></dt>
+<dd><p>Defines one option of a <cite>Parameter</cite> of type <cite>OPTION</cite></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Option.value">
+<span class="sig-name descname"><span class="pre">value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Option.value" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Option.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Option.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Option.description">
+<span class="sig-name descname"><span class="pre">description</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Option.description" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Type">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.service.</span></span><span class="sig-name descname"><span class="pre">Type</span></span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/service.html#Type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.service.Type" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>Enumerates the different types of service <cite>Parameters</cite></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Type.STRING">
+<span class="sig-name descname"><span class="pre">STRING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'string'</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Type.STRING" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Type.INT">
+<span class="sig-name descname"><span class="pre">INT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'int'</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Type.INT" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Type.FLOAT">
+<span class="sig-name descname"><span class="pre">FLOAT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'float'</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Type.FLOAT" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Type.BOOL">
+<span class="sig-name descname"><span class="pre">BOOL</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'bool'</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Type.BOOL" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Type.OPTION">
+<span class="sig-name descname"><span class="pre">OPTION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'option'</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Type.OPTION" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Type.ARTIFACT">
+<span class="sig-name descname"><span class="pre">ARTIFACT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'artifact'</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Type.ARTIFACT" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Type.COLLECTION">
+<span class="sig-name descname"><span class="pre">COLLECTION</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'collection'</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Type.COLLECTION" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Parameter">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.service.</span></span><span class="sig-name descname"><span class="pre">Parameter</span></span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/service.html#Parameter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.service.Parameter" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dataclass_wizard.JSONWizard</span></code></p>
+<p>Defines a <cite>Service</cite> parameter</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Parameter._">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_</span></span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/service.html#Parameter._"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.service.Parameter._" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dataclass_wizard.JSONWizard.Meta</span></code></p>
+<p>Inner meta class that can be extended by sub-classes for additional
+customization with the JSON load / dump process.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Parameter._.skip_defaults">
+<span class="sig-name descname"><span class="pre">skip_defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Parameter._.skip_defaults" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Parameter.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Parameter.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Parameter.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ivcap_sdk_service.service.Type" title="ivcap_sdk_service.service.Type"><span class="pre">Type</span></a></em><a class="headerlink" href="#ivcap_sdk_service.service.Parameter.type" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Parameter.options">
+<span class="sig-name descname"><span class="pre">options</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ivcap_sdk_service.service.Option" title="ivcap_sdk_service.service.Option"><span class="pre">Option</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ivcap_sdk_service.service.Parameter.options" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Parameter.description">
+<span class="sig-name descname"><span class="pre">description</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Parameter.description" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Parameter.default">
+<span class="sig-name descname"><span class="pre">default</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Parameter.default" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Parameter.unit">
+<span class="sig-name descname"><span class="pre">unit</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Parameter.unit" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Parameter.help">
+<span class="sig-name descname"><span class="pre">help</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Parameter.help" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Parameter.optional">
+<span class="sig-name descname"><span class="pre">optional</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Parameter.optional" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Parameter.constant">
+<span class="sig-name descname"><span class="pre">constant</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Parameter.constant" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Parameter.__post_init__">
+<span class="sig-name descname"><span class="pre">__post_init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/service.html#Parameter.__post_init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.service.Parameter.__post_init__" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Parameter.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/service.html#Parameter.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.service.Parameter.to_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Converts the dataclass instance to a Python dictionary object that is
+JSON serializable.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Parameter._to_str">
+<span class="sig-name descname"><span class="pre">_to_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/service.html#Parameter._to_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.service.Parameter._to_str" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Workflow">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.service.</span></span><span class="sig-name descname"><span class="pre">Workflow</span></span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/service.html#Workflow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.service.Workflow" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dataclass_wizard.JSONWizard</span></code></p>
+<p>Defines the workflow associated with a <cite>Service</cite></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Workflow._">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_</span></span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/service.html#Workflow._"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.service.Workflow._" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dataclass_wizard.JSONWizard.Meta</span></code></p>
+<p>Inner meta class that can be extended by sub-classes for additional
+customization with the JSON load / dump process.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Workflow._.skip_defaults">
+<span class="sig-name descname"><span class="pre">skip_defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Workflow._.skip_defaults" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Workflow.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Workflow.type" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.BasicWorkflow">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.service.</span></span><span class="sig-name descname"><span class="pre">BasicWorkflow</span></span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/service.html#BasicWorkflow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.service.BasicWorkflow" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ivcap_sdk_service.service.Workflow" title="ivcap_sdk_service.service.Workflow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Workflow</span></code></a></p>
+<p>Defines an IVCAP ‘Service’ workflow consisting of a single container</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>str</em>) – Name of docker image [‘IVCAP_CONTAINER’, ‘&#64;CONTAINER&#64;’]</p></li>
+<li><p><strong>command</strong> (<em>str</em>) – Path to init executable/script</p></li>
+<li><p><strong>min_memory</strong> (<em>int</em>) – Min memory requirement in ???</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.BasicWorkflow.type">
+<span class="sig-name descname"><span class="pre">type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'basic'</span></em><a class="headerlink" href="#ivcap_sdk_service.service.BasicWorkflow.type" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.BasicWorkflow.image">
+<span class="sig-name descname"><span class="pre">image</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.service.BasicWorkflow.image" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.BasicWorkflow.command">
+<span class="sig-name descname"><span class="pre">command</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ivcap_sdk_service.service.BasicWorkflow.command" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.BasicWorkflow.min_memory">
+<span class="sig-name descname"><span class="pre">min_memory</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.service.BasicWorkflow.min_memory" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.BasicWorkflow.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/service.html#BasicWorkflow.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.service.BasicWorkflow.to_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Converts the dataclass instance to a Python dictionary object that is
+JSON serializable.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.PythonWorkflow">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.service.</span></span><span class="sig-name descname"><span class="pre">PythonWorkflow</span></span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/service.html#PythonWorkflow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.service.PythonWorkflow" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ivcap_sdk_service.service.BasicWorkflow" title="ivcap_sdk_service.service.BasicWorkflow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BasicWorkflow</span></code></a></p>
+<p>Defines an IVCAP ‘Service’ workflow consisting of a single python script</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> (<em>str</em>) – Name of docker image [‘IVCAP_CONTAINER’, ‘&#64;CONTAINER&#64;’]</p></li>
+<li><p><strong>script</strong> (<em>str</em>) – Path to main python script [‘/app/service.py’]</p></li>
+<li><p><strong>min_memory</strong> (<em>int</em>) – Min memory requirement in ???</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.PythonWorkflow.script">
+<span class="sig-name descname"><span class="pre">script</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'/app/service.py'</span></em><a class="headerlink" href="#ivcap_sdk_service.service.PythonWorkflow.script" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.PythonWorkflow.def_workflow">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">def_workflow</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/service.html#PythonWorkflow.def_workflow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.service.PythonWorkflow.def_workflow" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.PythonWorkflow.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/service.html#PythonWorkflow.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.service.PythonWorkflow.to_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Converts the dataclass instance to a Python dictionary object that is
+JSON serializable.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Service">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.service.</span></span><span class="sig-name descname"><span class="pre">Service</span></span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/service.html#Service"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.service.Service" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dataclass_wizard.JSONWizard</span></code></p>
+<p>Defines an IVCAP service with all it’s necessary components</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>id</strong> (<em>URN</em>) – Service URN [‘IVCAP_SERVICE_ID’, ‘&#64;SERVICE_ID&#64;’]</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Human friendly service name</p></li>
+<li><p><strong>description</strong> (<em>str</em>) – Detailed description of this service</p></li>
+<li><p><strong>providerID</strong> (<em>URN</em>) – Provider URN [‘IVCAP_PROVIDER_ID’, ‘&#64;PROVIDER_ID&#64;’]</p></li>
+<li><p><strong>accountID</strong> (<em>URN</em>) – Account URN [‘IVCAP_ACCOUNT_ID’, ‘&#64;ACCOUNT_ID&#64;’]</p></li>
+<li><p><strong>parameters</strong> (<em>List</em><em>[</em><a class="reference internal" href="#ivcap_sdk_service.service.Parameter" title="ivcap_sdk_service.service.Parameter"><em>Parameter</em></a><em>]</em>) – List of parameters for this service</p></li>
+<li><p><strong>workflow</strong> (<a class="reference internal" href="#ivcap_sdk_service.service.Workflow" title="ivcap_sdk_service.service.Workflow"><em>Workflow</em></a>) – Workflow to use when executing the service [PythonWorkflow]</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Service.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Service.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Service.id">
+<span class="sig-name descname"><span class="pre">id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Service.id" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Service.providerID">
+<span class="sig-name descname"><span class="pre">providerID</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Service.providerID" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Service.accountID">
+<span class="sig-name descname"><span class="pre">accountID</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Service.accountID" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Service.parameters">
+<span class="sig-name descname"><span class="pre">parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#ivcap_sdk_service.service.Parameter" title="ivcap_sdk_service.service.Parameter"><span class="pre">Parameter</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ivcap_sdk_service.service.Service.parameters" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Service.description">
+<span class="sig-name descname"><span class="pre">description</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.service.Service.description" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Service.workflow">
+<span class="sig-name descname"><span class="pre">workflow</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#ivcap_sdk_service.service.Workflow" title="ivcap_sdk_service.service.Workflow"><span class="pre">Workflow</span></a></em><a class="headerlink" href="#ivcap_sdk_service.service.Service.workflow" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Service.from_file">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">serviceFile</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/service.html#Service.from_file"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.service.Service.from_file" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Service.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/service.html#Service.to_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.service.Service.to_dict" title="Permalink to this definition"></a></dt>
+<dd><p>Converts the dataclass instance to a Python dictionary object that is
+JSON serializable.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Service.to_yaml">
+<span class="sig-name descname"><span class="pre">to_yaml</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/service.html#Service.to_yaml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.service.Service.to_yaml" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.service.Service.append_arguments">
+<span class="sig-name descname"><span class="pre">append_arguments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ap</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">argparse.ArgumentParser</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">argparse.ArgumentParser</span></span></span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/service.html#Service.append_arguments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.service.Service.append_arguments" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../savers/index.html" class="btn btn-neutral float-left" title="ivcap_sdk_service.savers" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, CSIRO.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

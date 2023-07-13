@@ -1,0 +1,108 @@
+:py:mod:`ivcap_sdk_service.cio`
+===============================
+
+.. py:module:: ivcap_sdk_service.cio
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   io_adapter/index.rst
+   readable_file/index.rst
+   readable_proxy/index.rst
+   writable_file/index.rst
+   writable_proxy/index.rst
+
+
+Package Contents
+----------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ivcap_sdk_service.cio.IOAdapter
+
+
+
+
+.. py:class:: IOAdapter
+
+
+   Bases: :py:obj:`abc.ABC`
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:method:: read_artifact(artifact_id: str, binary_content=True, no_caching=False, seekable=False) -> IOReadable
+      :abstractmethod:
+
+      Return a readable file-like object providing the content of an artifact
+
+      :param artifact_id: ID of artifact to read
+      :type artifact_id: str
+      :param binary_content: If true content is expected to be of binary format otherwise text is expected. Defaults to True.
+      :type binary_content: bool, optional
+      :param no_caching: If true, content is not cached nor read from cache. Defaults to False.
+      :type no_caching: bool, optional
+      :param seekable: If true, returned readable should be seekable
+      :type seekable: bool, optional
+
+      :returns: The content of the artifact as a file-like object
+      :rtype: IOReadable
+
+
+   .. py:method:: artifact_readable(artifact_id: str) -> bool
+      :abstractmethod:
+
+      Return true if artifact exists and is readable
+
+      :param artifact_id: ID of artifact
+      :type artifact_id: str
+
+      :returns: True if artifact can be read
+      :rtype: bool
+
+
+   .. py:method:: write_artifact(mime_type: str, name: Optional[str] = None, collection_name: Optional[str] = None, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, on_close: Optional[OnCloseF] = None) -> IOWritable
+      :abstractmethod:
+
+      Returns a IOWritable to create a new artifact. It needs to be closed
+      in order to be persisted. If `on_close` is provided it is called with the
+      artifactID.
+
+      :param mime_type: _description_
+      :type mime_type: str
+      :param name: Optional name. Defaults to None.
+      :type name: Optional[str], optional
+      :param collection_name: Optional collection name. Defaults to None.
+      :type collection_name: Optional[str], optional
+      :param metadata: Key/value pairs (or list of key/value pairs) to add as metadata. Defaults to {}.
+      :type metadata: Optional[MetaDict | List[MetaDict]], optional
+      :param seekable: If true, writable should be seekable (needed for NetCDF). Defaults to False.
+      :type seekable: bool, optional
+      :param on_close: Called with assigned artifact ID. Defaults to None.
+      :type on_close: Optional[OnCloseF], optional
+
+      :returns: A file-like object to write deliver artifact content - needs to be closed
+      :rtype: IOWritable
+
+
+   .. py:method:: get_collection(collection_urn: str) -> Collection
+      :abstractmethod:
+
+      Return a collection representing a set of artifacts
+
+      :param collection_urn: Collection identifies
+      :type collection_urn: URN
+
+      :returns: An instance of a collection object appropriate for
+                the current context
+      :rtype: Collection
+
+
+

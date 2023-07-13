@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ivcap_sdk_service.cio.writable_proxy &mdash; ivcap_sd_service  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            ivcap_sd_service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../conduct.html">Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ivcap_sd_service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ivcap_sdk_service.cio.writable_proxy</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ivcap_sdk_service.cio.writable_proxy</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (c) 2023 Commonwealth Scientific and Industrial Research Organisation (CSIRO). All rights reserved.</span>
+<span class="c1"># Use of this source code is governed by a BSD-style license that can be</span>
+<span class="c1"># found in the LICENSE file. See the AUTHORS file for names of contributors.</span>
+<span class="c1">#</span>
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="kn">import</span> <span class="ne">BaseException</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">AnyStr</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">from</span> <span class="nn">ivcap_sdk_service.cio.utils</span> <span class="kn">import</span> <span class="n">encode64</span>
+
+<span class="kn">from</span> <span class="nn">ivcap_sdk_service.itypes</span> <span class="kn">import</span> <span class="n">MetaDict</span><span class="p">,</span> <span class="n">SupportedMimeTypes</span>
+<span class="kn">from</span> <span class="nn">ivcap_sdk_service.utils</span> <span class="kn">import</span> <span class="n">json_dump</span>
+<span class="kn">from</span> <span class="nn">..logger</span> <span class="kn">import</span> <span class="n">sys_logger</span> <span class="k">as</span> <span class="n">logger</span>
+
+<span class="kn">from</span> <span class="nn">.io_adapter</span> <span class="kn">import</span> <span class="n">IOWritable</span>
+
+<div class="viewcode-block" id="WritableProxy"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/writable_proxy/index.html#ivcap_sdk_service.cio.writable_proxy.WritableProxy">[docs]</a><span class="k">class</span> <span class="nc">WritableProxy</span><span class="p">(</span><span class="n">IOWritable</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A class which implements the IOWritable interface for writing data. It additionally</span>
+<span class="sd">    persists the data on disk.</span>
+
+<span class="sd">    ...</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name (str): _description_</span>
+<span class="sd">        on_close (Callable[[IO[bytes], None]]): _description_. Defaults to None.</span>
+<span class="sd">        is_binary (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">        use_temp_file (bool, optional): _description_. Defaults to True.</span>
+<span class="sd">        encoding (_type_, optional): _description_. Defaults to None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> 
+        <span class="n">storage_url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">mime_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
+        <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">MetaDict</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">MetaDict</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">is_seekable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">on_close</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+        <span class="n">encoding</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_storage_url</span> <span class="o">=</span> <span class="n">storage_url</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mime_type</span><span class="p">,</span> <span class="n">SupportedMimeTypes</span><span class="p">):</span>
+            <span class="n">mime_type</span> <span class="o">=</span> <span class="n">mime_type</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">is_binary</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">mime_type</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;text&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mime_type</span> <span class="o">=</span> <span class="n">mime_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="s2">&quot;???&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span> <span class="o">=</span> <span class="n">metadata</span>
+
+        <span class="c1"># At this stage, we first write it to a local temp file and on close, post the file</span>
+        <span class="c1"># to &#39;url&#39;</span>
+        <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;w+b&quot;</span> <span class="k">if</span> <span class="n">is_binary</span> <span class="k">else</span> <span class="s2">&quot;w+&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="n">encoding</span><span class="p">)</span> <span class="c1"># delete after uploaded</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cnt</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_on_close</span> <span class="o">=</span> <span class="n">on_close</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">closed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
+
+<div class="viewcode-block" id="WritableProxy.seek"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/writable_proxy/index.html#ivcap_sdk_service.cio.writable_proxy.WritableProxy.seek">[docs]</a>    <span class="k">def</span> <span class="nf">seek</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">whence</span><span class="o">=</span><span class="n">io</span><span class="o">.</span><span class="n">SEEK_SET</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Change stream position by offset</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">diff</span> <span class="o">=</span> <span class="n">offset</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">cnt</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cnt</span> <span class="o">+=</span> <span class="n">diff</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="n">whence</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="WritableProxy.seekable"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/writable_proxy/index.html#ivcap_sdk_service.cio.writable_proxy.WritableProxy.seekable">[docs]</a>    <span class="k">def</span> <span class="nf">seekable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="WritableProxy.tell"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/writable_proxy/index.html#ivcap_sdk_service.cio.writable_proxy.WritableProxy.tell">[docs]</a>    <span class="k">def</span> <span class="nf">tell</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return current stream position</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">stream_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">stream_pos</span></div>
+
+<div class="viewcode-block" id="WritableProxy.write"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/writable_proxy/index.html#ivcap_sdk_service.cio.writable_proxy.WritableProxy.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bytes_obj</span><span class="p">:</span> <span class="n">AnyStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="n">bytes_written</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">bytes_obj</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cnt</span> <span class="o">+=</span> <span class="n">bytes_written</span>
+        <span class="k">return</span> <span class="n">bytes_written</span></div>
+
+<div class="viewcode-block" id="WritableProxy.writelines"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/writable_proxy/index.html#ivcap_sdk_service.cio.writable_proxy.WritableProxy.writelines">[docs]</a>    <span class="k">def</span> <span class="nf">writelines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AnyStr</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="WritableProxy.writable"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/writable_proxy/index.html#ivcap_sdk_service.cio.writable_proxy.WritableProxy.writable">[docs]</a>    <span class="k">def</span> <span class="nf">writable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="WritableProxy.truncate"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/writable_proxy/index.html#ivcap_sdk_service.cio.writable_proxy.WritableProxy.truncate">[docs]</a>    <span class="k">def</span> <span class="nf">truncate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cnt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span><span class="o">.</span><span class="n">truncate</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cnt</span></div>
+
+<div class="viewcode-block" id="WritableProxy.readable"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/writable_proxy/index.html#ivcap_sdk_service.cio.writable_proxy.WritableProxy.readable">[docs]</a>    <span class="k">def</span> <span class="nf">readable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="WritableProxy.flush"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/writable_proxy/index.html#ivcap_sdk_service.cio.writable_proxy.WritableProxy.flush">[docs]</a>    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="WritableProxy.close"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/writable_proxy/index.html#ivcap_sdk_service.cio.writable_proxy.WritableProxy.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_upload</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_on_close</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_on_close</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;WritableProxy#close: on_close &#39;</span><span class="si">%s</span><span class="s2">&#39; failed with &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_on_close</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="WritableProxy._upload"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/writable_proxy/index.html#ivcap_sdk_service.cio.writable_proxy.WritableProxy._upload">[docs]</a>    <span class="k">def</span> <span class="nf">_upload</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> 
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">fd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Upload artifact &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">)</span>
+        <span class="n">fd</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="n">fd</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_metadata</span>
+        <span class="k">if</span> <span class="n">metadata</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Sequence</span><span class="p">):</span>
+                <span class="n">metadata</span> <span class="o">=</span> <span class="p">[</span><span class="n">metadata</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">metadataUploaded</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># dataType = str(type(self.dataPeek))</span>
+        <span class="c1"># ct = type2mime.get(dataType, &quot;unknown&quot;)</span>
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mime_type</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">:</span>
+            <span class="n">headers</span><span class="p">[</span><span class="s2">&quot;X-Name&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">metadata</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="c1"># Immediately upload simple metadata</span>
+            <span class="n">metadataUploaded</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">headers</span><span class="p">[</span><span class="s1">&#39;Upload-Metadata&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span> <span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">e</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">e</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">encode64</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">metadata</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Post artifact data=&#39;</span><span class="si">%s</span><span class="s2">&#39;, headers:&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">fd</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage_url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">fd</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;&gt;&gt;&gt;&gt;&quot;</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">())</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">fatal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;while posting result data </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage_url</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">status_code</span> <span class="o">&gt;=</span> <span class="mi">300</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">fatal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;error response </span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2"> while posting result data </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">j</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">j</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">]</span>
+        <span class="n">artifactID</span> <span class="o">=</span> <span class="n">j</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">artifactID</span><span class="p">:</span>
+            <span class="n">artifactID</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;X-Artifact-Id&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;WritableProxy: created artifact &#39;</span><span class="si">{</span><span class="n">artifactID</span><span class="si">}</span><span class="s2">&#39; of size &#39;</span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s2">&#39; via &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage_url</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">metadataUploaded</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">metadata</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">headers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;Location&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_upload_metadata</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="n">artifactID</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">artifactID</span></div>
+
+<div class="viewcode-block" id="WritableProxy._upload_metadata"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/writable_proxy/index.html#ivcap_sdk_service.cio.writable_proxy.WritableProxy._upload_metadata">[docs]</a>    <span class="k">def</span> <span class="nf">_upload_metadata</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> 
+        <span class="n">metadata</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">MetaDict</span><span class="p">],</span>
+        <span class="n">artifactID</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">md</span> <span class="ow">in</span> <span class="n">metadata</span><span class="p">:</span>
+            <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;X-Meta-Data-For-Url&quot;</span><span class="p">:</span> <span class="n">url</span><span class="p">,</span>
+                <span class="s2">&quot;X-Meta-Data-For-Artifact&quot;</span><span class="p">:</span> <span class="n">artifactID</span><span class="p">,</span>
+                <span class="s2">&quot;X-Meta-Data-Schema&quot;</span><span class="p">:</span> <span class="n">md</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;$schema&#39;</span><span class="p">,</span> <span class="s1">&#39;???&#39;</span><span class="p">),</span>
+                <span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+            <span class="p">}</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Post artifact metadata data=&#39;</span><span class="si">%s</span><span class="s2">&#39;, headers:&#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="n">md</span><span class="p">,</span> <span class="n">headers</span><span class="p">)</span>
+                <span class="n">payload</span> <span class="o">=</span> <span class="n">json_dump</span><span class="p">(</span><span class="n">md</span><span class="p">)</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage_url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">fatal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;while posting metadata </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage_url</span><span class="si">}</span><span class="s2"> - </span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">r</span><span class="o">.</span><span class="n">status_code</span> <span class="o">&gt;=</span> <span class="mi">300</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">fatal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;error response </span><span class="si">{</span><span class="n">r</span><span class="o">.</span><span class="n">status_code</span><span class="si">}</span><span class="s2"> while posting metadata </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_storage_url</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="WritableProxy.__repr__"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/writable_proxy/index.html#ivcap_sdk_service.cio.writable_proxy.WritableProxy.__repr__">[docs]</a>    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;&lt;WritableProxy name=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="si">}</span><span class="s2"> closed=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_closed</span><span class="si">}</span><span class="s2"> fp=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span><span class="si">}</span><span class="s2">&gt;&quot;</span></div></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, CSIRO.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

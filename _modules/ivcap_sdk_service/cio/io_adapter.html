@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ivcap_sdk_service.cio.io_adapter &mdash; ivcap_sd_service  documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            ivcap_sd_service
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../conduct.html">Code of Conduct</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">ivcap_sd_service</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">ivcap_sdk_service.cio.io_adapter</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for ivcap_sdk_service.cio.io_adapter</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Copyright (c) 2023 Commonwealth Scientific and Industrial Research Organisation (CSIRO). All rights reserved.</span>
+<span class="c1"># Use of this source code is governed by a BSD-style license that can be</span>
+<span class="c1"># found in the LICENSE file. See the AUTHORS file for names of contributors.</span>
+<span class="c1">#</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">AnyStr</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">import</span> <span class="nn">io</span>
+
+<span class="kn">from</span> <span class="nn">..itypes</span> <span class="kn">import</span> <span class="n">MetaDict</span><span class="p">,</span> <span class="n">Url</span>
+
+<div class="viewcode-block" id="_IOBase"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/io_adapter/index.html#ivcap_sdk_service.cio._IOBase">[docs]</a><span class="k">class</span> <span class="nc">_IOBase</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">mode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">closed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="_IOBase.readable"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/io_adapter/index.html#ivcap_sdk_service.cio._IOBase.readable">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">readable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="_IOBase.seek"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/io_adapter/index.html#ivcap_sdk_service.cio._IOBase.seek">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">seek</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offset</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">whence</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">SEEK_SET</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="_IOBase.seekable"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/io_adapter/index.html#ivcap_sdk_service.cio._IOBase.seekable">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">seekable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="_IOBase.tell"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/io_adapter/index.html#ivcap_sdk_service.cio._IOBase.tell">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">tell</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="_IOBase.writable"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/io_adapter/index.html#ivcap_sdk_service.cio._IOBase.writable">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">writable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="_IOBase.close"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/io_adapter/index.html#ivcap_sdk_service.cio._IOBase.close">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div></div>
+
+<div class="viewcode-block" id="IOReadable"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOReadable">[docs]</a><span class="k">class</span> <span class="nc">IOReadable</span><span class="p">(</span><span class="n">_IOBase</span><span class="p">):</span>
+<div class="viewcode-block" id="IOReadable.read"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOReadable.read">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnyStr</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="IOReadable.readline"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOReadable.readline">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">readline</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnyStr</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="IOReadable.readlines"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOReadable.readlines">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">readlines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hint</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">AnyStr</span><span class="p">]:</span>
+        <span class="k">pass</span></div>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">as_local_file</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="IOWritable"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOWritable">[docs]</a><span class="k">class</span> <span class="nc">IOWritable</span><span class="p">(</span><span class="n">_IOBase</span><span class="p">):</span>
+<div class="viewcode-block" id="IOWritable.write"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOWritable.write">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="n">AnyStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="IOWritable.writelines"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOWritable.writelines">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">writelines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">AnyStr</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="IOWritable.truncate"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOWritable.truncate">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">truncate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="IOWritable.flush"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOWritable.flush">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="IO_ReadWritable"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/io_adapter/index.html#ivcap_sdk_service.cio.IO_ReadWritable">[docs]</a><span class="k">class</span> <span class="nc">IO_ReadWritable</span><span class="p">(</span><span class="n">IOReadable</span><span class="p">,</span> <span class="n">IOWritable</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+<span class="k">class</span> <span class="nc">Collection</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A collection of artifacts</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ABC (_type_): _description_</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="Collection"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/io_adapter/index.html#ivcap_sdk_service.cio.Collection">[docs]</a><span class="k">class</span> <span class="nc">Collection</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A collection of artifacts</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+<span class="n">OnCloseF</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Url</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
+
+<div class="viewcode-block" id="IOAdapter"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOAdapter">[docs]</a><span class="k">class</span> <span class="nc">IOAdapter</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+
+    <span class="c1"># @classmethod</span>
+    <span class="c1"># def create_cache(cls, cache_dir: str, cache_proxy_url: str):</span>
+    <span class="c1">#     return None</span>
+
+<div class="viewcode-block" id="IOAdapter.read_artifact"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOAdapter.read_artifact">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">read_artifact</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">artifact_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">binary_content</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">no_caching</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">seekable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IOReadable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a readable file-like object providing the content of an artifact</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            artifact_id (str): ID of artifact to read</span>
+<span class="sd">            binary_content (bool, optional): If true content is expected to be of binary format otherwise text is expected. Defaults to True.</span>
+<span class="sd">            no_caching (bool, optional): If true, content is not cached nor read from cache. Defaults to False.</span>
+<span class="sd">            seekable (bool, optional): If true, returned readable should be seekable</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            IOReadable: The content of the artifact as a file-like object</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+    <span class="c1"># @abstractmethod</span>
+    <span class="c1"># def read_external(self, url: Url, binary_content=True, no_caching=False, seekable=False) -&gt; IOReadable:</span>
+    <span class="c1">#     &quot;&quot;&quot;Return a readable file-like object providing the content of an external data item.</span>
+
+    <span class="c1">#     Args:</span>
+    <span class="c1">#         url (Url): URL of external object to read</span>
+    <span class="c1">#         binary_content (bool, optional): If true content is expected to be of binary format otherwise text is expected. Defaults to True.</span>
+    <span class="c1">#         no_caching (bool, optional): If set, content is not cached nor read from cache. Defaults to False.</span>
+    <span class="c1">#         seekable (bool, optional): If true, returned readable should be seekable</span>
+
+    <span class="c1">#     Returns:</span>
+    <span class="c1">#         IOReadable: The content of the external data item as a file-like object</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     pass</span>
+
+<div class="viewcode-block" id="IOAdapter.artifact_readable"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOAdapter.artifact_readable">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">artifact_readable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">artifact_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return true if artifact exists and is readable</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            artifact_id (str): ID of artifact</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: True if artifact can be read</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="IOAdapter.write_artifact"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOAdapter.write_artifact">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">write_artifact</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">mime_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">collection_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">MetaDict</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">MetaDict</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+        <span class="n">seekable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">on_close</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OnCloseF</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IOWritable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a IOWritable to create a new artifact. It needs to be closed</span>
+<span class="sd">        in order to be persisted. If `on_close` is provided it is called with the </span>
+<span class="sd">        artifactID.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            mime_type (str): _description_</span>
+<span class="sd">            name (Optional[str], optional): Optional name. Defaults to None.</span>
+<span class="sd">            collection_name (Optional[str], optional): Optional collection name. Defaults to None.</span>
+<span class="sd">            metadata (Optional[MetaDict | List[MetaDict]], optional): Key/value pairs (or list of key/value pairs) to add as metadata. Defaults to {}.</span>
+<span class="sd">            seekable (bool, optional): If true, writable should be seekable (needed for NetCDF). Defaults to False.</span>
+<span class="sd">            on_close (Optional[OnCloseF], optional): Called with assigned artifact ID. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            IOWritable: A file-like object to write deliver artifact content - needs to be closed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="IOAdapter.get_collection"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOAdapter.get_collection">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collection_urn</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Collection</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a collection representing a set of artifacts</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            collection_urn (URN): Collection identifies</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Collection: An instance of a collection object appropriate for</span>
+<span class="sd">            the current context</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, CSIRO.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

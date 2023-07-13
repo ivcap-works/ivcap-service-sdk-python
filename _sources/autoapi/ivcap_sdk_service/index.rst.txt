@@ -1,0 +1,684 @@
+:py:mod:`ivcap_sdk_service`
+===========================
+
+.. py:module:: ivcap_sdk_service
+
+
+Subpackages
+-----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 3
+
+   cio/index.rst
+
+
+Submodules
+----------
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   itypes/index.rst
+   ivcap/index.rst
+   logger/index.rst
+   run/index.rst
+   savers/index.rst
+   service/index.rst
+
+
+Package Contents
+----------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ivcap_sdk_service.Service
+   ivcap_sdk_service.Parameter
+   ivcap_sdk_service.Option
+   ivcap_sdk_service.Type
+   ivcap_sdk_service.Workflow
+   ivcap_sdk_service.BasicWorkflow
+   ivcap_sdk_service.PythonWorkflow
+   ivcap_sdk_service.IOAdapter
+   ivcap_sdk_service.IOWritable
+   ivcap_sdk_service.IOReadable
+   ivcap_sdk_service.SupportedMimeTypes
+
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   ivcap_sdk_service.deliver_data
+   ivcap_sdk_service.fetch_data
+   ivcap_sdk_service.create_metadata
+   ivcap_sdk_service.get_config
+   ivcap_sdk_service.register_saver
+   ivcap_sdk_service.get_order_id
+   ivcap_sdk_service.get_node_id
+   ivcap_sdk_service.register_service
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   ivcap_sdk_service.__version__
+   ivcap_sdk_service.SCHEMA_KEY
+   ivcap_sdk_service.OnCloseF
+   ivcap_sdk_service.ServiceArgs
+
+
+.. py:data:: __version__
+
+   
+
+.. py:function:: deliver_data(name: str, data_or_lambda: Union[Any, Callable[[ivcap_sdk_service.cio.io_adapter.IOWritable], None]], mime_type: Union[str, ivcap_sdk_service.itypes.SupportedMimeTypes], collection_name: Optional[str] = None, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, on_close: Optional[ivcap_sdk_service.cio.io_adapter.OnCloseF] = None) -> str
+
+   Deliver a result of this service
+
+   :param name: A user friendly name
+   :type name: str
+   :param data_or_lambda: The data to deliver. Either directly or a callback
+                          providing a file-like handle to provide the data then.
+   :type data_or_lambda: Union[Any, Callable[[IOWritable], None]]
+   :param mime_type: The mime type of the data. Anything not starting with 'text' is assumed to be a binary content
+   :type mime_type: Union[str, SupportedMimeTypes]
+   :param collection_name: Optional collection name. Defaults to None.
+   :type collection_name: Optional[str], optional
+   :param metadata: Key/value pairs (or list of k/v pairs) to add as metadata. Defaults to None.
+   :type metadata: Optional[Union[MetaDict, Sequence[MetaDict]]], optional
+   :param seekable: If true, writable should be seekable (needed for NetCDF). Defaults to False.
+   :type seekable: bool, optional
+   :param on_close: Called with assigned artifact ID. Defaults to None.
+   :type on_close: Optional[Callable[[Url]]], optional
+
+   :raises NotImplementedError: Raised when no saver function is defined for 'type'
+
+   :returns: URL of published artifact
+
+
+.. py:function:: fetch_data(url: ivcap_sdk_service.itypes.Url, binary_content=True, no_caching=False, seekable=False) -> ivcap_sdk_service.cio.io_adapter.IOReadable
+
+   Return an 'IOReadable' on the content referenced by 'url'.
+
+   This simply calls 'cio.IOAdapter.read_artifact' through the
+   configured 'IOAdapter'.
+
+   :param url: Url to content
+   :type url: Url
+   :param binary_content: Indicates if content is binary [True].
+   :type binary_content: bool, optional
+   :param no_caching: Indicates if content should NOT be cached [False].
+   :type no_caching: bool, optional
+   :param seekable: Indicates if Readable should be seekable [False].
+   :type seekable: bool, optional
+
+   :returns: A readable on the referenced content
+   :rtype: IOReadable
+
+
+.. py:function:: create_metadata(schema: str, mdict: Optional[ivcap_sdk_service.itypes.MetaDict] = {}, **args) -> Dict
+
+   Return a dict which has a 'proper' schema declaration added.
+
+   :param schema: Schema URN
+   :type schema: str
+
+   :returns: A copy of 'args' plus a 'SCHEMA_KEY' entry
+   :rtype: Dict
+
+
+.. py:data:: SCHEMA_KEY
+   :value: '$schema'
+
+   
+
+.. py:function:: get_config() -> ivcap_sdk_service.config.Config
+
+
+.. py:function:: register_saver(mime_type: str, obj_type: Any, saverF: SaverF)
+
+   Register a 'saver' function used in 'deliver' for a specific data type.
+
+   :param mime_type: Mime type to use for that data type
+   :type mime_type: str
+   :param obj_type: The class this saver is for
+   :type obj_type: Any
+   :param saverF: Function to deliver an instance of `obj_type`
+   :type saverF: SaverF
+
+
+.. py:function:: get_order_id()
+
+   Returns the ID of the currently processed order
+
+
+.. py:function:: get_node_id()
+
+   Returns the ID of this computational entity
+
+
+.. py:function:: register_service(service: ivcap_sdk_service.service.Service, handler: Callable[[Dict], int])
+
+
+.. py:class:: Service
+
+
+   Bases: :py:obj:`dataclass_wizard.JSONWizard`
+
+   Defines an IVCAP service with all it's necessary components
+
+   :param id: Service URN ['IVCAP_SERVICE_ID', '@SERVICE_ID@']
+   :type id: URN
+   :param name: Human friendly service name
+   :type name: str
+   :param description: Detailed description of this service
+   :type description: str
+   :param providerID: Provider URN ['IVCAP_PROVIDER_ID', '@PROVIDER_ID@']
+   :type providerID: URN
+   :param accountID: Account URN ['IVCAP_ACCOUNT_ID', '@ACCOUNT_ID@']
+   :type accountID: URN
+   :param parameters: List of parameters for this service
+   :type parameters: List[Parameter]
+   :param workflow: Workflow to use when executing the service [PythonWorkflow]
+   :type workflow: Workflow
+
+   .. py:attribute:: name
+      :type: str
+
+      
+
+   .. py:attribute:: id
+      :type: str
+
+      
+
+   .. py:attribute:: providerID
+      :type: str
+
+      
+
+   .. py:attribute:: accountID
+      :type: str
+
+      
+
+   .. py:attribute:: parameters
+      :type: List[Parameter]
+
+      
+
+   .. py:attribute:: description
+      :type: str
+
+      
+
+   .. py:attribute:: workflow
+      :type: Workflow
+
+      
+
+   .. py:method:: from_file(serviceFile: str) -> None
+      :classmethod:
+
+
+   .. py:method:: to_dict()
+
+      Converts the dataclass instance to a Python dictionary object that is
+      JSON serializable.
+
+
+   .. py:method:: to_yaml() -> str
+
+
+   .. py:method:: append_arguments(ap: argparse.ArgumentParser) -> argparse.ArgumentParser
+
+
+
+.. py:class:: Parameter
+
+
+   Bases: :py:obj:`dataclass_wizard.JSONWizard`
+
+   Defines a `Service` parameter
+
+
+   .. py:class:: _
+
+
+      Bases: :py:obj:`dataclass_wizard.JSONWizard.Meta`
+
+      Inner meta class that can be extended by sub-classes for additional
+      customization with the JSON load / dump process.
+
+      .. py:attribute:: skip_defaults
+         :value: True
+
+         
+
+
+   .. py:attribute:: name
+      :type: str
+
+      
+
+   .. py:attribute:: type
+      :type: Type
+
+      
+
+   .. py:attribute:: options
+      :type: List[Option]
+
+      
+
+   .. py:attribute:: description
+      :type: str
+
+      
+
+   .. py:attribute:: default
+      :type: Any
+
+      
+
+   .. py:attribute:: unit
+      :type: str
+
+      
+
+   .. py:attribute:: help
+      :type: str
+
+      
+
+   .. py:attribute:: optional
+      :type: bool
+      :value: False
+
+      
+
+   .. py:attribute:: constant
+      :type: bool
+      :value: False
+
+      
+
+   .. py:method:: __post_init__()
+
+
+   .. py:method:: to_dict()
+
+      Converts the dataclass instance to a Python dictionary object that is
+      JSON serializable.
+
+
+   .. py:method:: _to_str(v)
+
+
+
+.. py:class:: Option
+
+
+   Defines one option of a `Parameter` of type `OPTION`
+
+
+   .. py:attribute:: value
+      :type: str
+
+      
+
+   .. py:attribute:: name
+      :type: str
+
+      
+
+   .. py:attribute:: description
+      :type: str
+
+      
+
+
+.. py:class:: Type
+
+
+   Bases: :py:obj:`enum.Enum`
+
+   Enumerates the different types of service `Parameters`
+
+
+   .. py:attribute:: STRING
+      :value: 'string'
+
+      
+
+   .. py:attribute:: INT
+      :value: 'int'
+
+      
+
+   .. py:attribute:: FLOAT
+      :value: 'float'
+
+      
+
+   .. py:attribute:: BOOL
+      :value: 'bool'
+
+      
+
+   .. py:attribute:: OPTION
+      :value: 'option'
+
+      
+
+   .. py:attribute:: ARTIFACT
+      :value: 'artifact'
+
+      
+
+   .. py:attribute:: COLLECTION
+      :value: 'collection'
+
+      
+
+
+.. py:class:: Workflow
+
+
+   Bases: :py:obj:`dataclass_wizard.JSONWizard`
+
+   Defines the workflow associated with a `Service`
+
+   .. py:class:: _
+
+
+      Bases: :py:obj:`dataclass_wizard.JSONWizard.Meta`
+
+      Inner meta class that can be extended by sub-classes for additional
+      customization with the JSON load / dump process.
+
+      .. py:attribute:: skip_defaults
+         :value: False
+
+         
+
+
+   .. py:attribute:: type
+      :type: str
+
+      
+
+
+.. py:class:: BasicWorkflow
+
+
+   Bases: :py:obj:`Workflow`
+
+   Defines an IVCAP 'Service' workflow consisting of a single container
+
+   :param image: Name of docker image ['IVCAP_CONTAINER', '@CONTAINER@']
+   :type image: str
+   :param command: Path to init executable/script
+   :type command: str
+   :param min_memory: Min memory requirement in ???
+   :type min_memory: int
+
+   .. py:attribute:: type
+      :type: str
+      :value: 'basic'
+
+      
+
+   .. py:attribute:: image
+      :type: str
+
+      
+
+   .. py:attribute:: command
+      :type: List[str]
+
+      
+
+   .. py:attribute:: min_memory
+      :type: str
+
+      
+
+   .. py:method:: to_dict()
+
+      Converts the dataclass instance to a Python dictionary object that is
+      JSON serializable.
+
+
+
+.. py:class:: PythonWorkflow
+
+
+   Bases: :py:obj:`BasicWorkflow`
+
+   Defines an IVCAP 'Service' workflow consisting of a single python script
+
+   :param image: Name of docker image ['IVCAP_CONTAINER', '@CONTAINER@']
+   :type image: str
+   :param script: Path to main python script ['/app/service.py']
+   :type script: str
+   :param min_memory: Min memory requirement in ???
+   :type min_memory: int
+
+   .. py:attribute:: script
+      :type: str
+      :value: '/app/service.py'
+
+      
+
+   .. py:method:: def_workflow()
+      :classmethod:
+
+
+   .. py:method:: to_dict()
+
+      Converts the dataclass instance to a Python dictionary object that is
+      JSON serializable.
+
+
+
+.. py:class:: IOAdapter
+
+
+   Bases: :py:obj:`abc.ABC`
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:method:: read_artifact(artifact_id: str, binary_content=True, no_caching=False, seekable=False) -> IOReadable
+      :abstractmethod:
+
+      Return a readable file-like object providing the content of an artifact
+
+      :param artifact_id: ID of artifact to read
+      :type artifact_id: str
+      :param binary_content: If true content is expected to be of binary format otherwise text is expected. Defaults to True.
+      :type binary_content: bool, optional
+      :param no_caching: If true, content is not cached nor read from cache. Defaults to False.
+      :type no_caching: bool, optional
+      :param seekable: If true, returned readable should be seekable
+      :type seekable: bool, optional
+
+      :returns: The content of the artifact as a file-like object
+      :rtype: IOReadable
+
+
+   .. py:method:: artifact_readable(artifact_id: str) -> bool
+      :abstractmethod:
+
+      Return true if artifact exists and is readable
+
+      :param artifact_id: ID of artifact
+      :type artifact_id: str
+
+      :returns: True if artifact can be read
+      :rtype: bool
+
+
+   .. py:method:: write_artifact(mime_type: str, name: Optional[str] = None, collection_name: Optional[str] = None, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, on_close: Optional[OnCloseF] = None) -> IOWritable
+      :abstractmethod:
+
+      Returns a IOWritable to create a new artifact. It needs to be closed
+      in order to be persisted. If `on_close` is provided it is called with the
+      artifactID.
+
+      :param mime_type: _description_
+      :type mime_type: str
+      :param name: Optional name. Defaults to None.
+      :type name: Optional[str], optional
+      :param collection_name: Optional collection name. Defaults to None.
+      :type collection_name: Optional[str], optional
+      :param metadata: Key/value pairs (or list of key/value pairs) to add as metadata. Defaults to {}.
+      :type metadata: Optional[MetaDict | List[MetaDict]], optional
+      :param seekable: If true, writable should be seekable (needed for NetCDF). Defaults to False.
+      :type seekable: bool, optional
+      :param on_close: Called with assigned artifact ID. Defaults to None.
+      :type on_close: Optional[OnCloseF], optional
+
+      :returns: A file-like object to write deliver artifact content - needs to be closed
+      :rtype: IOWritable
+
+
+   .. py:method:: get_collection(collection_urn: str) -> Collection
+      :abstractmethod:
+
+      Return a collection representing a set of artifacts
+
+      :param collection_urn: Collection identifies
+      :type collection_urn: URN
+
+      :returns: An instance of a collection object appropriate for
+                the current context
+      :rtype: Collection
+
+
+
+.. py:data:: OnCloseF
+
+   
+
+.. py:class:: IOWritable
+
+
+   Bases: :py:obj:`_IOBase`
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:method:: write(s: AnyStr) -> int
+      :abstractmethod:
+
+
+   .. py:method:: writelines(lines: List[AnyStr]) -> None
+      :abstractmethod:
+
+
+   .. py:method:: truncate(size: int = None) -> int
+      :abstractmethod:
+
+
+   .. py:method:: flush() -> None
+      :abstractmethod:
+
+
+
+.. py:class:: IOReadable
+
+
+   Bases: :py:obj:`_IOBase`
+
+   Helper class that provides a standard way to create an ABC using
+   inheritance.
+
+   .. py:property:: as_local_file
+      :type: str
+      :abstractmethod:
+
+
+   .. py:method:: read(n: int = -1) -> AnyStr
+      :abstractmethod:
+
+
+   .. py:method:: readline(limit: int = -1) -> AnyStr
+      :abstractmethod:
+
+
+   .. py:method:: readlines(hint: int = -1) -> List[AnyStr]
+      :abstractmethod:
+
+
+
+.. py:exception:: MissingParameterValue(name: str, message: str = None)
+
+
+   Bases: :py:obj:`Exception`
+
+   Common base class for all non-exit exceptions.
+
+   .. py:attribute:: name
+      :type: str
+
+      
+
+   .. py:attribute:: message
+      :type: Optional[str]
+
+      
+
+
+.. py:exception:: UnsupportedMimeType(mime_type: str)
+
+
+   Bases: :py:obj:`Exception`
+
+   Common base class for all non-exit exceptions.
+
+   .. py:attribute:: mime_type
+      :type: str
+
+      
+
+
+.. py:class:: SupportedMimeTypes
+
+
+   Bases: :py:obj:`enum.Enum`
+
+   Generic enumeration.
+
+   Derive from this class to define new enumerations.
+
+   .. py:attribute:: NETCDF
+      :value: 'application/netcdf'
+
+      
+
+   .. py:attribute:: PNG
+      :value: 'image/png'
+
+      
+
+   .. py:attribute:: JPEG
+      :value: 'image/jpeg'
+
+      
+
+
+.. py:data:: ServiceArgs
+
+   
+

@@ -1,0 +1,165 @@
+:py:mod:`ivcap_sdk_service.ivcap`
+=================================
+
+.. py:module:: ivcap_sdk_service.ivcap
+
+
+Module Contents
+---------------
+
+
+Functions
+~~~~~~~~~
+
+.. autoapisummary::
+
+   ivcap_sdk_service.ivcap.deliver_data
+   ivcap_sdk_service.ivcap.register_saver
+   ivcap_sdk_service.ivcap.create_metadata
+   ivcap_sdk_service.ivcap.fetch_data
+   ivcap_sdk_service.ivcap.get_order_id
+   ivcap_sdk_service.ivcap.get_node_id
+   ivcap_sdk_service.ivcap.notify
+   ivcap_sdk_service.ivcap.get_config
+   ivcap_sdk_service.ivcap.init
+
+
+
+Attributes
+~~~~~~~~~~
+
+.. autoapisummary::
+
+   ivcap_sdk_service.ivcap.SCHEMA_KEY
+   ivcap_sdk_service.ivcap.DELIVERED
+   ivcap_sdk_service.ivcap._CONFIG
+   ivcap_sdk_service.ivcap.SaverF
+   ivcap_sdk_service.ivcap._CLASS2MIME_TYPE
+   ivcap_sdk_service.ivcap._MIME_TYPE2SAVER
+
+
+.. py:data:: SCHEMA_KEY
+   :value: '$schema'
+
+   
+
+.. py:data:: DELIVERED
+   :value: []
+
+   
+
+.. py:data:: _CONFIG
+   :type: ivcap_sdk_service.config.Config
+
+   
+
+.. py:data:: SaverF
+
+   
+
+.. py:data:: _CLASS2MIME_TYPE
+
+   
+
+.. py:data:: _MIME_TYPE2SAVER
+   :type: Dict[str, SaverF]
+
+   
+
+.. py:function:: deliver_data(name: str, data_or_lambda: Union[Any, Callable[[ivcap_sdk_service.cio.io_adapter.IOWritable], None]], mime_type: Union[str, ivcap_sdk_service.itypes.SupportedMimeTypes], collection_name: Optional[str] = None, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, on_close: Optional[ivcap_sdk_service.cio.io_adapter.OnCloseF] = None) -> str
+
+   Deliver a result of this service
+
+   :param name: A user friendly name
+   :type name: str
+   :param data_or_lambda: The data to deliver. Either directly or a callback
+                          providing a file-like handle to provide the data then.
+   :type data_or_lambda: Union[Any, Callable[[IOWritable], None]]
+   :param mime_type: The mime type of the data. Anything not starting with 'text' is assumed to be a binary content
+   :type mime_type: Union[str, SupportedMimeTypes]
+   :param collection_name: Optional collection name. Defaults to None.
+   :type collection_name: Optional[str], optional
+   :param metadata: Key/value pairs (or list of k/v pairs) to add as metadata. Defaults to None.
+   :type metadata: Optional[Union[MetaDict, Sequence[MetaDict]]], optional
+   :param seekable: If true, writable should be seekable (needed for NetCDF). Defaults to False.
+   :type seekable: bool, optional
+   :param on_close: Called with assigned artifact ID. Defaults to None.
+   :type on_close: Optional[Callable[[Url]]], optional
+
+   :raises NotImplementedError: Raised when no saver function is defined for 'type'
+
+   :returns: URL of published artifact
+
+
+.. py:function:: register_saver(mime_type: str, obj_type: Any, saverF: SaverF)
+
+   Register a 'saver' function used in 'deliver' for a specific data type.
+
+   :param mime_type: Mime type to use for that data type
+   :type mime_type: str
+   :param obj_type: The class this saver is for
+   :type obj_type: Any
+   :param saverF: Function to deliver an instance of `obj_type`
+   :type saverF: SaverF
+
+
+.. py:function:: create_metadata(schema: str, mdict: Optional[ivcap_sdk_service.itypes.MetaDict] = {}, **args) -> Dict
+
+   Return a dict which has a 'proper' schema declaration added.
+
+   :param schema: Schema URN
+   :type schema: str
+
+   :returns: A copy of 'args' plus a 'SCHEMA_KEY' entry
+   :rtype: Dict
+
+
+.. py:function:: fetch_data(url: ivcap_sdk_service.itypes.Url, binary_content=True, no_caching=False, seekable=False) -> ivcap_sdk_service.cio.io_adapter.IOReadable
+
+   Return an 'IOReadable' on the content referenced by 'url'.
+
+   This simply calls 'cio.IOAdapter.read_artifact' through the
+   configured 'IOAdapter'.
+
+   :param url: Url to content
+   :type url: Url
+   :param binary_content: Indicates if content is binary [True].
+   :type binary_content: bool, optional
+   :param no_caching: Indicates if content should NOT be cached [False].
+   :type no_caching: bool, optional
+   :param seekable: Indicates if Readable should be seekable [False].
+   :type seekable: bool, optional
+
+   :returns: A readable on the referenced content
+   :rtype: IOReadable
+
+
+.. py:function:: get_order_id()
+
+   Returns the ID of the currently processed order
+
+
+.. py:function:: get_node_id()
+
+   Returns the ID of this computational entity
+
+
+.. py:exception:: ExitException(msg)
+
+
+   Bases: :py:obj:`Exception`
+
+   Common base class for all non-exit exceptions.
+
+
+.. py:function:: notify(msg, schema=None)
+
+   Publish 'msg' to indicate progress.
+
+
+.. py:function:: get_config() -> ivcap_sdk_service.config.Config
+
+
+.. py:function:: init(argv: Dict[str, str] = None, modify_ap: Callable[[argparse.ArgumentParser], argparse.ArgumentParser] = None)
+
+

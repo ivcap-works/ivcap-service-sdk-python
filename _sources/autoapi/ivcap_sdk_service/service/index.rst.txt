@@ -1,0 +1,347 @@
+:py:mod:`ivcap_sdk_service.service`
+===================================
+
+.. py:module:: ivcap_sdk_service.service
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ivcap_sdk_service.service.Option
+   ivcap_sdk_service.service.Type
+   ivcap_sdk_service.service.Parameter
+   ivcap_sdk_service.service.Workflow
+   ivcap_sdk_service.service.BasicWorkflow
+   ivcap_sdk_service.service.PythonWorkflow
+   ivcap_sdk_service.service.Service
+
+
+
+
+.. py:class:: Option
+
+
+   Defines one option of a `Parameter` of type `OPTION`
+
+
+   .. py:attribute:: value
+      :type: str
+
+      
+
+   .. py:attribute:: name
+      :type: str
+
+      
+
+   .. py:attribute:: description
+      :type: str
+
+      
+
+
+.. py:class:: Type
+
+
+   Bases: :py:obj:`enum.Enum`
+
+   Enumerates the different types of service `Parameters`
+
+
+   .. py:attribute:: STRING
+      :value: 'string'
+
+      
+
+   .. py:attribute:: INT
+      :value: 'int'
+
+      
+
+   .. py:attribute:: FLOAT
+      :value: 'float'
+
+      
+
+   .. py:attribute:: BOOL
+      :value: 'bool'
+
+      
+
+   .. py:attribute:: OPTION
+      :value: 'option'
+
+      
+
+   .. py:attribute:: ARTIFACT
+      :value: 'artifact'
+
+      
+
+   .. py:attribute:: COLLECTION
+      :value: 'collection'
+
+      
+
+
+.. py:class:: Parameter
+
+
+   Bases: :py:obj:`dataclass_wizard.JSONWizard`
+
+   Defines a `Service` parameter
+
+
+   .. py:class:: _
+
+
+      Bases: :py:obj:`dataclass_wizard.JSONWizard.Meta`
+
+      Inner meta class that can be extended by sub-classes for additional
+      customization with the JSON load / dump process.
+
+      .. py:attribute:: skip_defaults
+         :value: True
+
+         
+
+
+   .. py:attribute:: name
+      :type: str
+
+      
+
+   .. py:attribute:: type
+      :type: Type
+
+      
+
+   .. py:attribute:: options
+      :type: List[Option]
+
+      
+
+   .. py:attribute:: description
+      :type: str
+
+      
+
+   .. py:attribute:: default
+      :type: Any
+
+      
+
+   .. py:attribute:: unit
+      :type: str
+
+      
+
+   .. py:attribute:: help
+      :type: str
+
+      
+
+   .. py:attribute:: optional
+      :type: bool
+      :value: False
+
+      
+
+   .. py:attribute:: constant
+      :type: bool
+      :value: False
+
+      
+
+   .. py:method:: __post_init__()
+
+
+   .. py:method:: to_dict()
+
+      Converts the dataclass instance to a Python dictionary object that is
+      JSON serializable.
+
+
+   .. py:method:: _to_str(v)
+
+
+
+.. py:class:: Workflow
+
+
+   Bases: :py:obj:`dataclass_wizard.JSONWizard`
+
+   Defines the workflow associated with a `Service`
+
+   .. py:class:: _
+
+
+      Bases: :py:obj:`dataclass_wizard.JSONWizard.Meta`
+
+      Inner meta class that can be extended by sub-classes for additional
+      customization with the JSON load / dump process.
+
+      .. py:attribute:: skip_defaults
+         :value: False
+
+         
+
+
+   .. py:attribute:: type
+      :type: str
+
+      
+
+
+.. py:class:: BasicWorkflow
+
+
+   Bases: :py:obj:`Workflow`
+
+   Defines an IVCAP 'Service' workflow consisting of a single container
+
+   :param image: Name of docker image ['IVCAP_CONTAINER', '@CONTAINER@']
+   :type image: str
+   :param command: Path to init executable/script
+   :type command: str
+   :param min_memory: Min memory requirement in ???
+   :type min_memory: int
+
+   .. py:attribute:: type
+      :type: str
+      :value: 'basic'
+
+      
+
+   .. py:attribute:: image
+      :type: str
+
+      
+
+   .. py:attribute:: command
+      :type: List[str]
+
+      
+
+   .. py:attribute:: min_memory
+      :type: str
+
+      
+
+   .. py:method:: to_dict()
+
+      Converts the dataclass instance to a Python dictionary object that is
+      JSON serializable.
+
+
+
+.. py:class:: PythonWorkflow
+
+
+   Bases: :py:obj:`BasicWorkflow`
+
+   Defines an IVCAP 'Service' workflow consisting of a single python script
+
+   :param image: Name of docker image ['IVCAP_CONTAINER', '@CONTAINER@']
+   :type image: str
+   :param script: Path to main python script ['/app/service.py']
+   :type script: str
+   :param min_memory: Min memory requirement in ???
+   :type min_memory: int
+
+   .. py:attribute:: script
+      :type: str
+      :value: '/app/service.py'
+
+      
+
+   .. py:method:: def_workflow()
+      :classmethod:
+
+
+   .. py:method:: to_dict()
+
+      Converts the dataclass instance to a Python dictionary object that is
+      JSON serializable.
+
+
+
+.. py:class:: Service
+
+
+   Bases: :py:obj:`dataclass_wizard.JSONWizard`
+
+   Defines an IVCAP service with all it's necessary components
+
+   :param id: Service URN ['IVCAP_SERVICE_ID', '@SERVICE_ID@']
+   :type id: URN
+   :param name: Human friendly service name
+   :type name: str
+   :param description: Detailed description of this service
+   :type description: str
+   :param providerID: Provider URN ['IVCAP_PROVIDER_ID', '@PROVIDER_ID@']
+   :type providerID: URN
+   :param accountID: Account URN ['IVCAP_ACCOUNT_ID', '@ACCOUNT_ID@']
+   :type accountID: URN
+   :param parameters: List of parameters for this service
+   :type parameters: List[Parameter]
+   :param workflow: Workflow to use when executing the service [PythonWorkflow]
+   :type workflow: Workflow
+
+   .. py:attribute:: name
+      :type: str
+
+      
+
+   .. py:attribute:: id
+      :type: str
+
+      
+
+   .. py:attribute:: providerID
+      :type: str
+
+      
+
+   .. py:attribute:: accountID
+      :type: str
+
+      
+
+   .. py:attribute:: parameters
+      :type: List[Parameter]
+
+      
+
+   .. py:attribute:: description
+      :type: str
+
+      
+
+   .. py:attribute:: workflow
+      :type: Workflow
+
+      
+
+   .. py:method:: from_file(serviceFile: str) -> None
+      :classmethod:
+
+
+   .. py:method:: to_dict()
+
+      Converts the dataclass instance to a Python dictionary object that is
+      JSON serializable.
+
+
+   .. py:method:: to_yaml() -> str
+
+
+   .. py:method:: append_arguments(ap: argparse.ArgumentParser) -> argparse.ArgumentParser
+
+
+
