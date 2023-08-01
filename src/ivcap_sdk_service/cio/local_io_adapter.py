@@ -118,8 +118,8 @@ class LocalIOAdapter(IOAdapter):
     def write_artifact(
         self,
         mime_type: str, 
+        *,
         name: Optional[str] = None,
-        collection_name: Optional[str] = None,
         metadata: Optional[MetaDict] = {}, 
         seekable=False,
         on_close: Optional[OnCloseF] = None
@@ -139,17 +139,17 @@ class LocalIOAdapter(IOAdapter):
         Returns:
             IOWritable: A file-like object to write deliver artifact content - needs to be closed
         """
-        fname = self._to_path(self.out_dir, name, collection_name)
+        fname = self._to_path(self.out_dir, name)
         if isinstance(mime_type, SupportedMimeTypes):
             mime_type = mime_type.value
         is_binary = not mime_type.startswith('text')
 
-        def _on_close(_1, _2):
+        def _on_close(urn, _2):
             logger.info("Written artifact '%s' to '%s'", name, fname)
             if metadata != {}:
                 json_dump(metadata, f"{fname}-meta.json")
             if on_close:
-                on_close(f"file://{fname}")
+                on_close(urn)
 
         return WritableFile(fname, _on_close, is_binary, use_temp_file=False)
 
@@ -186,12 +186,28 @@ class LocalIOAdapter(IOAdapter):
             return name
         elif name.startswith('file:'):
             return name[len('file://'):]
+        elif name.startswith('urn:file:'):
+            return name[len('urn:file://'):]
         else:
             if collection_name:
                 return os.path.join(prefix, collection_name, name)
             else:
                 return os.path.join(prefix, name)
-            
+
+    def write_metadata(
+        self,
+        entity_id: str, # URN
+        schema: str, # URN
+        metadata: MetaDict,
+    ) -> str:
+        e = os.path.basename(f"{entity_id}:{schema}.json")
+        if not e.startswith("urn"):
+            e = f"urn:{e}"
+        fname = self._to_path(self.out_dir, e)
+        json_dump(metadata, fname)
+        return e
+                              
+                                   
     def get_collection(self, collection_urn: str) -> Collection:
         u = urlparse(collection_urn)
         if u.scheme == '' or u.scheme == 'file':
@@ -201,6 +217,7 @@ class LocalIOAdapter(IOAdapter):
                 raise ValueError(f"Cannot find local file or directory '{u.path}")
         else:
             raise ValueError(f"Remote collection is not supported, yet")
+        
     def __repr__(self):
         return f"<LocalIOAdapter in_dir={self.in_dir} out_dir={self.out_dir}>"
 

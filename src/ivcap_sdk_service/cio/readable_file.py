@@ -38,6 +38,10 @@ class ReadableFile(IOReadable):
         return self._mode
 
     @property
+    def urn(self) -> str:
+        return f"urn:file://{self._path}"
+
+    @property
     def name(self) -> str:
         return self._name
 
