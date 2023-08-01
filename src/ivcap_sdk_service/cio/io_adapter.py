@@ -54,6 +54,11 @@ class _IOBase(ABC):
         pass
 
 class IOReadable(_IOBase):
+    @property
+    @abstractmethod
+    def urn(self) -> str:
+        pass
+    
     @abstractmethod
     def read(self, n: int = -1) -> AnyStr:
         pass
@@ -72,6 +77,11 @@ class IOReadable(_IOBase):
         pass
 
 class IOWritable(_IOBase):
+    @property
+    @abstractmethod
+    def urn(self) -> str:
+        pass
+
     @abstractmethod
     def write(self, s: AnyStr) -> int:
         pass
@@ -185,6 +195,51 @@ class IOAdapter(ABC):
 
         Returns:
             IOWritable: A file-like object to write deliver artifact content - needs to be closed
+        """
+        pass
+    
+    @abstractmethod
+    def write_artifact(
+        self,
+        mime_type: str, 
+        *,
+        name: Optional[str] = None,
+        metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None, 
+        seekable=False,
+        on_close: Optional[OnCloseF] = None
+    ) -> IOWritable:
+        """Returns a IOWritable to create a new artifact. It needs to be closed
+        in order to be persisted. If `on_close` is provided it is called with the 
+        artifactID.
+
+        Args:
+            mime_type (str): _description_
+            name (Optional[str], optional): Optional name. Defaults to None.
+            metadata (Optional[MetaDict | List[MetaDict]], optional): Key/value pairs (or list of key/value pairs) to add as metadata. Defaults to {}.
+            seekable (bool, optional): If true, writable should be seekable (needed for NetCDF). Defaults to False.
+            on_close (Optional[OnCloseF], optional): Called with assigned artifact ID. Defaults to None.
+
+        Returns:
+            IOWritable: A file-like object to write deliver artifact content - needs to be closed
+        """
+        pass
+    
+    @abstractmethod
+    def write_metadata(
+        self,
+        entity_id: str, # URN
+        schema: str, # URN
+        metadata: MetaDict,
+    ) -> str:
+        """Add a 'metadata' aspect to 'entity_id' with 'schema'.
+
+        Args:
+            entity_id (URN): Entity URN the metadata should be attached to
+            schema (URN): Schema used in 'metadata'
+            metadata (MetaDict): Metadata (aspect) to be attached to 'entity_id'
+
+        Returns:
+            str: Metadata record URN
         """
         pass
 

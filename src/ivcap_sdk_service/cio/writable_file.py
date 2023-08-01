@@ -45,6 +45,13 @@ class WritableFile(IOWritable):
         self._closed = False
 
     @property
+    def urn(self) -> str:
+        if self._name.startswith('urn:'):
+            return self._name
+        else:
+            return f"urn:file://{self._file_obj.name}"
+
+    @property
     def closed(self) -> bool:
         return self._closed
 
@@ -100,7 +107,7 @@ class WritableFile(IOWritable):
         self._file_obj.flush()
         try:
             if self._on_close:
-                self._on_close(self._name, self._file_obj)
+                self._on_close(self.urn, self._file_obj)
         except BaseException as err:
             logger.warning("WritableFile#close: on_close '%s' failed with '%s'", self._on_close, err)
         finally:
