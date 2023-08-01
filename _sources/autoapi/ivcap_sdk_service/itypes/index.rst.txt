@@ -22,11 +22,17 @@ Attributes
 
 .. autoapisummary::
 
+   ivcap_sdk_service.itypes.SCHEMA_KEY
    ivcap_sdk_service.itypes.Url
    ivcap_sdk_service.itypes.MetaDict
    ivcap_sdk_service.itypes.FilePath
    ivcap_sdk_service.itypes.ServiceArgs
 
+
+.. py:data:: SCHEMA_KEY
+   :value: '$schema'
+
+   
 
 .. py:class:: SupportedMimeTypes
 
@@ -98,5 +104,13 @@ Attributes
       :type: str
 
       
+
+
+.. py:exception:: MissingSchemaDeclaration
+
+
+   Bases: :py:obj:`Exception`
+
+   Common base class for all non-exit exceptions.
 
 

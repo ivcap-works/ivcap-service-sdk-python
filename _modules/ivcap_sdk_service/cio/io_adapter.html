@@ -130,6 +130,11 @@
         <span class="k">pass</span></div></div>
 
 <div class="viewcode-block" id="IOReadable"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOReadable">[docs]</a><span class="k">class</span> <span class="nc">IOReadable</span><span class="p">(</span><span class="n">_IOBase</span><span class="p">):</span>
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">urn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">pass</span>
+    
 <div class="viewcode-block" id="IOReadable.read"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOReadable.read">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnyStr</span><span class="p">:</span>
         <span class="k">pass</span></div>
@@ -148,6 +153,11 @@
         <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="IOWritable"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOWritable">[docs]</a><span class="k">class</span> <span class="nc">IOWritable</span><span class="p">(</span><span class="n">_IOBase</span><span class="p">):</span>
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">urn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">pass</span>
+
 <div class="viewcode-block" id="IOWritable.write"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOWritable.write">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="n">AnyStr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="k">pass</span></div>
@@ -237,7 +247,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="IOAdapter.write_artifact"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOAdapter.write_artifact">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">write_artifact</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">mime_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
@@ -261,6 +271,51 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            IOWritable: A file-like object to write deliver artifact content - needs to be closed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+    
+<div class="viewcode-block" id="IOAdapter.write_artifact"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOAdapter.write_artifact">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">write_artifact</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">mime_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">MetaDict</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">MetaDict</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+        <span class="n">seekable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">on_close</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OnCloseF</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IOWritable</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a IOWritable to create a new artifact. It needs to be closed</span>
+<span class="sd">        in order to be persisted. If `on_close` is provided it is called with the </span>
+<span class="sd">        artifactID.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            mime_type (str): _description_</span>
+<span class="sd">            name (Optional[str], optional): Optional name. Defaults to None.</span>
+<span class="sd">            metadata (Optional[MetaDict | List[MetaDict]], optional): Key/value pairs (or list of key/value pairs) to add as metadata. Defaults to {}.</span>
+<span class="sd">            seekable (bool, optional): If true, writable should be seekable (needed for NetCDF). Defaults to False.</span>
+<span class="sd">            on_close (Optional[OnCloseF], optional): Called with assigned artifact ID. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            IOWritable: A file-like object to write deliver artifact content - needs to be closed</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+    
+<div class="viewcode-block" id="IOAdapter.write_metadata"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOAdapter.write_metadata">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">write_metadata</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="c1"># URN</span>
+        <span class="n">schema</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="c1"># URN</span>
+        <span class="n">metadata</span><span class="p">:</span> <span class="n">MetaDict</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Add a &#39;metadata&#39; aspect to &#39;entity_id&#39; with &#39;schema&#39;.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            entity_id (URN): Entity URN the metadata should be attached to</span>
+<span class="sd">            schema (URN): Schema used in &#39;metadata&#39;</span>
+<span class="sd">            metadata (MetaDict): Metadata (aspect) to be attached to &#39;entity_id&#39;</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Metadata record URN</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 

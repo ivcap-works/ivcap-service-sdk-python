@@ -33,6 +33,10 @@ Classes
       :type: str
 
 
+   .. py:property:: urn
+      :type: str
+
+
    .. py:property:: name
       :type: str
 

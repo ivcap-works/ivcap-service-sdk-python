@@ -112,20 +112,28 @@
 <h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this heading"></a></h3>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.itypes.Url" title="ivcap_sdk_service.itypes.Url"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Url</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.itypes.SCHEMA_KEY" title="ivcap_sdk_service.itypes.SCHEMA_KEY"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SCHEMA_KEY</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.itypes.MetaDict" title="ivcap_sdk_service.itypes.MetaDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MetaDict</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.itypes.Url" title="ivcap_sdk_service.itypes.Url"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Url</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.itypes.FilePath" title="ivcap_sdk_service.itypes.FilePath"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FilePath</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.itypes.MetaDict" title="ivcap_sdk_service.itypes.MetaDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MetaDict</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.itypes.ServiceArgs" title="ivcap_sdk_service.itypes.ServiceArgs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ServiceArgs</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.itypes.FilePath" title="ivcap_sdk_service.itypes.FilePath"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FilePath</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.itypes.ServiceArgs" title="ivcap_sdk_service.itypes.ServiceArgs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ServiceArgs</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
 </table>
+<dl class="py data">
+<dt class="sig sig-object py" id="ivcap_sdk_service.itypes.SCHEMA_KEY">
+<span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.itypes.</span></span><span class="sig-name descname"><span class="pre">SCHEMA_KEY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'$schema'</span></em><a class="headerlink" href="#ivcap_sdk_service.itypes.SCHEMA_KEY" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="ivcap_sdk_service.itypes.SupportedMimeTypes">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.itypes.</span></span><span class="sig-name descname"><span class="pre">SupportedMimeTypes</span></span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/itypes.html#SupportedMimeTypes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.itypes.SupportedMimeTypes" title="Permalink to this definition"></a></dt>
@@ -196,6 +204,13 @@
 <span class="sig-name descname"><span class="pre">mime_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.itypes.UnsupportedMimeType.mime_type" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="ivcap_sdk_service.itypes.MissingSchemaDeclaration">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.itypes.</span></span><span class="sig-name descname"><span class="pre">MissingSchemaDeclaration</span></span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/itypes.html#MissingSchemaDeclaration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.itypes.MissingSchemaDeclaration" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Common base class for all non-exit exceptions.</p>
 </dd></dl>
 
 </section>

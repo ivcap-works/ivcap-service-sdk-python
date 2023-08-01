@@ -91,6 +91,11 @@ Attributes
    Helper class that provides a standard way to create an ABC using
    inheritance.
 
+   .. py:property:: urn
+      :type: str
+      :abstractmethod:
+
+
    .. py:property:: as_local_file
       :type: str
       :abstractmethod:
@@ -116,6 +121,11 @@ Attributes
 
    Helper class that provides a standard way to create an ABC using
    inheritance.
+
+   .. py:property:: urn
+      :type: str
+      :abstractmethod:
+
 
    .. py:method:: write(s: AnyStr) -> int
       :abstractmethod:
@@ -237,6 +247,44 @@ Attributes
 
       :returns: A file-like object to write deliver artifact content - needs to be closed
       :rtype: IOWritable
+
+
+   .. py:method:: write_artifact(mime_type: str, *, name: Optional[str] = None, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, on_close: Optional[OnCloseF] = None) -> IOWritable
+      :abstractmethod:
+
+      Returns a IOWritable to create a new artifact. It needs to be closed
+      in order to be persisted. If `on_close` is provided it is called with the
+      artifactID.
+
+      :param mime_type: _description_
+      :type mime_type: str
+      :param name: Optional name. Defaults to None.
+      :type name: Optional[str], optional
+      :param metadata: Key/value pairs (or list of key/value pairs) to add as metadata. Defaults to {}.
+      :type metadata: Optional[MetaDict | List[MetaDict]], optional
+      :param seekable: If true, writable should be seekable (needed for NetCDF). Defaults to False.
+      :type seekable: bool, optional
+      :param on_close: Called with assigned artifact ID. Defaults to None.
+      :type on_close: Optional[OnCloseF], optional
+
+      :returns: A file-like object to write deliver artifact content - needs to be closed
+      :rtype: IOWritable
+
+
+   .. py:method:: write_metadata(entity_id: str, schema: str, metadata: ivcap_sdk_service.itypes.MetaDict) -> str
+      :abstractmethod:
+
+      Add a 'metadata' aspect to 'entity_id' with 'schema'.
+
+      :param entity_id: Entity URN the metadata should be attached to
+      :type entity_id: URN
+      :param schema: Schema used in 'metadata'
+      :type schema: URN
+      :param metadata: Metadata (aspect) to be attached to 'entity_id'
+      :type metadata: MetaDict
+
+      :returns: Metadata record URN
+      :rtype: str
 
 
    .. py:method:: get_collection(collection_urn: str) -> Collection

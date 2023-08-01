@@ -121,6 +121,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">urn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;urn:&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;urn:file://</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">closed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span>
 
@@ -176,7 +183,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_on_close</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_on_close</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_on_close</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">urn</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;WritableFile#close: on_close &#39;</span><span class="si">%s</span><span class="s2">&#39; failed with &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_on_close</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
         <span class="k">finally</span><span class="p">:</span>

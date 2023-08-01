@@ -85,14 +85,16 @@
 <span class="c1">#</span>
 <span class="kn">from</span> <span class="nn">argparse</span> <span class="kn">import</span> <span class="n">ArgumentParser</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">cast</span>
+<span class="kn">from</span> <span class="nn">typing_extensions</span> <span class="kn">import</span> <span class="n">deprecated</span>
 
 <span class="kn">from</span> <span class="nn">.cio.io_adapter</span> <span class="kn">import</span> <span class="n">IOAdapter</span><span class="p">,</span> <span class="n">IOReadable</span><span class="p">,</span> <span class="n">IOWritable</span><span class="p">,</span> <span class="n">OnCloseF</span>
 
 <span class="kn">from</span> <span class="nn">.logger</span> <span class="kn">import</span> <span class="n">sys_logger</span> <span class="k">as</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">.config</span> <span class="kn">import</span> <span class="n">Config</span>
-<span class="kn">from</span> <span class="nn">.itypes</span> <span class="kn">import</span> <span class="n">MetaDict</span><span class="p">,</span> <span class="n">SupportedMimeTypes</span><span class="p">,</span> <span class="n">Url</span><span class="p">,</span> <span class="n">MissingParameterValue</span><span class="p">,</span> <span class="n">UnsupportedMimeType</span>
+<span class="kn">from</span> <span class="nn">.itypes</span> <span class="kn">import</span> <span class="n">MetaDict</span><span class="p">,</span> <span class="n">MissingSchemaDeclaration</span><span class="p">,</span> <span class="n">SupportedMimeTypes</span><span class="p">,</span> <span class="n">Url</span> 
+<span class="kn">from</span> <span class="nn">.itypes</span> <span class="kn">import</span> <span class="n">MissingParameterValue</span><span class="p">,</span> <span class="n">UnsupportedMimeType</span><span class="p">,</span> <span class="n">SCHEMA_KEY</span>
 
-<span class="n">SCHEMA_KEY</span> <span class="o">=</span> <span class="s1">&#39;$schema&#39;</span>
+
 
 <span class="n">DELIVERED</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="n">_CONFIG</span><span class="p">:</span> <span class="n">Config</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># only use internally and only after calling init()</span>
@@ -116,11 +118,26 @@
     <span class="c1"># NETCDF_MT: xa_dataset_saver,</span>
 <span class="p">}</span>
 
-<div class="viewcode-block" id="deliver_data"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/ivcap/index.html#ivcap_sdk_service.deliver_data">[docs]</a><span class="k">def</span> <span class="nf">deliver_data</span><span class="p">(</span>
+<div class="viewcode-block" id="deliver_data"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/ivcap/index.html#ivcap_sdk_service.deliver_data">[docs]</a><span class="nd">@deprecated</span><span class="p">(</span><span class="s2">&quot;Use &#39;publish_artifact&#39; instead&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">deliver_data</span><span class="p">(</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
     <span class="n">data_or_lambda</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">IOWritable</span><span class="p">],</span> <span class="kc">None</span><span class="p">]],</span>
     <span class="n">mime_type</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SupportedMimeTypes</span><span class="p">],</span> 
-    <span class="n">collection_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">MetaDict</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">MetaDict</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+    <span class="n">seekable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">on_close</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OnCloseF</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">publish_artifact</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">data_or_lambda</span><span class="p">,</span> <span class="n">mime_type</span><span class="p">,</span> 
+                     <span class="n">metadata</span> <span class="o">=</span> <span class="n">metadata</span><span class="p">,</span> 
+                     <span class="n">seekable</span> <span class="o">=</span> <span class="n">seekable</span><span class="p">,</span> 
+                     <span class="n">on_close</span> <span class="o">=</span> <span class="n">on_close</span><span class="p">,</span>
+                     <span class="p">)</span></div>
+
+<div class="viewcode-block" id="publish_artifact"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/ivcap/index.html#ivcap_sdk_service.publish_artifact">[docs]</a><span class="k">def</span> <span class="nf">publish_artifact</span><span class="p">(</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
+    <span class="n">data_or_lambda</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">IOWritable</span><span class="p">],</span> <span class="kc">None</span><span class="p">]],</span>
+    <span class="n">mime_type</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">SupportedMimeTypes</span><span class="p">],</span>
+    <span class="o">*</span><span class="p">,</span>
     <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">MetaDict</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">MetaDict</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
     <span class="n">seekable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">on_close</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OnCloseF</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -132,7 +149,6 @@
 <span class="sd">        data_or_lambda (Union[Any, Callable[[IOWritable], None]]): The data to deliver. Either directly or a callback </span>
 <span class="sd">             providing a file-like handle to provide the data then.</span>
 <span class="sd">        mime_type (Union[str, SupportedMimeTypes]): The mime type of the data. Anything not starting with &#39;text&#39; is assumed to be a binary content</span>
-<span class="sd">        collection_name (Optional[str], optional): Optional collection name. Defaults to None.</span>
 <span class="sd">        metadata (Optional[Union[MetaDict, Sequence[MetaDict]]], optional): Key/value pairs (or list of k/v pairs) to add as metadata. Defaults to None.</span>
 <span class="sd">        seekable (bool, optional): If true, writable should be seekable (needed for NetCDF). Defaults to False.</span>
 <span class="sd">        on_close (Optional[Callable[[Url]]], optional): Called with assigned artifact ID. Defaults to None.</span>
@@ -145,15 +161,15 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">global</span> <span class="n">DELIVERED</span>
-
-    <span class="n">_url</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">url_</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">_on_close</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
-        <span class="k">nonlocal</span> <span class="n">_url</span>
-        <span class="n">_url</span> <span class="o">=</span> <span class="n">url</span>
+        <span class="k">nonlocal</span> <span class="n">url_</span>
+        <span class="n">url_</span> <span class="o">=</span> <span class="n">url</span>
         <span class="n">mt</span> <span class="o">=</span> <span class="n">mime_type</span><span class="o">.</span><span class="n">value</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mime_type</span><span class="p">,</span> <span class="n">SupportedMimeTypes</span><span class="p">)</span> <span class="k">else</span> <span class="n">mime_type</span>
         <span class="n">m</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">mime_type</span><span class="o">=</span><span class="n">mt</span><span class="p">,</span> <span class="n">meta</span><span class="o">=</span><span class="n">metadata</span><span class="p">)</span>
         <span class="n">DELIVERED</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
-        <span class="n">notify</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">_CONFIG</span><span class="o">.</span><span class="n">SCHEMA_PREFIX</span> <span class="o">+</span> <span class="s1">&#39;deliver&#39;</span><span class="p">)</span>
+        <span class="c1"># TODO: Find a different mechanism</span>
+        <span class="c1">#notify(m, _CONFIG.SCHEMA_PREFIX + &#39;deliver&#39;)</span>
         <span class="k">if</span> <span class="n">on_close</span><span class="p">:</span>
             <span class="n">on_close</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
 
@@ -161,7 +177,8 @@
         <span class="n">l</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">Callable</span><span class="p">[[</span><span class="n">IOWritable</span><span class="p">],</span> <span class="kc">None</span><span class="p">],</span>  <span class="n">data_or_lambda</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">mime_type</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">MissingParameterValue</span><span class="p">(</span><span class="s1">&#39;mime_type&#39;</span><span class="p">)</span>
-        <span class="n">fhdl</span><span class="p">:</span> <span class="n">IOWritable</span> <span class="o">=</span> <span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">IO_ADAPTER</span><span class="o">.</span><span class="n">write_artifact</span><span class="p">(</span><span class="n">mime_type</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">collection_name</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">seekable</span><span class="p">,</span> <span class="n">_on_close</span><span class="p">)</span>
+        <span class="n">fhdl</span><span class="p">:</span> <span class="n">IOWritable</span> <span class="o">=</span> <span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">IO_ADAPTER</span><span class="o">.</span><span class="n">write_artifact</span><span class="p">(</span><span class="n">mime_type</span><span class="p">,</span> 
+                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span> <span class="n">seekable</span><span class="o">=</span><span class="n">seekable</span><span class="p">,</span> <span class="n">on_close</span><span class="o">=</span><span class="n">_on_close</span><span class="p">)</span>
         <span class="n">l</span><span class="p">(</span><span class="n">fhdl</span><span class="p">)</span>
         <span class="n">fhdl</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span> 
@@ -175,10 +192,12 @@
         <span class="n">sf</span> <span class="o">=</span> <span class="n">_MIME_TYPE2SAVER</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mime_type</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">sf</span><span class="p">:</span>
             <span class="n">sf</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">IO_ADAPTER</span><span class="p">,</span> 
-            <span class="n">collection_name</span><span class="o">=</span><span class="n">collection_name</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span> <span class="n">seekable</span><span class="o">=</span><span class="n">seekable</span><span class="p">,</span> <span class="n">on_close</span><span class="o">=</span><span class="n">_on_close</span><span class="p">)</span>
+                <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span> 
+                <span class="n">seekable</span><span class="o">=</span><span class="n">seekable</span><span class="p">,</span> 
+                <span class="n">on_close</span><span class="o">=</span><span class="n">_on_close</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">UnsupportedMimeType</span><span class="p">(</span><span class="n">mime_type</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">_url</span></div>
+    <span class="k">return</span> <span class="n">url_</span></div>
 
 <div class="viewcode-block" id="register_saver"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/ivcap/index.html#ivcap_sdk_service.register_saver">[docs]</a><span class="k">def</span> <span class="nf">register_saver</span><span class="p">(</span><span class="n">mime_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">obj_type</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">saverF</span><span class="p">:</span> <span class="n">SaverF</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Register a &#39;saver&#39; function used in &#39;deliver&#39; for a specific data type.</span>
@@ -201,8 +220,45 @@
 <span class="sd">        Dict: A copy of &#39;args&#39; plus a &#39;SCHEMA_KEY&#39; entry</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">mdict</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">)</span>
-    <span class="n">d</span><span class="p">[</span><span class="s1">&#39;$schema&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">schema</span>
+    <span class="n">d</span><span class="p">[</span><span class="n">SCHEMA_KEY</span><span class="p">]</span> <span class="o">=</span> <span class="n">schema</span>
     <span class="k">return</span> <span class="n">d</span></div>
+
+<div class="viewcode-block" id="publish_metadata"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/ivcap/index.html#ivcap_sdk_service.publish_metadata">[docs]</a><span class="k">def</span> <span class="nf">publish_metadata</span><span class="p">(</span><span class="n">entity_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">metadata</span><span class="p">:</span> <span class="n">MetaDict</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add a &#39;metadata&#39; aspect to &#39;entity_id&#39; with &#39;schema&#39;.</span>
+<span class="sd">    If &#39;schema&#39; is ommited, &#39;metadata&#39; is expected to contain a SCHEMA_KEY entry</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        entity_id (str): Entity URN the metadata should be attached to</span>
+<span class="sd">        metadata (MetaDict): Metadata (aspect) to be attached to &#39;entity_id&#39;</span>
+<span class="sd">        schema (Optional[str], optional): Schema defining &#39;metadata&#39;</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Metadata record URN</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">entity_id</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">MissingParameterValue</span><span class="p">(</span><span class="s1">&#39;entity_id&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">metadata</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">MissingParameterValue</span><span class="p">(</span><span class="s1">&#39;metadata&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">schema</span><span class="p">:</span>
+        <span class="n">schema</span> <span class="o">=</span> <span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">SCHEMA_KEY</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">schema</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">MissingSchemaDeclaration</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">IO_ADAPTER</span><span class="o">.</span><span class="n">write_metadata</span><span class="p">(</span><span class="n">entity_id</span><span class="p">,</span> <span class="n">schema</span><span class="p">,</span> <span class="n">metadata</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="publish_result"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/ivcap/index.html#ivcap_sdk_service.publish_result">[docs]</a><span class="k">def</span> <span class="nf">publish_result</span><span class="p">(</span><span class="n">metadata</span><span class="p">:</span> <span class="n">MetaDict</span><span class="p">,</span> <span class="n">schema</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Add a &#39;metadata&#39; aspect with &#39;schema&#39; to the order record for this </span>
+<span class="sd">    service instance.</span>
+<span class="sd">    If &#39;schema&#39; is ommited, &#39;metadata&#39; is expected to contain a SCHEMA_KEY entry</span>
+<span class="sd">    </span>
+<span class="sd">    Args:</span>
+<span class="sd">        metadata (MetaDict): Metadata (aspect) to be attached to &#39;entity_id&#39;</span>
+<span class="sd">        schema (Optional[str], optional): Schema defining &#39;metadata&#39;</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        str: Metadata record URN</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">entity_id</span> <span class="o">=</span> <span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">ORDER_ID</span>
+    <span class="k">return</span> <span class="n">publish_metadata</span><span class="p">(</span><span class="n">entity_id</span><span class="p">,</span> <span class="n">metadata</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="fetch_data"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/ivcap/index.html#ivcap_sdk_service.fetch_data">[docs]</a><span class="k">def</span> <span class="nf">fetch_data</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="n">Url</span><span class="p">,</span> <span class="n">binary_content</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">no_caching</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">seekable</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IOReadable</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return an &#39;IOReadable&#39; on the content referenced by &#39;url&#39;.</span>

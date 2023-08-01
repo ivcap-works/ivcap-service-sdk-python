@@ -14,8 +14,11 @@ Functions
 .. autoapisummary::
 
    ivcap_sdk_service.ivcap.deliver_data
+   ivcap_sdk_service.ivcap.publish_artifact
    ivcap_sdk_service.ivcap.register_saver
    ivcap_sdk_service.ivcap.create_metadata
+   ivcap_sdk_service.ivcap.publish_metadata
+   ivcap_sdk_service.ivcap.publish_result
    ivcap_sdk_service.ivcap.fetch_data
    ivcap_sdk_service.ivcap.get_order_id
    ivcap_sdk_service.ivcap.get_node_id
@@ -30,18 +33,12 @@ Attributes
 
 .. autoapisummary::
 
-   ivcap_sdk_service.ivcap.SCHEMA_KEY
    ivcap_sdk_service.ivcap.DELIVERED
    ivcap_sdk_service.ivcap._CONFIG
    ivcap_sdk_service.ivcap.SaverF
    ivcap_sdk_service.ivcap._CLASS2MIME_TYPE
    ivcap_sdk_service.ivcap._MIME_TYPE2SAVER
 
-
-.. py:data:: SCHEMA_KEY
-   :value: '$schema'
-
-   
 
 .. py:data:: DELIVERED
    :value: []
@@ -66,7 +63,10 @@ Attributes
 
    
 
-.. py:function:: deliver_data(name: str, data_or_lambda: Union[Any, Callable[[ivcap_sdk_service.cio.io_adapter.IOWritable], None]], mime_type: Union[str, ivcap_sdk_service.itypes.SupportedMimeTypes], collection_name: Optional[str] = None, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, on_close: Optional[ivcap_sdk_service.cio.io_adapter.OnCloseF] = None) -> str
+.. py:function:: deliver_data(name: str, data_or_lambda: Union[Any, Callable[[ivcap_sdk_service.cio.io_adapter.IOWritable], None]], mime_type: Union[str, ivcap_sdk_service.itypes.SupportedMimeTypes], metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, on_close: Optional[ivcap_sdk_service.cio.io_adapter.OnCloseF] = None) -> str
+
+
+.. py:function:: publish_artifact(name: str, data_or_lambda: Union[Any, Callable[[ivcap_sdk_service.cio.io_adapter.IOWritable], None]], mime_type: Union[str, ivcap_sdk_service.itypes.SupportedMimeTypes], *, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, on_close: Optional[ivcap_sdk_service.cio.io_adapter.OnCloseF] = None) -> str
 
    Deliver a result of this service
 
@@ -77,8 +77,6 @@ Attributes
    :type data_or_lambda: Union[Any, Callable[[IOWritable], None]]
    :param mime_type: The mime type of the data. Anything not starting with 'text' is assumed to be a binary content
    :type mime_type: Union[str, SupportedMimeTypes]
-   :param collection_name: Optional collection name. Defaults to None.
-   :type collection_name: Optional[str], optional
    :param metadata: Key/value pairs (or list of k/v pairs) to add as metadata. Defaults to None.
    :type metadata: Optional[Union[MetaDict, Sequence[MetaDict]]], optional
    :param seekable: If true, writable should be seekable (needed for NetCDF). Defaults to False.
@@ -112,6 +110,37 @@ Attributes
 
    :returns: A copy of 'args' plus a 'SCHEMA_KEY' entry
    :rtype: Dict
+
+
+.. py:function:: publish_metadata(entity_id: str, metadata: ivcap_sdk_service.itypes.MetaDict, schema: Optional[str] = None) -> str
+
+   Add a 'metadata' aspect to 'entity_id' with 'schema'.
+   If 'schema' is ommited, 'metadata' is expected to contain a SCHEMA_KEY entry
+
+   :param entity_id: Entity URN the metadata should be attached to
+   :type entity_id: str
+   :param metadata: Metadata (aspect) to be attached to 'entity_id'
+   :type metadata: MetaDict
+   :param schema: Schema defining 'metadata'
+   :type schema: Optional[str], optional
+
+   :returns: Metadata record URN
+   :rtype: str
+
+
+.. py:function:: publish_result(metadata: ivcap_sdk_service.itypes.MetaDict, schema: Optional[str] = None) -> str
+
+   Add a 'metadata' aspect with 'schema' to the order record for this
+   service instance.
+   If 'schema' is ommited, 'metadata' is expected to contain a SCHEMA_KEY entry
+
+   :param metadata: Metadata (aspect) to be attached to 'entity_id'
+   :type metadata: MetaDict
+   :param schema: Schema defining 'metadata'
+   :type schema: Optional[str], optional
+
+   :returns: Metadata record URN
+   :rtype: str
 
 
 .. py:function:: fetch_data(url: ivcap_sdk_service.itypes.Url, binary_content=True, no_caching=False, seekable=False) -> ivcap_sdk_service.cio.io_adapter.IOReadable

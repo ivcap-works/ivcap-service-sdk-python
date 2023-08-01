@@ -38,6 +38,10 @@ Classes
    :param use_temp_file: _description_. Defaults to True.
    :type use_temp_file: bool, optional
 
+   .. py:property:: urn
+      :type: str
+
+
    .. py:property:: closed
       :type: bool
 

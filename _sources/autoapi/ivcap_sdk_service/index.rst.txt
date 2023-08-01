@@ -55,8 +55,11 @@ Functions
 .. autoapisummary::
 
    ivcap_sdk_service.deliver_data
+   ivcap_sdk_service.publish_artifact
    ivcap_sdk_service.fetch_data
    ivcap_sdk_service.create_metadata
+   ivcap_sdk_service.publish_metadata
+   ivcap_sdk_service.publish_result
    ivcap_sdk_service.get_config
    ivcap_sdk_service.register_saver
    ivcap_sdk_service.get_order_id
@@ -80,7 +83,10 @@ Attributes
 
    
 
-.. py:function:: deliver_data(name: str, data_or_lambda: Union[Any, Callable[[ivcap_sdk_service.cio.io_adapter.IOWritable], None]], mime_type: Union[str, ivcap_sdk_service.itypes.SupportedMimeTypes], collection_name: Optional[str] = None, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, on_close: Optional[ivcap_sdk_service.cio.io_adapter.OnCloseF] = None) -> str
+.. py:function:: deliver_data(name: str, data_or_lambda: Union[Any, Callable[[ivcap_sdk_service.cio.io_adapter.IOWritable], None]], mime_type: Union[str, ivcap_sdk_service.itypes.SupportedMimeTypes], metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, on_close: Optional[ivcap_sdk_service.cio.io_adapter.OnCloseF] = None) -> str
+
+
+.. py:function:: publish_artifact(name: str, data_or_lambda: Union[Any, Callable[[ivcap_sdk_service.cio.io_adapter.IOWritable], None]], mime_type: Union[str, ivcap_sdk_service.itypes.SupportedMimeTypes], *, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, on_close: Optional[ivcap_sdk_service.cio.io_adapter.OnCloseF] = None) -> str
 
    Deliver a result of this service
 
@@ -91,8 +97,6 @@ Attributes
    :type data_or_lambda: Union[Any, Callable[[IOWritable], None]]
    :param mime_type: The mime type of the data. Anything not starting with 'text' is assumed to be a binary content
    :type mime_type: Union[str, SupportedMimeTypes]
-   :param collection_name: Optional collection name. Defaults to None.
-   :type collection_name: Optional[str], optional
    :param metadata: Key/value pairs (or list of k/v pairs) to add as metadata. Defaults to None.
    :type metadata: Optional[Union[MetaDict, Sequence[MetaDict]]], optional
    :param seekable: If true, writable should be seekable (needed for NetCDF). Defaults to False.
@@ -136,10 +140,41 @@ Attributes
    :rtype: Dict
 
 
+.. py:function:: publish_metadata(entity_id: str, metadata: ivcap_sdk_service.itypes.MetaDict, schema: Optional[str] = None) -> str
+
+   Add a 'metadata' aspect to 'entity_id' with 'schema'.
+   If 'schema' is ommited, 'metadata' is expected to contain a SCHEMA_KEY entry
+
+   :param entity_id: Entity URN the metadata should be attached to
+   :type entity_id: str
+   :param metadata: Metadata (aspect) to be attached to 'entity_id'
+   :type metadata: MetaDict
+   :param schema: Schema defining 'metadata'
+   :type schema: Optional[str], optional
+
+   :returns: Metadata record URN
+   :rtype: str
+
+
 .. py:data:: SCHEMA_KEY
    :value: '$schema'
 
    
+
+.. py:function:: publish_result(metadata: ivcap_sdk_service.itypes.MetaDict, schema: Optional[str] = None) -> str
+
+   Add a 'metadata' aspect with 'schema' to the order record for this
+   service instance.
+   If 'schema' is ommited, 'metadata' is expected to contain a SCHEMA_KEY entry
+
+   :param metadata: Metadata (aspect) to be attached to 'entity_id'
+   :type metadata: MetaDict
+   :param schema: Schema defining 'metadata'
+   :type schema: Optional[str], optional
+
+   :returns: Metadata record URN
+   :rtype: str
+
 
 .. py:function:: get_config() -> ivcap_sdk_service.config.Config
 
@@ -553,6 +588,44 @@ Attributes
       :rtype: IOWritable
 
 
+   .. py:method:: write_artifact(mime_type: str, *, name: Optional[str] = None, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, on_close: Optional[OnCloseF] = None) -> IOWritable
+      :abstractmethod:
+
+      Returns a IOWritable to create a new artifact. It needs to be closed
+      in order to be persisted. If `on_close` is provided it is called with the
+      artifactID.
+
+      :param mime_type: _description_
+      :type mime_type: str
+      :param name: Optional name. Defaults to None.
+      :type name: Optional[str], optional
+      :param metadata: Key/value pairs (or list of key/value pairs) to add as metadata. Defaults to {}.
+      :type metadata: Optional[MetaDict | List[MetaDict]], optional
+      :param seekable: If true, writable should be seekable (needed for NetCDF). Defaults to False.
+      :type seekable: bool, optional
+      :param on_close: Called with assigned artifact ID. Defaults to None.
+      :type on_close: Optional[OnCloseF], optional
+
+      :returns: A file-like object to write deliver artifact content - needs to be closed
+      :rtype: IOWritable
+
+
+   .. py:method:: write_metadata(entity_id: str, schema: str, metadata: ivcap_sdk_service.itypes.MetaDict) -> str
+      :abstractmethod:
+
+      Add a 'metadata' aspect to 'entity_id' with 'schema'.
+
+      :param entity_id: Entity URN the metadata should be attached to
+      :type entity_id: URN
+      :param schema: Schema used in 'metadata'
+      :type schema: URN
+      :param metadata: Metadata (aspect) to be attached to 'entity_id'
+      :type metadata: MetaDict
+
+      :returns: Metadata record URN
+      :rtype: str
+
+
    .. py:method:: get_collection(collection_urn: str) -> Collection
       :abstractmethod:
 
@@ -579,6 +652,11 @@ Attributes
    Helper class that provides a standard way to create an ABC using
    inheritance.
 
+   .. py:property:: urn
+      :type: str
+      :abstractmethod:
+
+
    .. py:method:: write(s: AnyStr) -> int
       :abstractmethod:
 
@@ -603,6 +681,11 @@ Attributes
 
    Helper class that provides a standard way to create an ABC using
    inheritance.
+
+   .. py:property:: urn
+      :type: str
+      :abstractmethod:
+
 
    .. py:property:: as_local_file
       :type: str
