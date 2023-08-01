@@ -7,6 +7,8 @@ from enum import Enum
 from typing import Dict, NamedTuple, Optional, Union
 from numbers import Number
 
+SCHEMA_KEY = '$schema'
+
 class SupportedMimeTypes(Enum):
     NETCDF = 'application/netcdf'
     PNG = 'image/png'
@@ -32,3 +34,5 @@ class UnsupportedMimeType(Exception):
     def __init__(self, mime_type: str):
         self.mime_type = mime_type
 
+class MissingSchemaDeclaration(Exception): 
+    pass

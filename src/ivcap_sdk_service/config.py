@@ -14,6 +14,7 @@ import sys
 from enum import Enum, auto
 
 from .cio import IOAdapter, LocalIOAdapter, IvcapIOAdapter, Cache
+from .logger import sys_logger as logger
 
 INSIDE_CONTAINER = not not os.getenv('IVCAP_INSIDE_CONTAINER', None) # make it a bool
 INSIDE_ARGO = not not os.getenv('ARGO_NODE_ID', None) # make it a bool
@@ -83,6 +84,11 @@ class Config:
         self.SERVICE_COMMAND = Command.SERVICE_FILE
 
     self.ORDER_ID = args.pop('ivcap:order_id', order_id_def)
+    if not self.ORDER_ID:
+        self.ORDER_ID = "urn:ivcap:order:00000000-0000-0000-0000-000000000000"
+        if INSIDE_ARGO:
+            logger.warn("missing 'order-id'")
+        
     self.NODE_ID = args.pop('ivcap:node_id', node_id_def)
 
     self.CACHE_PROXY_URL = args.pop('ivcap:cache_proxy', None)
@@ -101,7 +107,7 @@ class Config:
         in_dir = in_dir,
         out_dir = self.OUT_DIR,
         order_id=self.ORDER_ID,
-        cache = self.CACHE,
+        #cache = self.CACHE,
         cachable_url = self.cachable_url,
        )
     else:

@@ -18,7 +18,8 @@ except Exception:
     __version__ = "unknown"
 
 
-from .ivcap import deliver_data, fetch_data, register_saver, create_metadata, SCHEMA_KEY
+from .ivcap import deliver_data, publish_artifact, fetch_data, register_saver
+from .ivcap import create_metadata, publish_metadata, SCHEMA_KEY, publish_result
 from .ivcap import get_config, register_saver, get_order_id, get_node_id
 from .run import register_service
 from .service import Service, Parameter, Option, Type
