@@ -78,9 +78,10 @@ jobs:
           rm -rf *
           cp -r /tmp/html/* .
           touch .nojekyll
+          echo "Committing updated files to git"
           git add .
-          git commit -m "docs update"
-          git push
+          git commit --allow-empty -m "docs update"
+          git push --set-upstream origin gh-pages
           
       # - name: Use Python Semantic Release to prepare release
       #   env:
