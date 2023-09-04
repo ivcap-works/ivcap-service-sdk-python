@@ -16,17 +16,18 @@ def verify_artifact(urn):
     if is_valid_resource_urn(urn, Resource.ARTIFACT):
         return urn
 
-    if INSIDE_CONTAINER:
-        if not validators.url(urn):
-            raise ArgumentTypeError(f"Illegal artifact reference '{urn}' - expected url")
+    # if INSIDE_CONTAINER:
+    #     if not validators.url(urn):
+    #         raise ArgumentTypeError(f"Illegal artifact reference '{urn}' - expected url")
+    #     return urn
+    # else:
+    
+    if validators.url(urn):
         return urn
-    else:
-        if validators.url(urn):
-            return urn
-        # outside container we allow resource to be local file
-        if not get_config().IO_ADAPTER.artifact_readable(urn):
-            raise ArgumentTypeError(f"Cannot find local file '{urn}' - {get_config().IO_ADAPTER}")
-        return urn
+    # could be local file 
+    if not get_config().IO_ADAPTER.artifact_readable(urn):
+        raise ArgumentTypeError(f"Cannot find local file '{urn}' - {get_config().IO_ADAPTER}")
+    return urn
 
 class ArtifactAction(Action):
     def __call__(self, _1, namespace, value, _2=None):
@@ -36,7 +37,7 @@ class ArtifactAction(Action):
         except Exception as err:
             raise ArgumentTypeError(err)
 
-def verify_collection(urn):
+def verify_collection(urn: str):
     if is_valid_resource_urn(urn, Resource.COLLECTION):
         return urn
     if is_valid_resource_urn(urn, Resource.ARTIFACT):
@@ -45,6 +46,10 @@ def verify_collection(urn):
 
 
     if INSIDE_CONTAINER:
+        # inside a container we get collections served from a queue
+        if urn.startswith(get_config().QUEUE_PREFIX):
+            return urn
+        
         raise ArgumentTypeError(f"Illegal collection reference '{urn}' - expected url")
     else:
         # throws an exception if we can't create a collection object
@@ -60,5 +65,5 @@ class CollectionAction(Action):
             raise ArgumentTypeError(err)
         
 def is_valid_resource_urn(urn: str, resource: Resource) -> bool:
-    prefix = f"{get_config().SCHEMA_PREFIX}:{resource.value}:"
+    prefix = f"{get_config().SCHEMA_PREFIX}{resource.value}:"
     return urn.startswith(prefix)
