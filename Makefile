@@ -47,6 +47,15 @@ add-license:
 	licenseheaders -t .license.tmpl -y 2023 -d src
 	licenseheaders -t .license.tmpl -y 2023 -d examples
 
+version:
+	@poetry version $(v)
+	@git add pyproject.toml
+	@git commit -m "v$$(poetry version -s)"
+	@git tag v$$(poetry version -s)
+	@git push
+	@git push --tags
+	@poetry version
+
 docs:
 	cd ${ROOT_DIR}/docs && make html
 
