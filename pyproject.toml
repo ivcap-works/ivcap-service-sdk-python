@@ -2,7 +2,7 @@
 name = "ivcap_sdk_service"
 version = "0.3.0"
 description = "SDK library for building services for the IVCAP platform"
-authors = ["Max Ott <max.ott@csiro.au>, Tim Erwin <tim.erwin@csiro.au>"]
+authors = ["Max Ott <max.ott@csiro.au>", "Tim Erwin <tim.erwin@csiro.au>"]
 license = "Proprietary"
 readme = "README.md"
 
