@@ -119,6 +119,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.pypi-token
 
 # Spyder project settings
 .spyderproject
@@ -150,3 +151,4 @@ dmypy.json
 
 # MacOS
 .DS_Store
+

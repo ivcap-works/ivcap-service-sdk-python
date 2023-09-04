@@ -60,6 +60,10 @@ class WritableProxy(IOWritable):
         self._closed = False
 
     @property
+    def urn(self) -> str:
+        return "???WHAT???"
+
+    @property
     def closed(self) -> bool:
         return self._closed
 
@@ -169,33 +173,62 @@ class WritableProxy(IOWritable):
 
         if not metadataUploaded and len(metadata) > 0:
             url = r.headers.get('Location')
-            self._upload_metadata(metadata, artifactID, url)
+            for md in metadata:
+                upload_metadata(self._storage_url, artifactID, md, artifact_id=artifactID, url=url)
         return artifactID
 
-    def _upload_metadata(
-        self, 
-        metadata: Sequence[MetaDict],
-        artifactID: str,
-        url: str,
-    ) -> None:
-        for md in metadata:
-            headers = {
-                "X-Meta-Data-For-Url": url,
-                "X-Meta-Data-For-Artifact": artifactID,
-                "X-Meta-Data-Schema": md.get('$schema', '???'),
-                "Content-Type": "application/json",
-            }
-            try:
-                logger.debug("Post artifact metadata data='%s', headers:'%s'", md, headers)
-                payload = json_dump(md)
-                r = requests.post(self._storage_url, data=payload, headers=headers)
-            except:
-                logger.fatal(f"while posting metadata {self._storage_url} - {sys.exc_info()}")
-                sys.exit(-1)
-            if r.status_code >= 300:
-                logger.fatal(f"error response {r.status_code} while posting metadata {self._storage_url}")
-                sys.exit(-1)
+    # def _upload_metadata(
+    #     self, 
+    #     metadata: Sequence[MetaDict],
+    #     artifactID: str,
+    #     url: str,
+    # ) -> None:
+    #     for md in metadata:
+    #         headers = {
+    #             "X-Meta-Data-For-Url": url,
+    #             "X-Meta-Data-For-Artifact": artifactID,
+    #             "X-Meta-Data-Schema": md.get('$schema', '???'),
+    #             "Content-Type": "application/json",
+    #         }
+    #         try:
+    #             logger.debug("Post artifact metadata data='%s', headers:'%s'", md, headers)
+    #             payload = json_dump(md)
+    #             r = requests.post(self._storage_url, data=payload, headers=headers)
+    #         except:
+    #             logger.fatal(f"while posting metadata {self._storage_url} - {sys.exc_info()}")
+    #             sys.exit(-1)
+    #         if r.status_code >= 300:
+    #             logger.fatal(f"error response {r.status_code} while posting metadata {self._storage_url}")
+    #             sys.exit(-1)
 
     def __repr__(self):
         return f"<WritableProxy name={self._name} closed={self._closed} fp={self._file_obj}>"
 
+def upload_metadata(
+    storage_url: str,
+    entity_urn: str,
+    metadata: MetaDict,
+    *,
+    artifact_id: str = None,
+    url: str = None,
+) -> None:
+    headers = {
+        "X-Meta-Data-For-Entity": entity_urn,
+        "X-Meta-Data-Schema": metadata.get('$schema', '???'),
+        "Content-Type": "application/json",
+    }
+    if artifact_id:
+        headers["X-Meta-Data-For-Artifact"] = artifact_id
+    if url:
+        headers["X-Meta-Data-For-Url"] = url
+
+    try:
+        logger.debug("Post artifact metadata data='%s', headers:'%s'", metadata, headers)
+        payload = json_dump(metadata)
+        r = requests.post(storage_url, data=payload, headers=headers)
+    except:
+        logger.fatal(f"while posting metadata {storage_url} - {sys.exc_info()}")
+        sys.exit(-1)
+    if r.status_code >= 300:
+        logger.fatal(f"error response {r.status_code} while posting metadata {storage_url}")
+        sys.exit(-1)

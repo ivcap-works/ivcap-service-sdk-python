@@ -51,7 +51,8 @@ class Config:
   OUT_DIR: str
 
   SCHEMA_PREFIX: str
-
+  QUEUE_PREFIX: str  
+  
   SERVICE_ARGS: MutableSequence[str]
   SERVICE_COMMAND: Command = Command.SERVICE_RUN
 
@@ -114,7 +115,8 @@ class Config:
       self.IO_ADAPTER = LocalIOAdapter(in_dir=in_dir, out_dir=self.OUT_DIR, cache_dir=cacheDir)
 
     self.SCHEMA_PREFIX = args.pop('ivcap:schema_prefix', None)
-
+    self.QUEUE_PREFIX = f"{self.SCHEMA_PREFIX}queue:"
+    
   def add_arguments(self, ap):
     order_id_def = os.getenv('IVCAP_ORDER_ID')
     node_id_def = os.getenv('ARGO_NODE_ID')

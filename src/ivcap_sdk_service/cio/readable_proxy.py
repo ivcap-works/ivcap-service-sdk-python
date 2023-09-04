@@ -24,6 +24,7 @@ class ReadableProxy(IOReadable):
         cache: Optional[IOWritable] = None
     ):
         self._name = name if name else url
+        self._urn = url
         self._is_binary = is_binary
         self._mode = "rb" if is_binary else "r"
         self._download_url = url
@@ -41,6 +42,10 @@ class ReadableProxy(IOReadable):
     @property
     def mode(self) -> str:
         return self._mode
+
+    @property
+    def urn(self) -> str:
+        return self._urn
 
     @property
     def name(self) -> str:
