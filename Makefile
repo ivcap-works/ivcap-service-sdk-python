@@ -17,6 +17,10 @@ ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 build: add-license
 	poetry build
 
+# https://www.digitalocean.com/community/tutorials/how-to-publish-python-packages-to-pypi-using-poetry-on-ubuntu-22-04
+publish: build
+	poetry publish
+
 test:
 	pytest ${ROOT_DIR}/tests/
 
@@ -46,6 +50,15 @@ docker-run: #docker-build
 add-license:
 	licenseheaders -t .license.tmpl -y 2023 -d src
 	licenseheaders -t .license.tmpl -y 2023 -d examples
+
+version:
+	@poetry version $(v)
+	@git add pyproject.toml
+	@git commit -m "v$$(poetry version -s)"
+	@git tag v$$(poetry version -s)
+	@git push
+	@git push --tags
+	@poetry version
 
 docs:
 	cd ${ROOT_DIR}/docs && make html
