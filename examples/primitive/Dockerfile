@@ -1,3 +1,10 @@
+# This Dockerfile builds a container image for running a Python service that uses the primitive package.
+# The container has two stages:
+#   1. Build the Go binary and install the primitive package.
+#   2. Create a lightweight image with the Go binary and Python script.
+# The Python script and requirements file are copied into the container, and the Python packages are installed.
+# Finally, the Python script is run as the entrypoint of the container.
+
 # Stage 1: Build the Go binary
 FROM golang:1.21-alpine AS build
 
