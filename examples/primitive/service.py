@@ -1,12 +1,14 @@
-# import docker
-import os
 import logging
 import subprocess
 
-from ivcap_sdk_service import Service, Parameter, Type, PythonWorkflow, ServiceArgs, SupportedMimeTypes
-from ivcap_sdk_service import register_service, create_metadata, publish_artifact
+from pathlib import Path
 from PIL import Image
 from tempfile import TemporaryDirectory
+from typing import (List, Tuple)
+
+from ivcap_sdk_service import (Parameter, PythonWorkflow, Service, ServiceArgs,
+                               SupportedMimeTypes, Type, publish_artifact,
+                               register_service)
 
 logger = None # set when called by SDK
 
@@ -87,44 +89,102 @@ SERVICE = Service(
     workflow=PythonWorkflow(script='/primitive/service.py', min_memory='2Gi')
 )
 
+def create_directories(tmpdir: Path) -> Tuple[Path, Path]:
+    """
+    Creates input and output directories in the given temporary directory.
+
+    Args:
+        tmpdir (Path): The temporary directory in which to create the input and output directories.
+
+    Returns:
+        Tuple[Path, Path]: A tuple containing the paths to the input and output directories, respectively.
+    """
+    input_dir = tmpdir / 'input'
+    output_dir = tmpdir / 'output'
+    input_dir.mkdir()
+    output_dir.mkdir()
+    return input_dir, output_dir
+
+def save_input_image(input_dir: Path, input_image: Image) -> Path:
+    """
+    Saves the input image to the specified directory.
+
+    Args:
+        input_dir (Path): The directory to save the input image to.
+        input_image (Image): The input image to save.
+
+    Returns:
+        Path: The path to the saved input image.
+    """
+    input_image_path = input_dir / 'input.jpg'
+    input_image.save(input_image_path)
+    return input_image_path
+
+def generate_command(input_image_path: Path, output_image_path: Path) -> List[str]:
+    """
+    Generates a command to run the primitive service on an input image.
+
+    Args:
+        input_image_path (Path): The path to the input image.
+        output_image_path (Path): The path to save the output image.
+
+    Returns:
+        List[str]: A list of command line arguments to run the primitive service.
+    """
+    return ['primitive', '-i', input_image_path, '-o', output_image_path, '-n', '100']
+
+def execute_command(command: List[str]) -> bytes:
+    """
+    Executes a command and returns the output as bytes.
+
+    Args:
+        command (List[str]): A list of strings representing the command to execute.
+
+    Returns:
+        bytes: The output of the command as bytes.
+    """
+    result = subprocess.run(command, stdout=subprocess.PIPE)
+    return result.stdout
+
 def service(args: ServiceArgs, svc_logger: logging):
-    global logger 
+    """
+    Runs the primitive service with the given arguments.
+
+    Args:
+        args (ServiceArgs): The arguments for the service.
+        svc_logger (logging): The logger for the service.
+
+    Returns:
+        None
+    """
+    global logger
     logger = svc_logger
 
     logger.info(f"Called with {args}")
     input_image = Image.open(args.input_image)
 
-
     with TemporaryDirectory() as tmpdir:
         logger.info(f"Using temporary directory {tmpdir}")
-
-        logger.info(f"Creating input and output directories")
-        os.mkdir(os.path.join(tmpdir, 'input'))
-        os.mkdir(os.path.join(tmpdir, 'output'))
+        input_dir, output_dir = create_directories(Path(tmpdir))
 
         logger.info(f"Saving input image")
-        input_image_path = os.path.join(tmpdir, 'input.jpg')
-        input_image.save(input_image_path)
-        
-        output_image_path = os.path.join(tmpdir, 'output.jpg')
+        input_image_path = save_input_image(input_dir, input_image)
+        output_image_path = output_dir / 'output.jpg'
 
-        # Define the command as a list of strings
         logger.info('Generating primitive command')
-        command = ['primitive', '-i', input_image_path, '-o', output_image_path, '-n', '100']
+        command = generate_command(input_image_path, output_image_path)
 
-        # Use subprocess.run() to execute the command
         logger.info(f'Running command via subprocess: {command}')
-        result = subprocess.run(command, stdout=subprocess.PIPE)
+        output_data = execute_command(command)
 
-        # Print the output of the command
-        logger.info(f"Primitive output: \n{result.stdout.decode()}")
+        logger.info(f"Primitive output: \n{output_data.decode()}")
 
         logger.info(f"Creating metadata {output_image_path}")
-        
+
         logger.info(f"Publishing output image {output_image_path}")
         publish_artifact(
             f'{output_image_path}', 
             lambda buffer: buffer.write(open(output_image_path, "rb").read()),
-            SupportedMimeTypes.JPEG) 
+            SupportedMimeTypes.JPEG)        
 
 register_service(SERVICE, service)
