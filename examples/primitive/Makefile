@@ -1,15 +1,10 @@
-SERVICE_CONTAINER_NAME=primitive-service
-SERVICE_TITLE=Primitive Service
-
+SERVICE_TITLE=Primitive
 SERVICE_FILE=service.py
+SERVICE_CONTAINER_NAME=primitive-service
 
 PROVIDER_NAME=ivcap.test
 
-# don't foget to login 'az acr login --name cipmain'
-AZ_DOCKER_REGISTRY=cipmain.azurecr.io
-GKE_DOCKER_REGISTRY=australia-southeast1-docker.pkg.dev/reinvent-science-prod-2ae1/ivap-registry
-MINIKUBE_DOCKER_REGISTRY=localhost:5000
-DOCKER_REGISTRY=${MINIKUBE_DOCKER_REGISTRY}
+DOCKER_REGISTRY=localhost:5000
 
 SERVICE_ID:=ivcap:service:$(shell python3 -c 'import uuid; print(uuid.uuid5(uuid.NAMESPACE_DNS, \
         "${PROVIDER_NAME}" + "${SERVICE_CONTAINER_NAME}"));'):${SERVICE_CONTAINER_NAME}
@@ -24,20 +19,12 @@ DOCKER_DEPLOY=${DOCKER_REGISTRY}/${DOCKER_TAG}
 
 PROJECT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
-TMP_DIR=/tmp
-
-DOCKER_LOCAL_DATA_DIR=/tmp/DATA
-#IMG_URL=https://juststickers.in/wp-content/uploads/2016/07/go-programming-language.png
-#IMG_URL=https://dwglogo.com/wp-content/uploads/2017/08/gopher_hanging_left_purple.png
-IMG_URL=https://wallpaperaccess.com/full/4482737.png
-IMAGE_ARTIFACT=urn:ivcap:artifact:07793994-bbff-49d5-979b-0843b6b4093c
-
-GITHUB_USER_HOST?=git@github.com
-SDK_CLONE_RELATIVE=.ivcap-sdk-python
-SDK_CLONE_ABSOLUTE=${PROJECT_DIR}/.ivcap-sdk-python
-SDK_COMMIT?=HEAD
-
 docker-build:
+	@test -f ../../dist/ivcap_sdk_service-0.3.1.tar.gz || \
+		(echo "ERROR: ../../dist/ivcap_sdk_service-0.3.1.tar.gz is missing. Go build it!" && exit 1)
+	@echo "Copying ivcap_sdk_service-0.3.1.tar.gz to dist/"
+	cp ../../dist/ivcap_sdk_service-0.3.1.tar.gz dist/
+
 	@echo "Building docker image ${DOCKER_NAME}"
 	docker build \
 		--build-arg GIT_COMMIT=${GIT_COMMIT} \
