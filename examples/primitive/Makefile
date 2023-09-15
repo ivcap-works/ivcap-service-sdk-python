@@ -1,6 +1,11 @@
+#
+# Variables
+#
 SERVICE_TITLE=Primitive
 SERVICE_FILE=service.py
 SERVICE_CONTAINER_NAME=primitive-service
+SERVICE_NAME=$(shell grep name ../../pyproject.toml | sed -E 's/name = "(.*)"/\1/')
+SERVICE_VERSION=$(shell poetry version -s)
 
 PROVIDER_NAME=ivcap.test
 
@@ -19,13 +24,11 @@ DOCKER_DEPLOY=${DOCKER_REGISTRY}/${DOCKER_TAG}
 
 PROJECT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
-docker-build:
-	@test -f ../../dist/ivcap_sdk_service-0.3.1.tar.gz || \
-		(echo "ERROR: ../../dist/ivcap_sdk_service-0.3.1.tar.gz is missing. Go build it!" && exit 1)
-	@echo "Copying ivcap_sdk_service-0.3.1.tar.gz to dist/"
-	cp ../../dist/ivcap_sdk_service-0.3.1.tar.gz dist/
+# Copy the distribution file to the target directory
+dist/$(SERVICE_NAME)-$(SERVICE_VERSION).tar.gz: ../../dist/$(SERVICE_NAME)-$(SERVICE_VERSION).tar.gz
+	cp $< $@
 
-	@echo "Building docker image ${DOCKER_NAME}"
+build-docker-image: dist/$(SERVICE_NAME)-$(SERVICE_VERSION).tar.gz
 	docker build \
 		--build-arg GIT_COMMIT=${GIT_COMMIT} \
 		--build-arg GIT_TAG=${GIT_TAG} \
@@ -35,7 +38,7 @@ docker-build:
 		${PROJECT_DIR} ${DOCKER_BILD_ARGS}
 	@echo "\nFinished building docker image ${DOCKER_NAME}\n"
 
-docker-publish: docker-build
+docker-publish: build-docker-image
 	@echo "====> If 'unauthorized: authentication required' log into ACR with 'az acr login --name cipmain'"
 	docker tag ${DOCKER_NAME} ${DOCKER_DEPLOY}
 	docker push ${DOCKER_DEPLOY}
