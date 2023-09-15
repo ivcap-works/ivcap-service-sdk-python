@@ -1,3 +1,9 @@
+##
+## Copyright (c) 2023 Commonwealth Scientific and Industrial Research Organisation (CSIRO). All rights reserved.
+## Use of this source code is governed by a BSD-style license that can be
+## found in the LICENSE file. See the AUTHORS file for names of contributors.
+##
+
 # This Dockerfile builds a container image for running a Python service that uses the primitive package.
 # The container has two stages:
 #   1. Build the Go binary and install the primitive package.
@@ -37,6 +43,10 @@ COPY requirements.txt /primitive/
 
 # Install Python packages from the requirements file
 RUN pip3 install -r /primitive/requirements.txt
+
+# Install the primitive package from the local file system.
+COPY dist/ivcap_sdk_service-0.3.1.tar.gz /primitive/
+RUN pip install /primitive/ivcap_sdk_service-0.3.1.tar.gz
 
 # Copy your Python script into the Docker image (replace 'your_script.py' with the actual filename)
 COPY service.py /primitive/
