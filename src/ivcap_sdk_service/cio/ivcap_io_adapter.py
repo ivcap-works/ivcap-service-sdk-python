@@ -33,7 +33,6 @@ class IvcapIOAdapter(IOAdapter):
         storage_url: Url,
         in_dir: str,
         out_dir: str,
-        order_id: str,
         cachable_url: Callable[[str], str],
     ) -> None:
         super().__init__()
@@ -209,15 +208,39 @@ class IvcapIOAdapter(IOAdapter):
 
 
 class IvcapCollection(Collection):
+    """
+    Represents a collection of items in the IVCAP system.
+
+    Args:
+        collection_urn (str): The URN of the collection.
+        adapter (IvcapIOAdapter): The adapter used to communicate with the IVCAP system.
+    """
+
     def __init__(self, collection_urn: str, adapter: IvcapIOAdapter) -> None:
         super().__init__()
         self._collection_urn = collection_urn
         self._adapter = adapter
 
+    @property
     def name(self) -> str:
+        """
+        Returns the name of the collection URN associated with this adapter.
+
+        :return: The name of the collection URN.
+        :rtype: str
+        """
         return self._collection_urn
 
     def __iter__(self):
+        """
+        Returns an iterator for the collection.
+
+        If the collection URN starts with the queue prefix defined in the configuration,
+        returns an iterator for a queue collection. Otherwise, returns an iterator for a
+        single collection.
+
+        :return: An iterator for the collection.
+        """
         from ..ivcap import get_config  # avoiding circular imports
 
         if self._collection_urn.startswith(get_config().QUEUE_PREFIX):
@@ -230,6 +253,20 @@ class IvcapCollection(Collection):
 
 
 class IvcapSingleIter:
+    """
+    A class that represents a single iteration over an artifact in the IvcapIOAdapter.
+
+    Args:
+        artifact_urn (str): The URN of the artifact to iterate over.
+        adapter (IvcapIOAdapter): The IvcapIOAdapter instance to use for reading the artifact.
+
+    Raises:
+        StopIteration: If the artifact has already been served.
+
+    Returns:
+        The contents of the artifact.
+    """
+
     def __init__(self, artifact_urn: str, adapter: IvcapIOAdapter) -> None:
         self._artifact_urn = artifact_urn
         self._already_served = False
@@ -244,6 +281,26 @@ class IvcapSingleIter:
 
 
 class IvcapCollectionIter:
+    """
+    An iterator class for iterating over artifacts in an IVCAP collection.
+
+    Args:
+        collection_urn (str): The URN of the collection to iterate over.
+        adapter (IvcapIOAdapter): An instance of the IvcapIOAdapter class to use for I/O operations.
+
+    Attributes:
+        _urn (str): The URN of the collection being iterated over.
+        _url (str): The URL of the collection being iterated over.
+        _adapter (IvcapIOAdapter): An instance of the IvcapIOAdapter class to use for I/O operations.
+        _ack_token (str): The acknowledgement token for the previously iterated artifact.
+
+    Raises:
+        StopIteration: Raised when there are no more artifacts to iterate over.
+
+    Returns:
+        An instance of the Artifact class representing the next artifact in the collection.
+    """
+
     def __init__(self, collection_urn: str, adapter: IvcapIOAdapter) -> None:
         self._urn = collection_urn
         self._url = adapter.cachable_url(collection_urn)
