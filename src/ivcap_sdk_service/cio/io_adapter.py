@@ -160,12 +160,12 @@ class IOWritable(_IOBase):
         """
 
     @abstractmethod
-    def write(self, s: AnyStr) -> int:
+    def write(self, bytes_obj: AnyStr) -> int:
         """
         Writes the given string to the output stream.
 
         Args:
-            s (AnyStr): The string to write to the output stream.
+            bytes_obj (AnyStr): The string to write to the output stream.
 
         Returns:
             int: The number of characters written to the output stream.
