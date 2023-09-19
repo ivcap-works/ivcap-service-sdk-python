@@ -7,7 +7,6 @@
 Implementation of the IOAdapter class for use inside the IVCAP platform
 """
 import os
-from pathlib import Path
 import sys
 from typing import Callable, Optional, Sequence, Union
 from os import access, R_OK
