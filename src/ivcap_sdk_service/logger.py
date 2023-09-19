@@ -9,8 +9,8 @@ import sys
 
 # format
 DEF_LEVEL = _logging.DEBUG
-_format = '%(levelname)s %(asctime)s %(name)s %(message)s'
-_datefmt = '%Y-%m-%dT%H:%M:%S%z'
+_format = "%(levelname)s %(asctime)s %(name)s %(message)s"
+_datefmt = "%Y-%m-%dT%H:%M:%S%z"
 
 _formatter = _logging.Formatter(_format, _datefmt)
 _console = _logging.StreamHandler(sys.stdout)

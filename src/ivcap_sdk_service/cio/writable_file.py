@@ -11,6 +11,7 @@ from ..logger import sys_logger as logger
 
 from .io_adapter import IOWritable
 
+
 class WritableFile(IOWritable):
     """
     A class which implements the IOWritable interface for writing data. It additionally
@@ -26,16 +27,19 @@ class WritableFile(IOWritable):
         use_temp_file (bool, optional): _description_. Defaults to True.
     """
 
-    def __init__(self, 
-        name: str, 
-        on_close: Optional[Callable[[str, IO[Any]], str]]=None, 
-        is_binary=True, 
+    def __init__(
+        self,
+        name: str,
+        on_close: Optional[Callable[[str, IO[Any]], str]] = None,
+        is_binary=True,
         encoding=None,
         use_temp_file=False,
     ):
         mode = "wb" if is_binary else "w"
         if use_temp_file:
-            self._file_obj = tempfile.NamedTemporaryFile(mode, encoding=encoding) # delete after uploaded
+            self._file_obj = tempfile.NamedTemporaryFile(
+                mode, encoding=encoding
+            )  # delete after uploaded
             self._name = self._file_obj.name
         else:
             self._file_obj = io.open(name, mode=mode, encoding=encoding)
@@ -46,7 +50,7 @@ class WritableFile(IOWritable):
 
     @property
     def urn(self) -> str:
-        if self._name.startswith('urn:'):
+        if self._name.startswith("urn:"):
             return self._name
         else:
             return f"urn:file://{self._file_obj.name}"
@@ -109,7 +113,11 @@ class WritableFile(IOWritable):
             if self._on_close:
                 self._on_close(self.urn, self._file_obj)
         except BaseException as err:
-            logger.warning("WritableFile#close: on_close '%s' failed with '%s'", self._on_close, err)
+            logger.warning(
+                "WritableFile#close: on_close '%s' failed with '%s'",
+                self._on_close,
+                err,
+            )
         finally:
             self._file_obj.close()
 

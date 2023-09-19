@@ -7,12 +7,12 @@
 # read version from installed package
 
 
-try:  # Python < 3.10 (backport) 
-    from importlib_metadata import version 
-except ImportError: 
-    from importlib.metadata import version 
+try:  # Python < 3.10 (backport)
+    from importlib_metadata import version
+except ImportError:
+    from importlib.metadata import version
 
-try:   
+try:
     __version__ = version("ivcap_sdk_service")
 except Exception:
     __version__ = "unknown"
@@ -26,4 +26,9 @@ from .service import Service, Parameter, Option, Type
 from .service import Workflow, BasicWorkflow, PythonWorkflow
 
 from .cio.io_adapter import IOAdapter, OnCloseF, IOWritable, IOReadable
-from .itypes import MissingParameterValue, UnsupportedMimeType, SupportedMimeTypes, ServiceArgs
+from .itypes import (
+    MissingParameterValue,
+    UnsupportedMimeType,
+    SupportedMimeTypes,
+    ServiceArgs,
+)

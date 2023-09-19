@@ -13,15 +13,16 @@ from ..logger import sys_logger as logger
 
 from .io_adapter import IOReadable, IOWritable
 
-class ReadableProxy(IOReadable):
 
-    def __init__(self, 
+class ReadableProxy(IOReadable):
+    def __init__(
+        self,
         url: str,
         name=None,
-        on_close: Callable[[IO[bytes]], None]=None, 
-        is_binary=True, 
+        on_close: Callable[[IO[bytes]], None] = None,
+        is_binary=True,
         encoding=None,
-        cache: Optional[IOWritable] = None
+        cache: Optional[IOWritable] = None,
     ):
         self._name = name if name else url
         self._urn = url
@@ -34,7 +35,7 @@ class ReadableProxy(IOReadable):
         self._offset = 0
         self._file_obj = None
         self._closed = False
-    
+
     @property
     def closed(self) -> bool:
         return self._closed
@@ -60,13 +61,12 @@ class ReadableProxy(IOReadable):
 
     def readable(self) -> bool:
         return True
-    
+
     def readline(self, limit: int = -1) -> AnyStr:
         raise Exception("not implemented")
 
     def readlines(self, hint: int = -1) -> List[AnyStr]:
         raise Exception("not implemented")
-
 
     def seek(self, offset, whence=io.SEEK_SET):
         """
@@ -107,7 +107,7 @@ class ReadableProxy(IOReadable):
 
     def close(self):
         self._closed = True
- 
+
         if self._cache:
             try:
                 self._cache.close()
@@ -116,22 +116,24 @@ class ReadableProxy(IOReadable):
             finally:
                 self._cache = None
 
-
         f = self._get_file_obj()
         try:
             if self._on_close:
                 self._on_close(f)
         except BaseException as err:
-            logger.warn("ReadableProxyclose: on_close '%s' failed with '%s'", self._on_close, err)
+            logger.warn(
+                "ReadableProxyclose: on_close '%s' failed with '%s'",
+                self._on_close,
+                err,
+            )
         finally:
             f.close()
- 
 
     def _get_file_obj(self):
         if self._file_obj == None:
             self._open_file_obj()
         return self._file_obj
-    
+
     def _open_file_obj(self):
         """Open and ensure that the local file object is properly "filled".
 
@@ -148,16 +150,27 @@ class ReadableProxy(IOReadable):
                 if cacheID:
                     self._name = f"{self._name} ({cacheID})"
             except BaseException as ex:
-                logger.error("ReadableProxy#_open_file_obj: While downloading - %s", ex.__repr__())
+                logger.error(
+                    "ReadableProxy#_open_file_obj: While downloading - %s",
+                    ex.__repr__(),
+                )
                 raise ex
-            
-            logger.debug("ReadableProxy#_open_file_obj: Read external content '%s' into '%s'", self._download_url, self._path)
+
+            logger.debug(
+                "ReadableProxy#_open_file_obj: Read external content '%s' into '%s'",
+                self._download_url,
+                self._path,
+            )
 
         elif self._path:
-            self._file_obj = io.open(self._path, mode=self._mode, encoding=self._encoding)
+            self._file_obj = io.open(
+                self._path, mode=self._mode, encoding=self._encoding
+            )
 
     def __repr__(self):
-        return f"<ReadableProxy name={self._name} closed={self._closed} mode={self._mode}>"
+        return (
+            f"<ReadableProxy name={self._name} closed={self._closed} mode={self._mode}>"
+        )
 
     def to_json(self):
         return self._name

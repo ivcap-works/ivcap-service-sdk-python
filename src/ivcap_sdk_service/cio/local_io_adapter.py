@@ -25,11 +25,13 @@ from ..itypes import MetaDict, Url, SupportedMimeTypes
 from ..logger import sys_logger as logger
 from .io_adapter import Collection, IOAdapter, IOReadable, IOWritable, OnCloseF
 
+
 class LocalIOAdapter(IOAdapter):
     """
     An adapter for a standard file system backend.
     """
-    def __init__(self, in_dir: str, out_dir: str, cache_dir: str=None) -> None:
+
+    def __init__(self, in_dir: str, out_dir: str, cache_dir: str = None) -> None:
         """
         Initialise FileAdapter data paths
 
@@ -52,7 +54,9 @@ class LocalIOAdapter(IOAdapter):
         self.out_dir = os.path.abspath(out_dir)
         self.cache_dir = os.path.abspath(cache_dir) if cache_dir else None
 
-    def read_artifact(self, artifact_id: str, binary_content=True, no_caching=False, seekable=False) -> IOReadable:
+    def read_artifact(
+        self, artifact_id: str, binary_content=True, no_caching=False, seekable=False
+    ) -> IOReadable:
         """Return a readable file-like object providing the content of an artifact
 
         Args:
@@ -65,17 +69,23 @@ class LocalIOAdapter(IOAdapter):
             IOReadable: The content of the artifact as a file-like object
         """
         u = urlparse(artifact_id)
-        if u.scheme == '' or u.scheme == 'file':
+        if u.scheme == "" or u.scheme == "file":
             return self.read_local(u.path, binary_content=binary_content)
         else:
-            return self.read_external(artifact_id, binary_content=binary_content, no_caching=no_caching, seekable=seekable)
+            return self.read_external(
+                artifact_id,
+                binary_content=binary_content,
+                no_caching=no_caching,
+                seekable=seekable,
+            )
 
-    def read_external(self, 
-        url: Url, 
-        binary_content=True, 
-        no_caching=False, 
+    def read_external(
+        self,
+        url: Url,
+        binary_content=True,
+        no_caching=False,
         seekable=False,
-        local_file_name=None
+        local_file_name=None,
     ) -> IOReadable:
         """Return a readable file-like object providing the content of an external data item.
 
@@ -90,14 +100,22 @@ class LocalIOAdapter(IOAdapter):
         """
         cache = None
         if self.cache_dir and not no_caching:
-            cname = local_file_name if local_file_name else join(self.cache_dir, get_cache_name(url))
+            cname = (
+                local_file_name
+                if local_file_name
+                else join(self.cache_dir, get_cache_name(url))
+            )
             if isfile(cname) and access(cname, R_OK):
                 return ReadableFile(f"{url} (cached)", cname, is_binary=binary_content)
             cache = WritableFile(cname, is_binary=binary_content)
 
         ior = ReadableProxy(url, url, is_binary=binary_content, cache=cache)
         if cache:
-            logger.debug("LocalIOAdapter#read_external: Cache external content '%s' into '%s'", url, cache.name)
+            logger.debug(
+                "LocalIOAdapter#read_external: Cache external content '%s' into '%s'",
+                url,
+                cache.name,
+            )
         return ior
 
     def artifact_readable(self, artifact_id: str) -> bool:
@@ -110,22 +128,24 @@ class LocalIOAdapter(IOAdapter):
             bool: True if artifact can be read
         """
         u = urlparse(artifact_id)
-        if u.scheme == '' or u.scheme == 'file':
+        if u.scheme == "" or u.scheme == "file":
             return self.readable_local(u.path)
         else:
-            return True # assume that all external urls are at least conceptually readable
-    
+            return (
+                True  # assume that all external urls are at least conceptually readable
+            )
+
     def write_artifact(
         self,
-        mime_type: str, 
+        mime_type: str,
         *,
         name: Optional[str] = None,
-        metadata: Optional[MetaDict] = {}, 
+        metadata: Optional[MetaDict] = {},
         seekable=False,
-        on_close: Optional[OnCloseF] = None
+        on_close: Optional[OnCloseF] = None,
     ) -> IOWritable:
         """Returns a IOWritable to create a new artifact. It needs to be closed
-        in order to be persisted. If `on_close` is provided it is called with the 
+        in order to be persisted. If `on_close` is provided it is called with the
         artifactID.
 
         Args:
@@ -142,7 +162,7 @@ class LocalIOAdapter(IOAdapter):
         fname = self._to_path(self.out_dir, name)
         if isinstance(mime_type, SupportedMimeTypes):
             mime_type = mime_type.value
-        is_binary = not mime_type.startswith('text')
+        is_binary = not mime_type.startswith("text")
 
         def _on_close(urn, _2):
             logger.info("Written artifact '%s' to '%s'", name, fname)
@@ -167,7 +187,9 @@ class LocalIOAdapter(IOAdapter):
         file_name = self._to_path(self.in_dir, name, collection_name)
         return isfile(file_name) and access(file_name, R_OK)
 
-    def read_local(self, name: str, collection_name: str = None, binary_content=True) -> IOReadable:
+    def read_local(
+        self, name: str, collection_name: str = None, binary_content=True
+    ) -> IOReadable:
         """Return a readable file-like object providing the content of an external data item.
 
         Args:
@@ -182,12 +204,12 @@ class LocalIOAdapter(IOAdapter):
         return ReadableFile(name, path, is_binary=binary_content)
 
     def _to_path(self, prefix: str, name: str, collection_name: str = None) -> str:
-        if name.startswith('/'):
+        if name.startswith("/"):
             return name
-        elif name.startswith('file:'):
-            return name[len('file://'):]
-        elif name.startswith('urn:file:'):
-            return name[len('urn:file://'):]
+        elif name.startswith("file:"):
+            return name[len("file://") :]
+        elif name.startswith("urn:file:"):
+            return name[len("urn:file://") :]
         else:
             if collection_name:
                 return os.path.join(prefix, collection_name, name)
@@ -196,8 +218,8 @@ class LocalIOAdapter(IOAdapter):
 
     def write_metadata(
         self,
-        entity_id: str, # URN
-        schema: str, # URN
+        entity_id: str,  # URN
+        schema: str,  # URN
         metadata: MetaDict,
     ) -> str:
         e = os.path.basename(f"{entity_id}:{schema}.json")
@@ -206,30 +228,30 @@ class LocalIOAdapter(IOAdapter):
         fname = self._to_path(self.out_dir, e)
         json_dump(metadata, fname)
         return e
-                              
-                                   
+
     def get_collection(self, collection_urn: str) -> Collection:
         u = urlparse(collection_urn)
-        if u.scheme == '' or u.scheme == 'file':
+        if u.scheme == "" or u.scheme == "file":
             if os.path.isfile(u.path) or os.path.isdir(u.path):
                 return LocalCollection(u.path, self)
             else:
                 raise ValueError(f"Cannot find local file or directory '{u.path}")
         else:
             raise ValueError(f"Remote collection is not supported, yet")
-        
+
     def __repr__(self):
         return f"<LocalIOAdapter in_dir={self.in_dir} out_dir={self.out_dir}>"
+
 
 class LocalCollection(Collection):
     def __init__(self, path: str, adapter: IOAdapter) -> None:
         super().__init__()
         self._path = path
         self._adapter = adapter
-        
+
     def name(self) -> str:
         return self._collection_urn
-    
+
     def __iter__(self):
         if os.path.isfile(self._path):
             return SingleFileIter(self._path, self._adapter)
@@ -239,12 +261,13 @@ class LocalCollection(Collection):
     def __repr__(self):
         return f"<LocalCollection path={self._path}>"
 
+
 class SingleFileIter:
     def __init__(self, path: str, adapter: IOAdapter) -> None:
         self._path = path
         self._adapter = adapter
         self._already_served = False
-        
+
     def __next__(self):
         if self._already_served:
             raise StopIteration
@@ -255,12 +278,13 @@ class SingleFileIter:
     def __repr__(self):
         return f"<LocalCollectionIter path={self._path}>"
 
+
 class DirectoryIter:
     def __init__(self, path: str, adapter: IOAdapter) -> None:
-        self._iter = Path(path).glob('*')
+        self._iter = Path(path).glob("*")
         self._adapter = adapter
         self._already_served = False
-        
+
     def __next__(self):
         f = str(next(self._iter))
         return self._adapter.read_local(f)

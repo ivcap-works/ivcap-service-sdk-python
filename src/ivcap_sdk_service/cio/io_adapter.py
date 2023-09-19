@@ -9,6 +9,7 @@ import io
 
 from ..itypes import MetaDict, Url
 
+
 class _IOBase(ABC):
     @property
     @abstractmethod
@@ -53,12 +54,13 @@ class _IOBase(ABC):
     def close(self) -> None:
         pass
 
+
 class IOReadable(_IOBase):
     @property
     @abstractmethod
     def urn(self) -> str:
         pass
-    
+
     @abstractmethod
     def read(self, n: int = -1) -> AnyStr:
         pass
@@ -75,6 +77,7 @@ class IOReadable(_IOBase):
     @abstractmethod
     def as_local_file(self) -> str:
         pass
+
 
 class IOWritable(_IOBase):
     @property
@@ -102,35 +105,41 @@ class IOWritable(_IOBase):
 class IO_ReadWritable(IOReadable, IOWritable):
     pass
 
+
 class Collection(ABC):
     """A collection of artifacts
 
     Args:
         ABC (_type_): _description_
     """
+
     @property
     @abstractmethod
     def name(self) -> str:
         pass
 
+
 class Collection(ABC):
-    """A collection of artifacts
-    """
+    """A collection of artifacts"""
+
     @property
     @abstractmethod
     def name(self) -> str:
         pass
+
 
 OnCloseF = Callable[[Url], None]
 
-class IOAdapter(ABC):
 
+class IOAdapter(ABC):
     # @classmethod
     # def create_cache(cls, cache_dir: str, cache_proxy_url: str):
     #     return None
 
     @abstractmethod
-    def read_artifact(self, artifact_id: str, binary_content=True, no_caching=False, seekable=False) -> IOReadable:
+    def read_artifact(
+        self, artifact_id: str, binary_content=True, no_caching=False, seekable=False
+    ) -> IOReadable:
         """Return a readable file-like object providing the content of an artifact
 
         Args:
@@ -174,15 +183,15 @@ class IOAdapter(ABC):
     @abstractmethod
     def write_artifact(
         self,
-        mime_type: str, 
+        mime_type: str,
         name: Optional[str] = None,
         collection_name: Optional[str] = None,
-        metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None, 
+        metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None,
         seekable=False,
-        on_close: Optional[OnCloseF] = None
+        on_close: Optional[OnCloseF] = None,
     ) -> IOWritable:
         """Returns a IOWritable to create a new artifact. It needs to be closed
-        in order to be persisted. If `on_close` is provided it is called with the 
+        in order to be persisted. If `on_close` is provided it is called with the
         artifactID.
 
         Args:
@@ -197,19 +206,19 @@ class IOAdapter(ABC):
             IOWritable: A file-like object to write deliver artifact content - needs to be closed
         """
         pass
-    
+
     @abstractmethod
     def write_artifact(
         self,
-        mime_type: str, 
+        mime_type: str,
         *,
         name: Optional[str] = None,
-        metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None, 
+        metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None,
         seekable=False,
         on_close: Optional[OnCloseF] = None
     ) -> IOWritable:
         """Returns a IOWritable to create a new artifact. It needs to be closed
-        in order to be persisted. If `on_close` is provided it is called with the 
+        in order to be persisted. If `on_close` is provided it is called with the
         artifactID.
 
         Args:
@@ -223,12 +232,12 @@ class IOAdapter(ABC):
             IOWritable: A file-like object to write deliver artifact content - needs to be closed
         """
         pass
-    
+
     @abstractmethod
     def write_metadata(
         self,
-        entity_id: str, # URN
-        schema: str, # URN
+        entity_id: str,  # URN
+        schema: str,  # URN
         metadata: MetaDict,
     ) -> str:
         """Add a 'metadata' aspect to 'entity_id' with 'schema'.

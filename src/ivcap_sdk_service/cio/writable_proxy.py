@@ -18,6 +18,7 @@ from ..logger import sys_logger as logger
 
 from .io_adapter import IOWritable
 
+
 class WritableProxy(IOWritable):
     """
     A class which implements the IOWritable interface for writing data. It additionally
@@ -33,19 +34,20 @@ class WritableProxy(IOWritable):
         encoding (_type_, optional): _description_. Defaults to None.
     """
 
-    def __init__(self, 
+    def __init__(
+        self,
         storage_url: str,
-        mime_type: str, 
+        mime_type: str,
         metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None,
         name: Optional[str] = None,
         is_seekable=False,
-        on_close: Optional[Callable[[str, str], str]]=None, 
+        on_close: Optional[Callable[[str, str], str]] = None,
         encoding=None,
     ):
         self._storage_url = storage_url
         if isinstance(mime_type, SupportedMimeTypes):
             mime_type = mime_type.value
-        is_binary = not mime_type.startswith('text')
+        is_binary = not mime_type.startswith("text")
 
         self._mime_type = mime_type
         self._name = name if name else "???"
@@ -54,7 +56,9 @@ class WritableProxy(IOWritable):
         # At this stage, we first write it to a local temp file and on close, post the file
         # to 'url'
         mode = "w+b" if is_binary else "w+"
-        self._file_obj = tempfile.NamedTemporaryFile(mode, encoding=encoding) # delete after uploaded
+        self._file_obj = tempfile.NamedTemporaryFile(
+            mode, encoding=encoding
+        )  # delete after uploaded
         self.cnt = 0
         self._on_close = on_close
         self._closed = False
@@ -121,12 +125,16 @@ class WritableProxy(IOWritable):
             if self._on_close:
                 self._on_close(url, self._name)
         except BaseException as err:
-            logger.warning("WritableProxy#close: on_close '%s' failed with '%s'", self._on_close, err)
+            logger.warning(
+                "WritableProxy#close: on_close '%s' failed with '%s'",
+                self._on_close,
+                err,
+            )
         finally:
             self._file_obj.close()
 
     def _upload(
-        self, 
+        self,
     ) -> str:
         fd = self._file_obj
         logger.info("Upload artifact '%s'", self._name)
@@ -152,33 +160,43 @@ class WritableProxy(IOWritable):
         if len(metadata) == 1 and len(metadata[0].keys()) <= 3:
             # Immediately upload simple metadata
             metadataUploaded = True
-            headers['Upload-Metadata'] = ','. join(map(lambda e: f"{e[0]} {encode64(str(e[1]))}", metadata[0].items()))
+            headers["Upload-Metadata"] = ",".join(
+                map(lambda e: f"{e[0]} {encode64(str(e[1]))}", metadata[0].items())
+            )
         try:
             logger.debug("Post artifact data='%s', headers:'%s'", fd, headers)
             r = requests.post(self._storage_url, data=fd, headers=headers)
         except:
             print(">>>>", sys.exc_info())
-            logger.fatal(f"while posting result data {self._storage_url} - {sys.exc_info()[0]}")
+            logger.fatal(
+                f"while posting result data {self._storage_url} - {sys.exc_info()[0]}"
+            )
             sys.exit(-1)
         if r.status_code >= 300:
-            logger.fatal(f"error response {r.status_code} while posting result data {self._storage_url}")
+            logger.fatal(
+                f"error response {r.status_code} while posting result data {self._storage_url}"
+            )
             sys.exit(-1)
 
         j = r.json()
-        size = j['size']
-        artifactID = j['id']
+        size = j["size"]
+        artifactID = j["id"]
         if not artifactID:
-            artifactID = r.headers.get('X-Artifact-Id')
-        logger.info(f"WritableProxy: created artifact '{artifactID}' of size '{size}' via '{self._storage_url}'")
+            artifactID = r.headers.get("X-Artifact-Id")
+        logger.info(
+            f"WritableProxy: created artifact '{artifactID}' of size '{size}' via '{self._storage_url}'"
+        )
 
         if not metadataUploaded and len(metadata) > 0:
-            url = r.headers.get('Location')
+            url = r.headers.get("Location")
             for md in metadata:
-                upload_metadata(self._storage_url, artifactID, md, artifact_id=artifactID, url=url)
+                upload_metadata(
+                    self._storage_url, artifactID, md, artifact_id=artifactID, url=url
+                )
         return artifactID
 
     # def _upload_metadata(
-    #     self, 
+    #     self,
     #     metadata: Sequence[MetaDict],
     #     artifactID: str,
     #     url: str,
@@ -204,6 +222,7 @@ class WritableProxy(IOWritable):
     def __repr__(self):
         return f"<WritableProxy name={self._name} closed={self._closed} fp={self._file_obj}>"
 
+
 def upload_metadata(
     storage_url: str,
     entity_urn: str,
@@ -214,7 +233,7 @@ def upload_metadata(
 ) -> None:
     headers = {
         "X-Meta-Data-For-Entity": entity_urn,
-        "X-Meta-Data-Schema": metadata.get('$schema', '???'),
+        "X-Meta-Data-Schema": metadata.get("$schema", "???"),
         "Content-Type": "application/json",
     }
     if artifact_id:
@@ -223,12 +242,16 @@ def upload_metadata(
         headers["X-Meta-Data-For-Url"] = url
 
     try:
-        logger.debug("Post artifact metadata data='%s', headers:'%s'", metadata, headers)
+        logger.debug(
+            "Post artifact metadata data='%s', headers:'%s'", metadata, headers
+        )
         payload = json_dump(metadata)
         r = requests.post(storage_url, data=payload, headers=headers)
     except:
         logger.fatal(f"while posting metadata {storage_url} - {sys.exc_info()}")
         sys.exit(-1)
     if r.status_code >= 300:
-        logger.fatal(f"error response {r.status_code} while posting metadata {storage_url}")
+        logger.fatal(
+            f"error response {r.status_code} while posting metadata {storage_url}"
+        )
         sys.exit(-1)

@@ -16,6 +16,7 @@ try:
 except ImportError:
     from yaml import SafeLoader, Dumper
 
+
 # Remove date parsing of yaml as datetime not serializable
 # https://stackoverflow.com/questions/34667108/ignore-dates-and-times-while-parsing-yaml
 class NoDatesSafeLoader(SafeLoader):
@@ -32,31 +33,34 @@ class NoDatesSafeLoader(SafeLoader):
         go on to serialise as json which doesn't have the advanced types
         of yaml, and leads to incompatibilities down the track.
         """
-        if 'yaml_implicit_resolvers' not in cls.__dict__:
+        if "yaml_implicit_resolvers" not in cls.__dict__:
             cls.yaml_implicit_resolvers = cls.yaml_implicit_resolvers.copy()
 
         for first_letter, mappings in cls.yaml_implicit_resolvers.items():
             cls.yaml_implicit_resolvers[first_letter] = [
-                (tag, regexp)
-                for tag, regexp in mappings if tag != tag_to_remove
+                (tag, regexp) for tag, regexp in mappings if tag != tag_to_remove
             ]
 
+
 def read_json(file_name):
-    with open(file_name, 'r') as f:
+    with open(file_name, "r") as f:
         data = f.read()
         params = json.loads(data)
         return params
 
+
 def read_yaml(file_name):
-    with open(file_name, 'r') as f:
+    with open(file_name, "r") as f:
         params = yaml.safe_load(f)
         return params
 
+
 def read_yaml_no_dates(file_name):
-    NoDatesSafeLoader.remove_implicit_resolver('tag:yaml.org,2002:timestamp')
-    with open(file_name, 'r') as f:
-        params = yaml.load(f,Loader=NoDatesSafeLoader)
+    NoDatesSafeLoader.remove_implicit_resolver("tag:yaml.org,2002:timestamp")
+    with open(file_name, "r") as f:
+        params = yaml.load(f, Loader=NoDatesSafeLoader)
         return params
+
 
 class _CustomEncoder(json.JSONEncoder):
     def default(self, o):
@@ -65,6 +69,7 @@ class _CustomEncoder(json.JSONEncoder):
         if "to_json" in dir(o):
             return o.to_json()
         return json.JSONEncoder.default(self, o)
+
 
 def json_dump(obj: Any, fileName: str = None, failQuietly=True) -> str:
     try:

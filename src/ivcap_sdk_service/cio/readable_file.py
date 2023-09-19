@@ -13,12 +13,13 @@ from ..logger import sys_logger as logger
 
 from .io_adapter import IOReadable
 
-class ReadableFile(IOReadable):
 
-    def __init__(self, 
+class ReadableFile(IOReadable):
+    def __init__(
+        self,
         name: str,
         path: Optional[str],
-        on_close: Callable[[IO[bytes]], None]=None, 
+        on_close: Callable[[IO[bytes]], None] = None,
         is_binary=True,
         encoding=None,
     ):
@@ -85,12 +86,18 @@ class ReadableFile(IOReadable):
             if self._on_close:
                 self._on_close(f)
         except BaseException as err:
-            logger.warn("ReadableProxyFile#close: on_close '%s' failed with '%s'", self._on_close, err)
+            logger.warn(
+                "ReadableProxyFile#close: on_close '%s' failed with '%s'",
+                self._on_close,
+                err,
+            )
         finally:
             f.close()
 
     def __repr__(self):
-        return f"<ReadableFile name={self._name} closed={self._closed} path={self._path}>"
+        return (
+            f"<ReadableFile name={self._name} closed={self._closed} path={self._path}>"
+        )
 
     def to_json(self):
         return self._name

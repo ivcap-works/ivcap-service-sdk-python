@@ -15,32 +15,40 @@ import os
 
 from typing import Dict
 
-from .verifiers import verify_artifact, verify_collection, ArtifactAction, CollectionAction
+from .verifiers import (
+    verify_artifact,
+    verify_collection,
+    ArtifactAction,
+    CollectionAction,
+)
 from .utils import read_yaml_no_dates
+
 
 @dataclass
 class Option:
-    """Defines one option of a `Parameter` of type `OPTION`
-    """
+    """Defines one option of a `Parameter` of type `OPTION`"""
+
     value: str
     name: str = None
     description: str = None
 
+
 class Type(Enum):
-    """Enumerates the different types of service `Parameters`
-    """
-    STRING = 'string'
-    INT = 'int'
-    FLOAT = 'float'
-    BOOL = 'bool'
-    OPTION = 'option'
-    ARTIFACT = 'artifact'
-    COLLECTION = 'collection'
+    """Enumerates the different types of service `Parameters`"""
+
+    STRING = "string"
+    INT = "int"
+    FLOAT = "float"
+    BOOL = "bool"
+    OPTION = "option"
+    ARTIFACT = "artifact"
+    COLLECTION = "collection"
+
 
 @dataclass()
 class Parameter(JSONWizard):
-    """Defines a `Service` parameter
-    """
+    """Defines a `Service` parameter"""
+
     class _(JSONWizard.Meta):
         skip_defaults = True
 
@@ -61,7 +69,7 @@ class Parameter(JSONWizard):
     def to_dict(self):
         d = super().to_dict()
         if self.type == Type.BOOL and not self.default:
-            d['optional'] = True
+            d["optional"] = True
         return d
 
     def _to_str(self, v):
@@ -70,13 +78,16 @@ class Parameter(JSONWizard):
         else:
             return v
 
+
 @dataclass
 class Workflow(JSONWizard):
     """Defines the workflow associated with a `Service`"""
+
     class _(JSONWizard.Meta):
         skip_defaults = False
 
     type: str
+
 
 @dataclass
 class BasicWorkflow(Workflow):
@@ -87,22 +98,18 @@ class BasicWorkflow(Workflow):
         command (str): Path to init executable/script
         min_memory (int): Min memory requirement in ???
     """
+
     type: str = "basic"
-    image: str = os.getenv('IVCAP_CONTAINER', '@CONTAINER@')
+    image: str = os.getenv("IVCAP_CONTAINER", "@CONTAINER@")
     command: List[str] = field(default_factory=list)
     min_memory: str = None
 
     def to_dict(self):
-        basic = {
-            'command': self.command,
-            'image': self.image
-        }
+        basic = {"command": self.command, "image": self.image}
         if self.min_memory:
-            basic['memory'] = { 'request': self.min_memory}
-        return {
-            'type': 'basic',
-            'basic': basic
-        }
+            basic["memory"] = {"request": self.min_memory}
+        return {"type": "basic", "basic": basic}
+
 
 @dataclass
 class PythonWorkflow(BasicWorkflow):
@@ -113,17 +120,18 @@ class PythonWorkflow(BasicWorkflow):
         script (str): Path to main python script ['/app/service.py']
         min_memory (int): Min memory requirement in ???
     """
-   
-    script: str = '/app/service.py'
+
+    script: str = "/app/service.py"
 
     @classmethod
-    def def_workflow(cls): 
+    def def_workflow(cls):
         return cls()
 
     def to_dict(self):
         d = super().to_dict()
-        d['basic']['command'] = ['python', self.script]
+        d["basic"]["command"] = ["python", self.script]
         return d
+
 
 @dataclass
 class Service(JSONWizard):
@@ -139,13 +147,18 @@ class Service(JSONWizard):
         workflow(Workflow): Workflow to use when executing the service [PythonWorkflow]
 
     """
+
     # class _(JSONWizard.Meta):
     #     skip_defaults = True
 
     name: str
-    id: str = os.getenv('IVCAP_SERVICE_ID', '@SERVICE_ID@')
-    providerID: str = json_field('provider-id', all=True, default=os.getenv('IVCAP_PROVIDER_ID', '@PROVIDER_ID@'))
-    accountID: str = json_field('account-id', all=True, default=os.getenv('IVCAP_ACCOUNT_ID', '@ACCOUNT_ID@'))
+    id: str = os.getenv("IVCAP_SERVICE_ID", "@SERVICE_ID@")
+    providerID: str = json_field(
+        "provider-id", all=True, default=os.getenv("IVCAP_PROVIDER_ID", "@PROVIDER_ID@")
+    )
+    accountID: str = json_field(
+        "account-id", all=True, default=os.getenv("IVCAP_ACCOUNT_ID", "@ACCOUNT_ID@")
+    )
     parameters: List[Parameter] = field(default_factory=list)
     description: str = None
     workflow: Workflow = field(default_factory=PythonWorkflow.def_workflow)
@@ -158,8 +171,8 @@ class Service(JSONWizard):
     # this function is NOT calling the 'to_dict' of referenced JSONWizard classes
     def to_dict(self):
         d = super().to_dict()
-        d['parameters'] = list(map(lambda p: p.to_dict(), self.parameters))
-        d['workflow'] = self.workflow.to_dict()
+        d["parameters"] = list(map(lambda p: p.to_dict(), self.parameters))
+        d["workflow"] = self.workflow.to_dict()
         return d
 
     def to_yaml(self) -> str:
@@ -175,49 +188,51 @@ class Service(JSONWizard):
         # optionals = []
         for p in self.parameters:
             if not (p.name and p.type):
-                raise Exception(f"A service parameter needs at least a name and a type - {p}")
+                raise Exception(
+                    f"A service parameter needs at least a name and a type - {p}"
+                )
             name = p.name
-            if name.startswith('cre:') or name.startswith('ivcap:'):
+            if name.startswith("cre:") or name.startswith("ivcap:"):
                 continue
-            args:Dict[str, Any] = dict(required = True)
+            args: Dict[str, Any] = dict(required=True)
             if p.type == Type.OPTION:
                 ca = list(map(lambda o: o.value, p.options))
-                args['choices'] = ca      
+                args["choices"] = ca
             elif p.type == Type.ARTIFACT:
-                args['type'] = verify_artifact
-                args['metavar'] = "URN"
-                args['action'] = ArtifactAction
+                args["type"] = verify_artifact
+                args["metavar"] = "URN"
+                args["action"] = ArtifactAction
                 pass
             elif p.type == Type.COLLECTION:
-                args['type'] = verify_collection
-                args['metavar'] = "URN"
-                args['action'] = CollectionAction
+                args["type"] = verify_collection
+                args["metavar"] = "URN"
+                args["action"] = CollectionAction
                 pass
             elif p.type == Type.BOOL:
-                args['action'] ='store_true'
-                args['required'] = False
+                args["action"] = "store_true"
+                args["required"] = False
             else:
                 if not type(p.type) == Type:
-                    raise Exception(f"Wrong type declaration for '{name}' - use enum 'Type'")
-                   
+                    raise Exception(
+                        f"Wrong type declaration for '{name}' - use enum 'Type'"
+                    )
+
                 t = type2type.get(p.type)
                 if not t:
                     raise Exception(f"Unsupported type '{p.type}' for '{name}'")
-                args['type'] = t
-                args['metavar'] = p.type.name.upper()
+                args["type"] = t
+                args["metavar"] = p.type.name.upper()
             if p.default:
-                args['default'] = p.default
+                args["default"] = p.default
             if p.description:
                 if p.default:
-                    args['help'] = f"{p.description} [{p.default}]"
+                    args["help"] = f"{p.description} [{p.default}]"
                 else:
-                    args['help'] = f"{p.description}"
+                    args["help"] = f"{p.description}"
             if p.optional:
-                args['required'] = not p.optional
+                args["required"] = not p.optional
                 # optionals.append(name)
             if p.constant or p.default:
-                args['required'] = False
+                args["required"] = False
             ap.add_argument(f"--{name}", **args)
         return ap
-
-
