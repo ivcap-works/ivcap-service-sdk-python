@@ -233,7 +233,7 @@ class LocalIOAdapter(IOAdapter):
         u = urlparse(collection_urn)
         if u.scheme == "" or u.scheme == "file":
             if os.path.isfile(u.path) or os.path.isdir(u.path):
-                return LocalCollection(u.path, self)
+                return LocalCollection(collection_urn, u.path, self)
             else:
                 raise ValueError(f"Cannot find local file or directory '{u.path}")
         else:
@@ -244,12 +244,31 @@ class LocalIOAdapter(IOAdapter):
 
 
 class LocalCollection(Collection):
-    def __init__(self, path: str, adapter: IOAdapter) -> None:
+    """
+    A collection class that represents a local file system directory or file.
+
+    Attributes:
+        _collection_urn (str): The URN of the collection.
+        _path (str): The path to the directory or file.
+        _adapter (IOAdapter): The IOAdapter instance used to read the directory or file.
+
+    Methods:
+        name(): Returns the name of the collection.
+        __iter__(): Returns an iterator over the files in the directory or the file itself.
+        __repr__(): Returns a string representation of the LocalCollection object.
+    """
+
+    def __init__(self, collection_urn: str, path: str, adapter: IOAdapter) -> None:
         super().__init__()
+        self._collection_urn = collection_urn
         self._path = path
         self._adapter = adapter
 
+    @property
     def name(self) -> str:
+        """
+        Returns the name of the collection URN associated with this local IO adapter.
+        """
         return self._collection_urn
 
     def __iter__(self):
@@ -263,12 +282,26 @@ class LocalCollection(Collection):
 
 
 class SingleFileIter:
+    """
+    An iterator that reads a single file from the local file system using the provided IOAdapter.
+
+    Args:
+        path (str): The path to the file to read.
+        adapter (IOAdapter): The IOAdapter to use for reading the file.
+
+    Returns:
+        An iterator that yields the contents of the file as bytes.
+    """
+
     def __init__(self, path: str, adapter: IOAdapter) -> None:
         self._path = path
         self._adapter = adapter
         self._already_served = False
 
     def __next__(self):
+        """
+        Returns the next item from the iterator. If the iterator has already served an item, raises StopIteration.
+        """
         if self._already_served:
             raise StopIteration
         else:
@@ -280,6 +313,17 @@ class SingleFileIter:
 
 
 class DirectoryIter:
+    """
+    A class that iterates over a directory and returns the contents of each file using the provided IOAdapter.
+
+    Args:
+        path (str): The path to the directory to iterate over.
+        adapter (IOAdapter): An instance of an IOAdapter to use for reading the contents of each file.
+
+    Returns:
+        The contents of each file in the directory.
+    """
+
     def __init__(self, path: str, adapter: IOAdapter) -> None:
         self._iter = Path(path).glob("*")
         self._adapter = adapter
