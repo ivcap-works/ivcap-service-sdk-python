@@ -35,14 +35,14 @@ class WritableFile(IOWritable):
         encoding=None,
         use_temp_file=False,
     ):
-        mode = "wb" if is_binary else "w"
+        self._mode = "wb" if is_binary else "w"
         if use_temp_file:
             self._file_obj = tempfile.NamedTemporaryFile(
-                mode, encoding=encoding
+                self._mode, encoding=encoding
             )  # delete after uploaded
             self._name = self._file_obj.name
         else:
-            self._file_obj = io.open(name, mode=mode, encoding=encoding)
+            self._file_obj = io.open(name, mode=self._mode, encoding=encoding)
             self._name = name
         self.cnt = 0
         self._on_close = on_close
