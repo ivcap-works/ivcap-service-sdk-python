@@ -13,6 +13,17 @@ from .io_adapter import IOReadable
 
 
 class ReadableFile(IOReadable):
+    """
+    A class representing a readable file.
+
+    Attributes:
+        _name (str): The name of the file.
+        _path (Optional[str]): The path to the file.
+        _file_obj (IO[bytes]): The file object.
+        _on_close (Optional[Callable[[IO[bytes]], None]]): A callback function to be called when the file is closed.
+        _closed (bool): A flag indicating whether the file is closed.
+    """
+
     def __init__(
         self,
         name: str,
@@ -23,8 +34,8 @@ class ReadableFile(IOReadable):
     ):
         self._name = name
         self._path = path
-        mode = "rb" if is_binary else "r"
-        self._file_obj = io.open(path, mode=mode, encoding=encoding)
+        self._mode = "rb" if is_binary else "r"
+        self._file_obj = io.open(path, mode=self._mode, encoding=encoding)
         self._on_close = on_close
         self._closed = False
 
@@ -44,6 +55,7 @@ class ReadableFile(IOReadable):
     def name(self) -> str:
         return self._name
 
+    @property
     def as_local_file(self) -> str:
         return self._path
 
@@ -84,7 +96,7 @@ class ReadableFile(IOReadable):
             if self._on_close:
                 self._on_close(f)
         except BaseException as err:
-            logger.warn(
+            logger.warning(
                 "ReadableProxyFile#close: on_close '%s' failed with '%s'",
                 self._on_close,
                 err,
@@ -98,4 +110,10 @@ class ReadableFile(IOReadable):
         )
 
     def to_json(self):
+        """
+        Returns the name of the readable file as a JSON string.
+
+        :return: A JSON string representing the name of the readable file.
+        :rtype: str
+        """
         return self._name
