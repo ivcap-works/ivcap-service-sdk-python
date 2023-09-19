@@ -14,92 +14,200 @@ class _IOBase(ABC):
     @property
     @abstractmethod
     def mode(self) -> str:
-        pass
+        """
+        Returns the I/O mode of the adapter.
+
+        :return: A string representing the I/O mode of the adapter.
+        """
 
     @property
     @abstractmethod
     def name(self) -> str:
-        pass
+        """
+        Returns the name of the IO adapter.
+
+        :return: A string representing the name of the IO adapter.
+        """
 
     @abstractmethod
     def close(self) -> None:
-        pass
+        """
+        Closes the IO adapter and releases any system resources associated with it.
+        """
 
     @property
     @abstractmethod
     def closed(self) -> bool:
-        pass
+        """
+        Returns a boolean indicating whether the IO adapter is closed or not.
+        """
 
     @abstractmethod
     def readable(self) -> bool:
-        pass
+        """
+        Returns True if the IO object is readable, False otherwise.
+        """
 
     @abstractmethod
     def seek(self, offset: int, whence: int = io.SEEK_SET) -> int:
-        pass
+        """
+        Change the stream position to the given byte offset.
+
+        :param offset: The byte offset to seek to.
+        :param whence: Optional. The reference point used to determine the new position. Defaults to io.SEEK_SET.
+        :return: The new absolute position.
+        """
 
     @abstractmethod
     def seekable(self) -> bool:
-        pass
+        """
+        Return True if the stream supports random access (i.e., if it has a seek method).
+        """
 
     @abstractmethod
     def tell(self) -> int:
-        pass
+        """
+        Returns the current position of the file pointer in the stream.
+
+        :return: The current position of the file pointer.
+        :rtype: int
+        """
 
     @abstractmethod
     def writable(self) -> bool:
-        pass
+        """
+        Returns True if the IO object is open for writing, False otherwise.
+        """
 
 
 class IOReadable(_IOBase):
+    """
+    Abstract base class for readable IO adapters.
+
+    Subclasses must implement the `urn`, `read`, `readline`, `readlines`, and `as_local_file` methods.
+    """
+
     @property
     @abstractmethod
     def urn(self) -> str:
-        pass
+        """
+        Returns the Uniform Resource Name (URN) for the input/output adapter.
+
+        :return: A string representing the URN for the adapter.
+        """
 
     @abstractmethod
     def read(self, n: int = -1) -> AnyStr:
-        pass
+        """
+        Read up to n bytes from the input stream.
+
+        Args:
+            n (int): The maximum number of bytes to read. If not specified, or negative, read until EOF.
+
+        Returns:
+            AnyStr: The data read from the input stream, as bytes or a string depending on the input mode.
+        """
 
     @abstractmethod
     def readline(self, limit: int = -1) -> AnyStr:
-        pass
+        """
+        Read and return one line from the input stream.
+
+        If limit is specified, at most limit bytes will be read.
+
+        :param limit: (optional) Maximum number of bytes to read.
+        :type limit: int
+        :return: The next line from the input stream.
+        :rtype: bytes or str
+        """
 
     @abstractmethod
     def readlines(self, hint: int = -1) -> List[AnyStr]:
-        pass
+        """
+        Read and return a list of lines from the stream.
+
+        Args:
+            hint (int): Optional. The number of bytes to read. Defaults to -1, which means to read until EOF.
+
+        Returns:
+            List[AnyStr]: A list of lines read from the stream.
+        """
 
     @property
     @abstractmethod
     def as_local_file(self) -> str:
-        pass
+        """
+        Returns the path to a local file that can be used to access the data represented by this IOAdapter.
+        """
 
 
 class IOWritable(_IOBase):
+    """
+    A base class for writable IO objects.
+
+    Subclasses must implement the abstract methods `write`, `writelines`, `truncate`, and `flush`.
+    Additionally, subclasses must implement the `urn` property, which should return a string representing
+    the unique resource identifier for the IO object.
+    """
+
     @property
     @abstractmethod
     def urn(self) -> str:
-        pass
+        """
+        Returns the Uniform Resource Name (URN) for the IO adapter.
+
+        :return: A string representing the URN for the IO adapter.
+        """
 
     @abstractmethod
     def write(self, s: AnyStr) -> int:
-        pass
+        """
+        Writes the given string to the output stream.
+
+        Args:
+            s (AnyStr): The string to write to the output stream.
+
+        Returns:
+            int: The number of characters written to the output stream.
+        """
 
     @abstractmethod
     def writelines(self, lines: List[AnyStr]) -> None:
-        pass
+        """
+        Write a list of lines to the output stream.
+
+        Args:
+            lines (List[AnyStr]): A list of lines to write to the output stream.
+
+        Returns:
+            None
+        """
 
     @abstractmethod
     def truncate(self, size: int = None) -> int:
-        pass
+        """
+        Truncates the file to the specified size (in bytes).
+
+        Args:
+            size (int, optional): The size (in bytes) to truncate the file to. If not specified, the file will be truncated to 0 bytes.
+
+        Returns:
+            int: The new size of the file (in bytes) after truncation.
+        """
 
     @abstractmethod
     def flush(self) -> None:
-        pass
+        """
+        Flushes the write buffer of the IO adapter.
+        """
 
 
 class IO_ReadWritable(IOReadable, IOWritable):
-    pass
+    """
+    A class that represents an object that can be both read from and written to.
+
+    This class inherits from the IOReadable and IOWritable classes, which provide the read and write functionality, respectively.
+    """
 
 
 class Collection(ABC):
@@ -112,16 +220,19 @@ class Collection(ABC):
     @property
     @abstractmethod
     def name(self) -> str:
-        pass
+        """
+        Returns the name of the IO adapter.
+        """
 
 
 OnCloseF = Callable[[Url], None]
 
 
 class IOAdapter(ABC):
-    # @classmethod
-    # def create_cache(cls, cache_dir: str, cache_proxy_url: str):
-    #     return None
+    """
+    Abstract base class for input/output (IO) adapters that provide a uniform interface for reading and writing artifacts
+    and metadata. Subclasses of this class must implement the abstract methods defined here.
+    """
 
     @abstractmethod
     def read_artifact(
@@ -138,22 +249,6 @@ class IOAdapter(ABC):
         Returns:
             IOReadable: The content of the artifact as a file-like object
         """
-        pass
-
-    # @abstractmethod
-    # def read_external(self, url: Url, binary_content=True, no_caching=False, seekable=False) -> IOReadable:
-    #     """Return a readable file-like object providing the content of an external data item.
-
-    #     Args:
-    #         url (Url): URL of external object to read
-    #         binary_content (bool, optional): If true content is expected to be of binary format otherwise text is expected. Defaults to True.
-    #         no_caching (bool, optional): If set, content is not cached nor read from cache. Defaults to False.
-    #         seekable (bool, optional): If true, returned readable should be seekable
-
-    #     Returns:
-    #         IOReadable: The content of the external data item as a file-like object
-    #     """
-    #     pass
 
     @abstractmethod
     def artifact_readable(self, artifact_id: str) -> bool:
@@ -165,7 +260,6 @@ class IOAdapter(ABC):
         Returns:
             bool: True if artifact can be read
         """
-        pass
 
     @abstractmethod
     def write_artifact(
@@ -192,7 +286,6 @@ class IOAdapter(ABC):
         Returns:
             IOWritable: A file-like object to write deliver artifact content - needs to be closed
         """
-        pass
 
     @abstractmethod
     def write_metadata(
@@ -211,7 +304,6 @@ class IOAdapter(ABC):
         Returns:
             str: Metadata record URN
         """
-        pass
 
     @abstractmethod
     def get_collection(self, collection_urn: str) -> Collection:
@@ -224,4 +316,3 @@ class IOAdapter(ABC):
             Collection: An instance of a collection object appropriate for
             the current context
         """
-        pass
