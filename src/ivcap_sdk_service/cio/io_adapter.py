@@ -50,10 +50,6 @@ class _IOBase(ABC):
     def writable(self) -> bool:
         pass
 
-    @abstractmethod
-    def close(self) -> None:
-        pass
-
 
 class IOReadable(_IOBase):
     @property
