@@ -5,7 +5,6 @@
 #
 from __future__ import annotations
 from argparse import Action, ArgumentTypeError
-import yaml
 import validators
 
 from .ivcap import get_config
