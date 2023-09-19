@@ -5,10 +5,8 @@
 #
 from builtins import BaseException
 from typing import IO, AnyStr, Callable, List, Optional
-import tempfile
 import io
 
-from ivcap_sdk_service.cio.utils import download
 from ..logger import sys_logger as logger
 
 from .io_adapter import IOReadable
