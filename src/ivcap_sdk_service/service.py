@@ -94,7 +94,7 @@ class Parameter(JSONWizard):
 
     def __post_init__(self):
         # 'default' is supposed to be a string
-        self.default = self._to_str(self.default)
+        self.default = self.to_str(self.default)
 
     def to_dict(self):
         d = super().to_dict()
