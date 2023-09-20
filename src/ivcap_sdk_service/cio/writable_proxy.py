@@ -4,7 +4,7 @@
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
 from builtins import BaseException
-import collections
+import collections.abc
 import sys
 from typing import AnyStr, Callable, List, Optional, Sequence, Union
 import tempfile
@@ -55,9 +55,9 @@ class WritableProxy(IOWritable):
 
         # At this stage, we first write it to a local temp file and on close, post the file
         # to 'url'
-        mode = "w+b" if is_binary else "w+"
+        self._mode = "w+b" if is_binary else "w+"
         self._file_obj = tempfile.NamedTemporaryFile(
-            mode, encoding=encoding
+            self._mode, encoding=encoding
         )  # delete after uploaded
         self.cnt = 0
         self._on_close = on_close
@@ -143,11 +143,11 @@ class WritableProxy(IOWritable):
 
         metadata = self._metadata
         if metadata:
-            if not isinstance(metadata, collections.Sequence):
+            if not isinstance(metadata, collections.abc.Sequence):
                 metadata = [metadata]
         else:
             metadata = []
-        metadataUploaded = False
+        metadata_uploaded = False
 
         # dataType = str(type(self.dataPeek))
         # ct = type2mime.get(dataType, "unknown")
@@ -159,7 +159,7 @@ class WritableProxy(IOWritable):
 
         if len(metadata) == 1 and len(metadata[0].keys()) <= 3:
             # Immediately upload simple metadata
-            metadataUploaded = True
+            metadata_uploaded = True
             headers["Upload-Metadata"] = ",".join(
                 map(lambda e: f"{e[0]} {encode64(str(e[1]))}", metadata[0].items())
             )
@@ -187,37 +187,13 @@ class WritableProxy(IOWritable):
             f"WritableProxy: created artifact '{artifactID}' of size '{size}' via '{self._storage_url}'"
         )
 
-        if not metadataUploaded and len(metadata) > 0:
+        if not metadata_uploaded and len(metadata) > 0:
             url = r.headers.get("Location")
             for md in metadata:
                 upload_metadata(
                     self._storage_url, artifactID, md, artifact_id=artifactID, url=url
                 )
         return artifactID
-
-    # def _upload_metadata(
-    #     self,
-    #     metadata: Sequence[MetaDict],
-    #     artifactID: str,
-    #     url: str,
-    # ) -> None:
-    #     for md in metadata:
-    #         headers = {
-    #             "X-Meta-Data-For-Url": url,
-    #             "X-Meta-Data-For-Artifact": artifactID,
-    #             "X-Meta-Data-Schema": md.get('$schema', '???'),
-    #             "Content-Type": "application/json",
-    #         }
-    #         try:
-    #             logger.debug("Post artifact metadata data='%s', headers:'%s'", md, headers)
-    #             payload = json_dump(md)
-    #             r = requests.post(self._storage_url, data=payload, headers=headers)
-    #         except:
-    #             logger.fatal(f"while posting metadata {self._storage_url} - {sys.exc_info()}")
-    #             sys.exit(-1)
-    #         if r.status_code >= 300:
-    #             logger.fatal(f"error response {r.status_code} while posting metadata {self._storage_url}")
-    #             sys.exit(-1)
 
     def __repr__(self):
         return f"<WritableProxy name={self._name} closed={self._closed} fp={self._file_obj}>"
@@ -231,6 +207,20 @@ def upload_metadata(
     artifact_id: str = None,
     url: str = None,
 ) -> None:
+    """
+    Uploads metadata to the specified storage URL for the given entity URN.
+
+    Args:
+        storage_url (str): The URL of the storage service to upload the metadata to.
+        entity_urn (str): The URN of the entity to associate the metadata with.
+        metadata (MetaDict): The metadata to upload.
+        artifact_id (str, optional): The ID of the artifact to associate the metadata with. Defaults to None.
+        url (str, optional): The URL to associate the metadata with. Defaults to None.
+
+    Raises:
+        SystemExit: If an error occurs while posting the metadata.
+
+    """
     headers = {
         "X-Meta-Data-For-Entity": entity_urn,
         "X-Meta-Data-Schema": metadata.get("$schema", "???"),
