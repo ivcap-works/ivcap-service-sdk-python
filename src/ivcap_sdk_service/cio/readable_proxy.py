@@ -15,6 +15,18 @@ from .io_adapter import IOReadable, IOWritable
 
 
 class ReadableProxy(IOReadable):
+    """
+    A class that provides a proxy for reading from a file-like object.
+
+    Attributes:
+        url (str): The URL of the file to read.
+        name (str): The name of the file.
+        on_close (Callable[[IO[bytes]], None]): A callback function to be called when the file is closed.
+        is_binary (bool): Whether the file is binary or not.
+        encoding (Optional[str]): The encoding of the file.
+        cache (Optional[IOWritable]): A cache to write the file contents to.
+    """
+
     def __init__(
         self,
         url: str,
@@ -52,21 +64,22 @@ class ReadableProxy(IOReadable):
     def name(self) -> str:
         return self._name
 
+    @property
     def as_local_file(self) -> str:
         self._get_file_obj()
         return self._path
 
     def writable(self) -> bool:
-        return self._writable_also
+        return False
 
     def readable(self) -> bool:
         return True
 
     def readline(self, limit: int = -1) -> AnyStr:
-        raise Exception("not implemented")
+        raise NotImplementedError("readline method is not implemented")
 
     def readlines(self, hint: int = -1) -> List[AnyStr]:
-        raise Exception("not implemented")
+        raise NotImplementedError("readlines method is not implemented")
 
     def seek(self, offset, whence=io.SEEK_SET):
         """
@@ -96,7 +109,7 @@ class ReadableProxy(IOReadable):
         if self._cache:
             n = self._cache.write(s)
             if n != len(s):
-                logger.warn("ReadableProxy#read: caching last read failed")
+                logger.warning("ReadableProxy#read: caching last read failed")
                 try:
                     self._cache.close()
                 except:
@@ -112,7 +125,9 @@ class ReadableProxy(IOReadable):
             try:
                 self._cache.close()
             except:
-                logger.warn("ReadableProxy#close: closing cache failed with '%s'", err)
+                logger.warning(
+                    "ReadableProxy#close: closing cache failed with '%s'", err
+                )
             finally:
                 self._cache = None
 
@@ -121,7 +136,7 @@ class ReadableProxy(IOReadable):
             if self._on_close:
                 self._on_close(f)
         except BaseException as err:
-            logger.warn(
+            logger.warning(
                 "ReadableProxyclose: on_close '%s' failed with '%s'",
                 self._on_close,
                 err,
@@ -130,7 +145,7 @@ class ReadableProxy(IOReadable):
             f.close()
 
     def _get_file_obj(self):
-        if self._file_obj == None:
+        if self._file_obj is None:
             self._open_file_obj()
         return self._file_obj
 
@@ -173,4 +188,10 @@ class ReadableProxy(IOReadable):
         )
 
     def to_json(self):
+        """
+        Returns the name of the current instance as a JSON string.
+
+        :return: A JSON string representing the name of the current instance.
+        :rtype: str
+        """
         return self._name
