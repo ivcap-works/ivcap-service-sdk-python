@@ -3,25 +3,32 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
+from typing import Dict, Callable, Sequence
+from argparse import ArgumentParser, ArgumentError
+from collections import namedtuple
 
 import os
 import sys
 import time
 import requests
 
-from typing import Dict, Callable, Sequence, Dict
-from argparse import ArgumentParser, ArgumentError
-from collections import namedtuple
-
-# import traceback
-
 from .ivcap import init, get_config
 from .logger import logger, sys_logger
 from .service import Service
-from .config import Command, INSIDE_ARGO, INSIDE_CONTAINER
+from .config import Command, INSIDE_ARGO
 
 
 def run(args: Dict, handler: Callable[[Dict], int]) -> int:
+    """
+    Runs the service with the given arguments and handler function.
+
+    Args:
+        args (Dict): A dictionary of arguments to pass to the handler function.
+        handler (Callable[[Dict], int]): A function that takes a dictionary of arguments and returns an integer code.
+
+    Returns:
+        int: The integer code returned by the handler function.
+    """
     sys_logger.info(f"Starting service with '{args}'")
     code = handler(args, logger)
     return code
@@ -42,11 +49,21 @@ def _print_banner(service: Service):
 
 
 def register_service(service: Service, handler: Callable[[Dict], int]):
+    """
+    Registers a service and its handler function.
+
+    Args:
+        service (Service): The service to register.
+        handler (Callable[[Dict], int]): The handler function to register.
+
+    Returns:
+        None
+    """
     if INSIDE_ARGO:
         # print banner immediately when inside the cluster
         _print_banner(service)
 
-    init(None, service.append_arguments)
+    init(argv=service.append_arguments)
     cmd = get_config().SERVICE_COMMAND
 
     if cmd == Command.SERVICE_RUN:
@@ -78,6 +95,11 @@ def register_service(service: Service, handler: Callable[[Dict], int]):
 
 
 def wait_for_data_proxy():
+    """
+    Waits for the data-proxy to be ready by checking its readiness endpoint.
+    If the data-proxy is not ready, it will retry a number of times with a delay between each retry.
+    Raises an exception if the data-proxy cannot be contacted after the retries.
+    """
     if not INSIDE_ARGO:
         return
 
@@ -101,12 +123,21 @@ def wait_for_data_proxy():
 def run_service(
     service: Service, args: Sequence[str], handler: Callable[[Dict], int]
 ) -> int:
-    ap = ArgumentParser(description=service.description)
-    # Need to wait for 3.10
-    # ap = ArgumentParser(description=service.description, exit_on_error=False)
-    service.append_arguments(ap)
-    pargs = ap.parse_args(args)
+    """
+    Runs the specified service with the given arguments and handler.
+
+    Args:
+        service (Service): The service to run.
+        args (Sequence[str]): The command-line arguments to pass to the service.
+        handler (Callable[[Dict], int]): The handler function to use for the service.
+
+    Returns:
+        int: The exit code of the service.
+    """
+    aurgument_parser = ArgumentParser(description=service.description)
+    service.append_arguments(aurgument_parser)
+    pargs = aurgument_parser.parse_args(args)
     args = vars(pargs)
-    ST = namedtuple("ServiceArgs", args.keys())
-    at = ST(**args)
-    return run(at, handler)
+    service_args_tuple = namedtuple("ServiceArgs", args.keys())
+    service_args = service_args_tuple(**args)
+    return run(service_args, handler)
