@@ -8,7 +8,7 @@ from dataclasses import dataclass
 import os
 from argparse import ArgumentParser, ArgumentTypeError
 from pathlib import Path
-from typing import MutableSequence, Dict
+from typing import MutableSequence, Callable, Dict
 import sys
 
 from enum import Enum, auto
@@ -79,6 +79,7 @@ class Config:
     def __init__(
         self,
         argv: Dict[str, str] = None,
+        modify_ap: Callable[[ArgumentParser], ArgumentParser] = None,
     ):
         prog = os.path.basename(sys.argv[0])
         if prog in ("__main__.py", "-m"):
@@ -350,7 +351,7 @@ def get_program_arguments():
     argv = []
     i = 0
     env_var = os.getenv(f"IVCAP_ENV{i}")
-    while env_var is None:
+    while env_var is not None:
         argv.append(env_var)
         i += 1
         env_var = os.getenv(f"IVCAP_ENV{i}")

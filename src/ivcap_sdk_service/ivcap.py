@@ -307,6 +307,7 @@ def get_config() -> Config:
 
 def init(
     argv: Dict[str, str] = None,
+    modify_ap: Callable[[ArgumentParser], ArgumentParser] = None,
 ):
     """
     Initializes the IVCAP SDK service.
@@ -315,7 +316,7 @@ def init(
         argv (Dict[str, str], optional): A dictionary of command line arguments. Defaults to None.
     """
     global _CONFIG
-    _CONFIG = Config(argv)
+    _CONFIG = Config(argv, modify_ap)
 
     from .savers import register_savers  # avoid circular dependencies
 

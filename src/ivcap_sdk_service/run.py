@@ -63,7 +63,7 @@ def register_service(service: Service, handler: Callable[[Dict], int]):
         # print banner immediately when inside the cluster
         _print_banner(service)
 
-    init(argv=service.append_arguments)
+    init(None, service.append_arguments)
     cmd = get_config().SERVICE_COMMAND
 
     if cmd == Command.SERVICE_RUN:
