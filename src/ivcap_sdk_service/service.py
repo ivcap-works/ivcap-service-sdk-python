@@ -3,17 +3,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
-
 from __future__ import annotations
-from dataclasses import dataclass, field
-from dataclass_wizard import JSONWizard, json_field
+
 from argparse import ArgumentParser
-from typing import List, Any
-import yaml
+from typing import Dict, List, Any
 from enum import Enum
 import os
 
-from typing import Dict
+from dataclasses import dataclass, field
+from dataclass_wizard import JSONWizard, json_field
+import yaml
+
 
 from .verifiers import (
     verify_artifact,
@@ -26,7 +26,14 @@ from .utils import read_yaml_no_dates
 
 @dataclass
 class Option:
-    """Defines one option of a `Parameter` of type `OPTION`"""
+    """
+    Defines one option of a `Parameter` of type `OPTION`.
+
+    Attributes:
+        value (str): The value of the option.
+        name (str, optional): The name of the option. Defaults to None.
+        description (str, optional): A description of the option. Defaults to None.
+    """
 
     value: str
     name: str = None
@@ -34,7 +41,17 @@ class Option:
 
 
 class Type(Enum):
-    """Enumerates the different types of service `Parameters`"""
+    """Enumerates the different types of service `Parameters`
+
+    Attributes:
+        STRING (str): Represents a string parameter type.
+        INT (str): Represents an integer parameter type.
+        FLOAT (str): Represents a float parameter type.
+        BOOL (str): Represents a boolean parameter type.
+        OPTION (str): Represents an option parameter type.
+        ARTIFACT (str): Represents an artifact parameter type.
+        COLLECTION (str): Represents a collection parameter type.
+    """
 
     STRING = "string"
     INT = "int"
@@ -47,7 +64,20 @@ class Type(Enum):
 
 @dataclass()
 class Parameter(JSONWizard):
-    """Defines a `Service` parameter"""
+    """
+    Defines a `Service` parameter.
+
+    Attributes:
+        name (str): The name of the parameter.
+        type (Type): The type of the parameter.
+        options (List[Option], optional): The list of options for the parameter. Defaults to None.
+        description (str, optional): The description of the parameter. Defaults to None.
+        default (Any, optional): The default value of the parameter. Defaults to None.
+        unit (str, optional): The unit of the parameter. Defaults to None.
+        help (str, optional): The help text for the parameter. Defaults to None.
+        optional (bool, optional): Whether the parameter is optional. Defaults to False.
+        constant (bool, optional): Whether the parameter is constant. Defaults to False.
+    """
 
     class _(JSONWizard.Meta):
         skip_defaults = True
@@ -72,16 +102,26 @@ class Parameter(JSONWizard):
             d["optional"] = True
         return d
 
-    def _to_str(self, v):
-        if v != None and type(v) != str:
-            return str(v)
-        else:
-            return v
+    def to_str(self, value):
+        """
+        Converts the given value to a string representation.
+
+        Args:
+            value: The value to convert.
+
+        Returns:
+            The string representation of the value.
+        """
+        return str(value) if value is not None and not isinstance(value, str) else value
 
 
 @dataclass
 class Workflow(JSONWizard):
-    """Defines the workflow associated with a `Service`"""
+    """Defines the workflow associated with a `Service`
+
+    Attributes:
+        type (str): The type of the workflow.
+    """
 
     class _(JSONWizard.Meta):
         skip_defaults = False
@@ -125,12 +165,18 @@ class PythonWorkflow(BasicWorkflow):
 
     @classmethod
     def def_workflow(cls):
+        """
+        Creates a new instance of the Workflow class.
+
+        :param cls: The Workflow class.
+        :return: A new instance of the Workflow class.
+        """
         return cls()
 
     def to_dict(self):
-        d = super().to_dict()
-        d["basic"]["command"] = ["python", self.script]
-        return d
+        service_dict = super().to_dict()
+        service_dict["basic"]["command"] = ["python", self.script]
+        return service_dict
 
 
 @dataclass
@@ -165,20 +211,49 @@ class Service(JSONWizard):
 
     @classmethod
     def from_file(cls, serviceFile: str) -> None:
+        """
+        Create a Service object from a YAML file.
+
+        Args:
+            serviceFile (str): The path to the YAML file.
+
+        Returns:
+            None
+        """
         pd = read_yaml_no_dates(serviceFile)
         return cls.from_dict(pd)
 
     # this function is NOT calling the 'to_dict' of referenced JSONWizard classes
     def to_dict(self):
-        d = super().to_dict()
-        d["parameters"] = list(map(lambda p: p.to_dict(), self.parameters))
-        d["workflow"] = self.workflow.to_dict()
-        return d
+        """
+        Converts the current Service object to a dictionary representation.
+
+        Returns:
+            dict: A dictionary representation of the Service object.
+        """
+        service_dict = super().to_dict()
+        service_dict["parameters"] = list(map(lambda p: p.to_dict(), self.parameters))
+        service_dict["workflow"] = self.workflow.to_dict()
+        return service_dict
 
     def to_yaml(self) -> str:
+        """
+        Convert the current object to a YAML string representation.
+
+        :return: A string containing the YAML representation of the object.
+        """
         return yaml.dump(self.to_dict(), default_flow_style=False)
 
-    def append_arguments(self, ap: ArgumentParser) -> ArgumentParser:
+    def append_arguments(self, argument_parser: ArgumentParser) -> ArgumentParser:
+        """
+        Appends arguments to the given ArgumentParser object based on the parameters defined in the service.
+
+        Args:
+            ap (ArgumentParser): The ArgumentParser object to which the arguments will be appended.
+
+        Returns:
+            ArgumentParser: The updated ArgumentParser object.
+        """
         type2type = {
             Type.STRING: str,
             Type.INT: int,
@@ -234,5 +309,6 @@ class Service(JSONWizard):
                 # optionals.append(name)
             if p.constant or p.default:
                 args["required"] = False
-            ap.add_argument(f"--{name}", **args)
-        return ap
+            argument_parser.add_argument(f"--{name}", **args)
+
+        return argument_parser
