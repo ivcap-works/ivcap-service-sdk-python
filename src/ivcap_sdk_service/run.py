@@ -87,9 +87,11 @@ def register_service(service: Service, handler: Callable[[Dict], int]):
     elif cmd == Command.SERVICE_FILE:
         print(service.to_yaml())
     elif cmd == Command.SERVICE_HELP:
-        ap = ArgumentParser(description=service.description, add_help=False)
-        service.append_arguments(ap)
-        ap.print_help()
+        argument_parser = ArgumentParser(
+            description=service.description, add_help=False
+        )
+        service.append_arguments(argument_parser)
+        argument_parser.print_help()
     else:
         sys_logger.error(f"Unexpected command '{cmd}'")
 
