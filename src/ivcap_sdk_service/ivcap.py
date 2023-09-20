@@ -8,7 +8,6 @@ from __future__ import annotations
 #
 # Helper funtions to interface with CSE services
 #
-from argparse import ArgumentParser
 from typing import Callable, Dict, Any, Optional, Sequence, Union, cast
 from typing_extensions import deprecated
 
@@ -55,6 +54,20 @@ def deliver_data(
     seekable=False,
     on_close: Optional[OnCloseF] = None,
 ) -> str:
+    """
+    Publishes an artifact with the given name, data, mime type, and metadata.
+
+    Args:
+        name (str): The name of the artifact.
+        data_or_lambda (Union[Any, Callable[[IOWritable], None]]): The data to publish, or a lambda function that writes the data to an IOWritable object.
+        mime_type (Union[str, SupportedMimeTypes]): The MIME type of the data.
+        metadata (Optional[Union[MetaDict, Sequence[MetaDict]]], optional): Metadata associated with the artifact. Defaults to None.
+        seekable (bool, optional): Whether the data is seekable. Defaults to False.
+        on_close (Optional[OnCloseF], optional): A function to call when the artifact is closed. Defaults to None.
+
+    Returns:
+        str: The ID of the published artifact.
+    """
     publish_artifact(
         name,
         data_or_lambda,
@@ -242,6 +255,13 @@ def get_node_id():
 
 
 class ExitException(Exception):
+    """
+    Exception raised when the program needs to exit with a message.
+
+    Attributes:
+        msg (str): The message to display when the exception is raised.
+    """
+
     def __init__(self, msg):
         self.msg = msg
 
@@ -273,6 +293,12 @@ def notify(msg, schema=None):
 
 
 def get_config() -> Config:
+    """
+    Returns the current configuration for the IVCAP SDK service.
+
+    Returns:
+        Config: The current configuration for the IVCAP SDK service.
+    """
     return _CONFIG
 
 
@@ -281,10 +307,15 @@ def get_config() -> Config:
 
 def init(
     argv: Dict[str, str] = None,
-    modify_ap: Callable[[ArgumentParser], ArgumentParser] = None,
 ):
+    """
+    Initializes the IVCAP SDK service.
+
+    Args:
+        argv (Dict[str, str], optional): A dictionary of command line arguments. Defaults to None.
+    """
     global _CONFIG
-    _CONFIG = Config(argv, modify_ap)
+    _CONFIG = Config(argv)
 
     from .savers import register_savers  # avoid circular dependencies
 
