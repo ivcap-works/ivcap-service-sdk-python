@@ -14,37 +14,58 @@ from ..itypes import Url
 
 
 def download(url: Url, fhdl: BinaryIO, chunk_size=None, close_fhdl=True) -> str:
-    cacheID = None
+    """
+    Downloads the content of the given URL and writes it to the given file handle.
+
+    Args:
+        url (str): The URL to download.
+        fhdl (BinaryIO): The file handle to write the downloaded content to.
+        chunk_size (int, optional): The size of the chunks to download the content in. Defaults to None.
+        close_fhdl (bool, optional): Whether to close the file handle after writing the content to it. Defaults to True.
+
+    Returns:
+        str: The cache ID of the downloaded content, if available.
+    """
+    cache_id = None
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
         ct = r.headers.get("Content-Type")
-        cacheID = r.headers.get("X-Cache-Id")
+        cache_id = r.headers.get("X-Cache-Id")
         logger.debug(f"cio#download: request {r} - {ct} - {r.headers}")
 
-        # if ct:
-        #     cname = f"{cname}.{ct.replace('/', '.')}"
-        # (fh, path) = self.cacheIO.get_fd(cname)
-        # logger.info(f"Downloading {url} to cache {path}")
-
-        for chunk in r.iter_content(chunk_size=chunk_size):  # 8192):
-            # logger.info(f"chunk {chunk}")
-            # If you have chunk encoded response uncomment if
-            # and set chunk_size parameter to None.
-            # if chunk:
+        for chunk in r.iter_content(chunk_size=chunk_size):
             fhdl.write(chunk)
     fhdl.flush()
     if close_fhdl:
         fhdl.close()
-    return cacheID
+    return cache_id
 
 
-def get_cache_name(url: Url) -> str:
+def get_cache_name(url: str) -> str:
+    """
+    Returns a unique cache name for the given URL.
+
+    Args:
+        url (str): The URL to generate a cache name for.
+
+    Returns:
+        str: A unique cache name for the given URL.
+    """
     name = re.search(".*/([^/]+)", url)[1]
     encoded_name = f"{sha256(url.encode('utf-8')).hexdigest()}-{name}"
     return encoded_name
 
 
 def encode64(s: str) -> str:
+    """
+    Encodes a string to base64.
+
+    Args:
+        s (str): The string to be encoded.
+
+    Returns:
+        str: The base64-encoded string.
+    """
     sb = s.encode("ascii")
     ba = base64.b64encode(sb)
     return ba.decode("ascii")
