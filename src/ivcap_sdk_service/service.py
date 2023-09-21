@@ -14,7 +14,6 @@ from dataclasses import dataclass, field
 from dataclass_wizard import JSONWizard, json_field
 import yaml
 
-
 from .verifiers import (
     verify_artifact,
     verify_collection,
@@ -60,6 +59,78 @@ class Type(Enum):
     OPTION = "option"
     ARTIFACT = "artifact"
     COLLECTION = "collection"
+
+
+class Arguments:
+    """
+    A utility class for building command-line arguments based on a given parameter.
+    """
+
+    def build(self, parameter) -> Dict[str, Any]:
+        """
+        Builds command-line arguments based on a given parameter.
+
+        Args:
+            parameter: A parameter object containing information about the argument.
+
+        Returns:
+            A dictionary containing the arguments for the command-line.
+        """
+        type2type = {
+            Type.STRING: str,
+            Type.INT: int,
+            Type.FLOAT: float,
+            Type.BOOL: bool,
+        }
+
+        args: Dict[str, Any] = dict(required=True)
+
+        if parameter.type == Type.OPTION:
+            ca = list(map(lambda o: o.value, parameter.options))
+            args["choices"] = ca
+        elif parameter.type == Type.ARTIFACT:
+            args["type"] = verify_artifact
+            args["metavar"] = "URN"
+            args["action"] = ArtifactAction
+        elif parameter.type == Type.COLLECTION:
+            args["type"] = verify_collection
+            args["metavar"] = "URN"
+            args["action"] = CollectionAction
+        elif parameter.type == Type.BOOL:
+            args["action"] = "store_true"
+            args["required"] = False
+        else:
+            # BEGIN: simplified_ed8c6549bwf9
+            if not isinstance(parameter.type, Type):
+                raise ValueError(
+                    f"Wrong type declaration for '{parameter.name}' - use enum 'Type'"
+                )
+
+            t = type2type.get(parameter.type)
+            if not t:
+                raise ValueError(
+                    f"Unsupported type '{parameter.type}' for '{parameter.name}'"
+                )
+            # END: simplified_ed8c6549bwf9
+            args["type"] = t
+            args["metavar"] = parameter.type.name.upper()
+
+        if parameter.default:
+            args["default"] = parameter.default
+
+        if parameter.description:
+            if parameter.default:
+                args["help"] = f"{parameter.description} [{parameter.default}]"
+            else:
+                args["help"] = f"{parameter.description}"
+
+        if parameter.optional:
+            args["required"] = not parameter.optional
+        # wut?
+        if parameter.constant or parameter.default:
+            args["required"] = False
+
+        return args
 
 
 @dataclass()
@@ -254,61 +325,22 @@ class Service(JSONWizard):
         Returns:
             ArgumentParser: The updated ArgumentParser object.
         """
-        type2type = {
-            Type.STRING: str,
-            Type.INT: int,
-            Type.FLOAT: float,
-            Type.BOOL: bool,
-        }
-        # optionals = []
-        for p in self.parameters:
-            if not (p.name and p.type):
-                raise Exception(
-                    f"A service parameter needs at least a name and a type - {p}"
-                )
-            name = p.name
-            if name.startswith("cre:") or name.startswith("ivcap:"):
-                continue
-            args: Dict[str, Any] = dict(required=True)
-            if p.type == Type.OPTION:
-                ca = list(map(lambda o: o.value, p.options))
-                args["choices"] = ca
-            elif p.type == Type.ARTIFACT:
-                args["type"] = verify_artifact
-                args["metavar"] = "URN"
-                args["action"] = ArtifactAction
-                pass
-            elif p.type == Type.COLLECTION:
-                args["type"] = verify_collection
-                args["metavar"] = "URN"
-                args["action"] = CollectionAction
-                pass
-            elif p.type == Type.BOOL:
-                args["action"] = "store_true"
-                args["required"] = False
-            else:
-                if not type(p.type) == Type:
-                    raise Exception(
-                        f"Wrong type declaration for '{name}' - use enum 'Type'"
-                    )
 
-                t = type2type.get(p.type)
-                if not t:
-                    raise Exception(f"Unsupported type '{p.type}' for '{name}'")
-                args["type"] = t
-                args["metavar"] = p.type.name.upper()
-            if p.default:
-                args["default"] = p.default
-            if p.description:
-                if p.default:
-                    args["help"] = f"{p.description} [{p.default}]"
-                else:
-                    args["help"] = f"{p.description}"
-            if p.optional:
-                args["required"] = not p.optional
-                # optionals.append(name)
-            if p.constant or p.default:
-                args["required"] = False
-            argument_parser.add_argument(f"--{name}", **args)
+        argument_builder = Arguments()
+        for parameter in self.parameters:
+            if not (parameter.name or parameter.type):
+                raise ValueError(
+                    f"Service parameter '{parameter}' is missing a name or type"
+                )
+
+            if parameter.name.startswith(("cre:", "ivcap:")):
+                continue
+
+            try:
+                args = argument_builder.build(parameter)
+            except ValueError as err:
+                raise ValueError("An error occurred: {}".format(str(err))) from err
+
+            argument_parser.add_argument(f"--{parameter.name}", **args)
 
         return argument_parser
