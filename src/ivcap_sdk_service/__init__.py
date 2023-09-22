@@ -26,4 +26,4 @@ from .service import Service, Parameter, Option, Type
 from .service import Workflow, BasicWorkflow, PythonWorkflow
 
 from .cio.io_adapter import IOAdapter, OnCloseF, IOWritable, IOReadable
-from .itypes import MissingParameterValue, UnsupportedMimeType, SupportedMimeTypes, ServiceArgs
+from .itypes import MissingParameterValue, UnsupportedMimeType, SupportedMimeTypes, ServiceArgs, MetaDict

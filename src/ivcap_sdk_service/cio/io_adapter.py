@@ -59,6 +59,11 @@ class IOReadable(_IOBase):
     def urn(self) -> str:
         pass
     
+    @property
+    @abstractmethod
+    def mime_type(self) -> str:
+        pass
+    
     @abstractmethod
     def read(self, n: int = -1) -> AnyStr:
         pass

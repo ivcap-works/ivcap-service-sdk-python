@@ -13,6 +13,8 @@ from typing import Optional
 from os import access, R_OK
 from os.path import isfile, join
 from urllib.parse import urlparse
+import time
+
 from .readable_file import ReadableFile
 
 from .readable_proxy import ReadableProxy
@@ -179,6 +181,7 @@ class LocalIOAdapter(IOAdapter):
             IOReadable: The content of the local file as a file-like object
         """
         path = self._to_path(self.in_dir, name, collection_name)
+        name = os.path.basename(path)
         return ReadableFile(name, path, is_binary=binary_content)
 
     def _to_path(self, prefix: str, name: str, collection_name: str = None) -> str:
@@ -200,9 +203,13 @@ class LocalIOAdapter(IOAdapter):
         schema: str, # URN
         metadata: MetaDict,
     ) -> str:
-        e = os.path.basename(f"{entity_id}:{schema}.json")
-        if not e.startswith("urn"):
-            e = f"urn:{e}"
+        if entity_id == 'urn:ivcap:order:00000000-0000-0000-0000-000000000000':
+            # debug mode
+            e = os.path.basename(f"{schema}.{time.time()}.json")
+        else:
+            e = os.path.basename(f"{entity_id}:{schema}.json")
+            if not e.startswith("urn"):
+                e = f"urn:{e}"
         fname = self._to_path(self.out_dir, e)
         json_dump(metadata, fname)
         return e
