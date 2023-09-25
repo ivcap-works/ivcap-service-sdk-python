@@ -349,19 +349,24 @@ def test_build_argument_with_wrong_type_declaration():
         arguments.build(parameter)
 
 
-def test_build_argument_with_unsupported_type():
-    """
-    Test that an exception is raised when a parameter is defined with a wrong type declaration.
-    """
-    parameter = Parameter(
-        name="A name",
-        type=bytes,
-        default=100,
-        optional=True,
-    )
-
-    arguments = Arguments()
-    with pytest.raises(
-        ValueError, match=f"Unsupported type '{parameter.type}' for '{parameter.name}'"
-    ):
-        arguments.build(parameter)
+#
+# NOTE: This test is commented out as it is not *currently* possible to get to a scenario
+#       where we have an unsupported type. The parameter type is checked when the service
+#       is created. The only way to get to this scenario is to add a custome type to
+#       class `Type` and forget to add it to the `action_map` in the `Arguments` class.
+# def test_build_argument_with_unsupported_type():
+#     """
+#     Test that an exception is raised when a parameter is defined with a wrong type declaration.
+#     """
+#     parameter = Parameter(
+#         name="A name",
+#         type=None,
+#         default=100,
+#         optional=True,
+#     )
+#
+#     arguments = Arguments()
+#     with pytest.raises(
+#         ValueError, match=f"Unsupported type '{parameter.type}' for '{parameter.name}'"
+#     ):
+#         arguments.build(parameter)
