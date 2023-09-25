@@ -76,6 +76,11 @@ class Arguments:
         Returns:
             A dictionary containing the arguments for the command-line.
         """
+        if not isinstance(parameter.type, Type):
+            raise ValueError(
+                f"Wrong type declaration for '{parameter.name}' - use enum 'Type'"
+            )
+
         type2type = {
             Type.STRING: str,
             Type.INT: int,
@@ -83,36 +88,42 @@ class Arguments:
             Type.BOOL: bool,
         }
 
-        args: Dict[str, Any] = dict(required=True)
-
-        if parameter.type == Type.OPTION:
-            ca = list(map(lambda o: o.value, parameter.options))
-            args["choices"] = ca
-        elif parameter.type == Type.ARTIFACT:
-            args["type"] = verify_artifact
-            args["metavar"] = "URN"
-            args["action"] = ArtifactAction
-        elif parameter.type == Type.COLLECTION:
-            args["type"] = verify_collection
-            args["metavar"] = "URN"
-            args["action"] = CollectionAction
-        elif parameter.type == Type.BOOL:
-            args["action"] = "store_true"
-            args["required"] = False
-        else:
-            # BEGIN: simplified_ed8c6549bwf9
-            if not isinstance(parameter.type, Type):
-                raise ValueError(
-                    f"Wrong type declaration for '{parameter.name}' - use enum 'Type'"
+        action_map = {
+            Type.OPTION: {
+                "choices": list(
+                    map(
+                        lambda o: o.value,
+                        parameter.options if parameter.options else [],
+                    )
                 )
+            },
+            Type.ARTIFACT: {
+                "type": verify_artifact,
+                "metavar": "URN",
+                "action": ArtifactAction,
+            },
+            Type.COLLECTION: {
+                "type": verify_collection,
+                "metavar": "URN",
+                "action": CollectionAction,
+            },
+            Type.BOOL: {
+                "action": "store_true",
+                "required": False,
+            },
+        }
 
-            t = type2type.get(parameter.type)
-            if not t:
+        args: Dict[str, Any] = dict(required=True)
+        param_type_action = action_map.get(parameter.type)
+        if param_type_action:
+            args.update(param_type_action)
+        else:
+            parameter_type = type2type.get(parameter.type)
+            if not parameter_type:
                 raise ValueError(
                     f"Unsupported type '{parameter.type}' for '{parameter.name}'"
                 )
-            # END: simplified_ed8c6549bwf9
-            args["type"] = t
+            args["type"] = parameter_type
             args["metavar"] = parameter.type.name.upper()
 
         if parameter.default:
@@ -126,7 +137,7 @@ class Arguments:
 
         if parameter.optional:
             args["required"] = not parameter.optional
-        # wut?
+        # wut???? elif maybe?
         if parameter.constant or parameter.default:
             args["required"] = False
 
