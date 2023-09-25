@@ -137,8 +137,7 @@ class Arguments:
 
         if parameter.optional:
             args["required"] = not parameter.optional
-        # wut???? elif maybe?
-        if parameter.constant or parameter.default:
+        elif parameter.constant or parameter.default:
             args["required"] = False
 
         return args
