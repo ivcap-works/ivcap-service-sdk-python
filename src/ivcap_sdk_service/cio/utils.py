@@ -13,32 +13,33 @@ from ..logger import sys_logger as logger
 from ..itypes import Url
 
 
-def download(url: Url, fhdl: BinaryIO, chunk_size=None, close_fhdl=True) -> str:
+def download(url: Url, fhdl: BinaryIO, chunk_size=None, close_fhdl=True) -> (str, str):
     """
-    Downloads the content of the given URL and writes it to the given file handle.
+    Downloads the content from the given URL and writes it to the given file handle.
 
     Args:
-        url (str): The URL to download.
+        url (Url): The URL to download the content from.
         fhdl (BinaryIO): The file handle to write the downloaded content to.
         chunk_size (int, optional): The size of the chunks to download the content in. Defaults to None.
-        close_fhdl (bool, optional): Whether to close the file handle after writing the content to it. Defaults to True.
+        close_fhdl (bool, optional): Whether to close the file handle after writing the content. Defaults to True.
 
     Returns:
-        str: The cache ID of the downloaded content, if available.
+        Tuple[str, str]: A tuple containing the content type of the downloaded content and the cache ID of the response.
     """
     cache_id = None
+    content_type = None
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
-        ct = r.headers.get("Content-Type")
+        content_type = r.headers.get("Content-Type")
         cache_id = r.headers.get("X-Cache-Id")
-        logger.debug(f"cio#download: request {r} - {ct} - {r.headers}")
+        logger.debug(f"cio#download: request {r} - {content_type} - {r.headers}")
 
         for chunk in r.iter_content(chunk_size=chunk_size):
             fhdl.write(chunk)
     fhdl.flush()
     if close_fhdl:
         fhdl.close()
-    return cache_id
+    return (content_type, cache_id)
 
 
 def get_cache_name(url: str) -> str:

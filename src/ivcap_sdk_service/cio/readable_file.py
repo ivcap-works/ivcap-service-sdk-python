@@ -5,6 +5,7 @@
 #
 from builtins import BaseException
 from typing import IO, AnyStr, Callable, List, Optional
+import filetype
 import io
 
 from ..logger import sys_logger as logger
@@ -54,6 +55,14 @@ class ReadableFile(IOReadable):
     @property
     def name(self) -> str:
         return self._name
+
+    @property
+    def mime_type(self) -> str:
+        kind = filetype.guess(self._path)
+        if kind is None:
+            return "unknown"
+        else:
+            return kind.mime
 
     @property
     def as_local_file(self) -> str:

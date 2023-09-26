@@ -18,6 +18,7 @@ from .itypes import (
     UnsupportedMimeType,
     SupportedMimeTypes,
     ServiceArgs,
+    MetaDict,
 )
 
 

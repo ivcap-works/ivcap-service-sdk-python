@@ -323,7 +323,9 @@ class Service(JSONWizard):
 
         :return: A string containing the YAML representation of the object.
         """
-        return yaml.dump(self.to_dict(), default_flow_style=False)
+        as_dict = self.to_dict()
+        as_yaml = yaml.dump(as_dict, default_flow_style=False, default_style='"')
+        return as_yaml
 
     def append_arguments(self, argument_parser: ArgumentParser) -> ArgumentParser:
         """

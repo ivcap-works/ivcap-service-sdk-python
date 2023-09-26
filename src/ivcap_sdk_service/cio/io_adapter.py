@@ -96,6 +96,15 @@ class IOReadable(_IOBase):
         :return: A string representing the URN for the adapter.
         """
 
+    @property
+    @abstractmethod
+    def mime_type(self) -> str:
+        """
+        Returns the MIME type of the data being read or written by the adapter.
+
+        :return: A string representing the MIME type of the data.
+        """
+
     @abstractmethod
     def read(self, n: int = -1) -> AnyStr:
         """
