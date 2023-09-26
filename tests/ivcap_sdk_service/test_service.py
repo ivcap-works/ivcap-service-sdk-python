@@ -12,6 +12,10 @@ from ivcap_sdk_service.service import (
 
 from ivcap_sdk_service.verifiers import CollectionAction
 
+# ....................................................#
+# ........ This section tests the Service class.......#
+# ....................................................#
+
 
 def test_append_all_arguments():
     service = Service(
@@ -370,3 +374,55 @@ def test_build_argument_with_wrong_type_declaration():
 #         ValueError, match=f"Unsupported type '{parameter.type}' for '{parameter.name}'"
 #     ):
 #         arguments.build(parameter)
+
+
+# ....................................................#
+# ....... This section tests the Parameter class......#
+# ....................................................#
+def test_parameter_creation():
+    param = Parameter(name="test_param", type=Type.STRING, description="Test parameter")
+    assert param.name == "test_param"
+    assert param.type == Type.STRING
+    assert param.description == "Test parameter"
+    assert param.default is None
+    assert param.unit is None
+    assert param.help is None
+    assert param.optional is False
+    assert param.constant is False
+
+
+def test_parameter_creation_with_options():
+    options = [Option(value="option1"), Option(value="option2")]
+    param = Parameter(name="test_param", type=Type.OPTION, options=options)
+    assert param.name == "test_param"
+    assert param.type == Type.OPTION
+    assert param.options == options
+    assert param.description is None
+    assert param.default is None
+    assert param.unit is None
+    assert param.help is None
+    assert param.optional is False
+    assert param.constant is False
+
+
+def test_parameter_to_dict():
+    param = Parameter(
+        name="test_param", type=Type.BOOL, description="Test parameter", default=False
+    )
+    param_dict = param.to_dict()
+    assert param_dict["name"] == "test_param"
+    assert param_dict["type"] == "bool"
+    assert param_dict["description"] == "Test parameter"
+    assert param_dict["default"] == "False"
+
+    assert "constant" not in param_dict
+    assert "optional" not in param_dict
+    assert "unit" not in param_dict
+    assert "help" not in param_dict
+
+
+def test_parameter_to_str():
+    param = Parameter(name="test_param", type=Type.STRING, default=123)
+    assert param.to_str(123) == "123"
+    assert param.to_str("test") == "test"
+    assert param.to_str(None) is None
