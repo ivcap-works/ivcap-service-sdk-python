@@ -446,3 +446,23 @@ def test_basic_workflow():
             "memory": {"request": "1Gi"},
         },
     }
+
+
+# ....................................................#
+# .... This section tests the PythonWorkflow class....#
+# ....................................................#
+def test_python_workflow():
+    workflow = PythonWorkflow(script="/primitive/service.py", min_memory="2Gi")
+    assert workflow.type == "basic"
+    assert workflow.image == "@CONTAINER@"
+    assert workflow.script == "/primitive/service.py"
+    assert workflow.min_memory == "2Gi"
+    print(workflow.to_dict())
+    assert workflow.to_dict() == {
+        "type": "basic",
+        "basic": {
+            "command": ["python", "/primitive/service.py"],
+            "image": "@CONTAINER@",
+            "memory": {"request": "2Gi"},
+        },
+    }
