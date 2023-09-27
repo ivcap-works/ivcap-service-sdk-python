@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 from ivcap_sdk_service.service import (
     Service,
     Parameter,
+    BasicWorkflow,
     PythonWorkflow,
     Type,
     Option,
@@ -426,3 +427,22 @@ def test_parameter_to_str():
     assert param.to_str(123) == "123"
     assert param.to_str("test") == "test"
     assert param.to_str(None) is None
+
+
+# ....................................................#
+# ..... This section tests the BasicWorkflow class....#
+# ....................................................#
+def test_basic_workflow():
+    workflow = BasicWorkflow(command=["/bin/bash"], min_memory="1Gi")
+    assert workflow.type == "basic"
+    assert workflow.image == "@CONTAINER@"
+    assert workflow.command == ["/bin/bash"]
+    assert workflow.min_memory == "1Gi"
+    assert workflow.to_dict() == {
+        "type": "basic",
+        "basic": {
+            "command": ["/bin/bash"],
+            "image": "@CONTAINER@",
+            "memory": {"request": "1Gi"},
+        },
+    }
