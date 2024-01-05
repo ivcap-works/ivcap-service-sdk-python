@@ -15,6 +15,8 @@ import os
 
 from typing import Dict
 
+from ivcap_sdk_service.itypes import URN
+
 from .verifiers import verify_artifact, verify_collection, ArtifactAction, CollectionAction
 from .utils import read_yaml_no_dates
 
@@ -30,6 +32,7 @@ class Type(Enum):
     """Enumerates the different types of service `Parameters`
     """
     STRING = 'string'
+    URN = 'urn'
     INT = 'int'
     FLOAT = 'float'
     BOOL = 'bool'
@@ -180,6 +183,7 @@ class Service(JSONWizard):
     def append_arguments(self, ap: ArgumentParser) -> ArgumentParser:
         type2type = {
             Type.STRING: str,
+            Type.URN: URN,
             Type.INT: int,
             Type.FLOAT: float,
             Type.BOOL: bool,
