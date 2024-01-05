@@ -213,9 +213,9 @@ class LocalIOAdapter(IOAdapter):
             e = os.path.basename(fn)
         else:
             if name:
-                fn = f"{name}.json"
+                fn = f"urn:ivcap:aspect#{name}.json"
             else:
-                fn = f"{entity_id}:{schema}.json"
+                fn = f"urn:ivcap:aspect#{entity_id}--{schema}.json"
             e = os.path.basename(fn)
             if not e.startswith("urn"):
                 e = f"urn:{e}"

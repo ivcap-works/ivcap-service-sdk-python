@@ -8,6 +8,7 @@ from typing import Dict, NamedTuple, Optional, Union
 from numbers import Number
 
 SCHEMA_KEY = '$schema'
+ENTITY_KEY = '$entiy'
 
 class SupportedMimeTypes(Enum):
     NETCDF = 'application/netcdf'
