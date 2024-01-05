@@ -211,6 +211,7 @@ def upload_metadata(
     *,
     artifact_id: str = None,
     url: str = None,
+    name: str = None,
 ) -> None:
     headers = {
         "X-Meta-Data-For-Entity": entity_urn,
@@ -221,7 +222,8 @@ def upload_metadata(
         headers["X-Meta-Data-For-Artifact"] = artifact_id
     if url:
         headers["X-Meta-Data-For-Url"] = url
-
+    if name:
+        headers["X-Name"] = name
     try:
         logger.debug("Post artifact metadata data='%s', headers:'%s'", metadata, headers)
         payload = json_dump(metadata)

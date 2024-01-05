@@ -84,6 +84,7 @@ class IvcapIOAdapter(IOAdapter):
         Returns:
             IOReadable: The content of the external data item as a file-like object
         """
+        name = url
         if no_caching:
             curl = url
         else:
@@ -91,7 +92,13 @@ class IvcapIOAdapter(IOAdapter):
                 curl = url
             else:
                 curl = self.cachable_url(url)
-        ior = ReadableProxy(curl, name=url, is_binary=binary_content)
+        r = requests.head(curl)
+        if r.status_code >= 400:
+            raise Exception(f"cannot get HEAD of {curl}")
+        n = r.headers.get('X-Artifact-Id')
+        if n:
+            name = n
+        ior = ReadableProxy(curl, name=name, is_binary=binary_content)
         return ior
 
     def artifact_readable(self, artifact_id: str) -> bool:
@@ -146,10 +153,11 @@ class IvcapIOAdapter(IOAdapter):
         entity_id: str, # URN
         schema: str, # URN
         metadata: MetaDict,
+        name: Optional[str] = None,
     ) -> str:
         if schema:
             metadata[SCHEMA_KEY] = schema
-        return upload_metadata(self.storage_url, entity_id, metadata)
+        return upload_metadata(self.storage_url, entity_id, metadata, name=name)
 
     def readable_local(self, name: str, collection_name: str = None) -> bool:
         """Return true if file exists and is readable. If 'name' starts with a '/'
@@ -202,7 +210,12 @@ class IvcapCollection(Collection):
         self._collection_urn = collection_urn
         self._adapter = adapter
 
+    @property
     def name(self) -> str:
+        return self._collection_urn
+
+    @property
+    def urn(self) -> str:
         return self._collection_urn
 
     def __iter__(self):
@@ -246,7 +259,7 @@ class IvcapCollectionIter:
             art_urn = h["Location"]
             self._ack_token = h["X-Ack-Token"]
             a = self._adapter.read_external(art_urn)
-            a.as_local_file()
+            #a.as_local_file()
             return a 
         logger.fatal(f"error response {r.status_code} while checking queue {self._urn}")
         sys.exit(-1)

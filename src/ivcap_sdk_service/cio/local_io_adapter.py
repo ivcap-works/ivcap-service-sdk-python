@@ -202,12 +202,21 @@ class LocalIOAdapter(IOAdapter):
         entity_id: str, # URN
         schema: str, # URN
         metadata: MetaDict,
+        name: Optional[str] = None,
     ) -> str:
         if entity_id == 'urn:ivcap:order:00000000-0000-0000-0000-000000000000':
             # debug mode
-            e = os.path.basename(f"{schema}.{time.time()}.json")
+            if name:
+                fn = f"{name}.{time.time()}.json"
+            else:
+                fn = f"{schema}.{time.time()}.json"
+            e = os.path.basename(fn)
         else:
-            e = os.path.basename(f"{entity_id}:{schema}.json")
+            if name:
+                fn = f"{name}.json"
+            else:
+                fn = f"{entity_id}:{schema}.json"
+            e = os.path.basename(fn)
             if not e.startswith("urn"):
                 e = f"urn:{e}"
         fname = self._to_path(self.out_dir, e)
@@ -233,9 +242,14 @@ class LocalCollection(Collection):
         super().__init__()
         self._path = path
         self._adapter = adapter
-        
+    
+    @property
     def name(self) -> str:
-        return self._collection_urn
+        return os.path.basename(self._path)
+
+    @property
+    def urn(self) -> str:
+        return f"urn:file://{self._path}"
     
     def __iter__(self):
         if os.path.isfile(self._path):

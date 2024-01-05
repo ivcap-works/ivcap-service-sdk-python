@@ -20,6 +20,11 @@ class _IOBase(ABC):
     def name(self) -> str:
         pass
 
+    @property
+    @abstractmethod
+    def urn(self) -> str:
+        pass
+
     @abstractmethod
     def close(self) -> None:
         pass
