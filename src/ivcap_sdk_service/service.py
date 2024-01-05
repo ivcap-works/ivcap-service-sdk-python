@@ -18,6 +18,7 @@ from typing import Dict
 from ivcap_sdk_service.itypes import URN
 
 from .verifiers import verify_artifact, verify_collection, ArtifactAction, CollectionAction
+from .verifiers import verify_aspect, AspectAction
 from .utils import read_yaml_no_dates
 
 @dataclass
