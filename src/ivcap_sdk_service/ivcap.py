@@ -18,8 +18,6 @@ from .config import Config
 from .itypes import MetaDict, MissingSchemaDeclaration, SupportedMimeTypes, Url 
 from .itypes import MissingParameterValue, UnsupportedMimeType, SCHEMA_KEY
 
-
-
 DELIVERED = []
 _CONFIG: Config = None # only use internally and only after calling init()
 
@@ -41,21 +39,6 @@ _CLASS2MIME_TYPE = {
 _MIME_TYPE2SAVER: Dict[str, SaverF] = {
     # NETCDF_MT: xa_dataset_saver,
 }
-
-@deprecated("Use 'publish_artifact' instead")
-def deliver_data(
-    name: str, 
-    data_or_lambda: Union[Any, Callable[[IOWritable], None]],
-    mime_type: Union[str, SupportedMimeTypes], 
-    metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None, 
-    seekable=False,
-    on_close: Optional[OnCloseF] = None
-) -> str:
-    publish_artifact(name, data_or_lambda, mime_type, 
-                     metadata = metadata, 
-                     seekable = seekable, 
-                     on_close = on_close,
-                     )
 
 def publish_artifact(
     name: str, 
@@ -83,7 +66,6 @@ def publish_artifact(
     Returns:
         URL of published artifact
     """
-
     global DELIVERED
     url_ = ""
     def _on_close(url):
@@ -123,18 +105,7 @@ def publish_artifact(
             raise UnsupportedMimeType(mime_type)
     return url_
 
-def register_saver(mime_type: str, obj_type: Any, saverF: SaverF):
-    """Register a 'saver' function used in 'deliver' for a specific data type.
-
-    Args:
-        mime_type (str): Mime type to use for that data type
-        obj_type (Any): The class this saver is for
-        saverF (SaverF): Function to deliver an instance of `obj_type`
-    """
-    _CLASS2MIME_TYPE[str(obj_type)] = mime_type
-    _MIME_TYPE2SAVER[mime_type] = saverF
-
-def create_metadata(schema: str, mdict:Optional[MetaDict] = {}, **args) -> Dict:
+def create_metadata(schema: str, mdict:Optional[MetaDict] = {}, **args) -> MetaDict:
     """Return a dict which has a 'proper' schema declaration added.
 
     Args:
@@ -147,42 +118,114 @@ def create_metadata(schema: str, mdict:Optional[MetaDict] = {}, **args) -> Dict:
     d[SCHEMA_KEY] = schema
     return d
 
-def publish_metadata(entity_id: str, metadata: MetaDict, schema: Optional[str] = None) -> str:
-    """Add a 'metadata' aspect to 'entity_id' with 'schema'.
+@deprecated("Use 'publish_artifact' instead")
+def deliver_data(
+    name: str, 
+    data_or_lambda: Union[Any, Callable[[IOWritable], None]],
+    mime_type: Union[str, SupportedMimeTypes], 
+    metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None, 
+    seekable=False,
+    on_close: Optional[OnCloseF] = None
+) -> str:
+    publish_artifact(name, data_or_lambda, mime_type, 
+                     metadata = metadata, 
+                     seekable = seekable, 
+                     on_close = on_close,
+                     )
+
+def register_saver(mime_type: str, obj_type: Any, saverF: SaverF):
+    """Register a 'saver' function used in 'deliver' for a specific data type.
+
+    Args:
+        mime_type (str): Mime type to use for that data type
+        obj_type (Any): The class this saver is for
+        saverF (SaverF): Function to deliver an instance of `obj_type`
+    """
+    _CLASS2MIME_TYPE[str(obj_type)] = mime_type
+    _MIME_TYPE2SAVER[mime_type] = saverF
+
+def publish_aspect(
+    entity: Any, 
+    aspect: MetaDict, 
+    schema: Optional[URN] = None,
+    *,
+    name: Optional[str] = None,
+    ignore_order_warning: Optional[bool] = False,
+) -> URN:
+    """Add an aspect to 'entity_id' with 'schema'.
     If 'schema' is ommited, 'metadata' is expected to contain a SCHEMA_KEY entry
     
     Args:
-        entity_id (str): Entity URN the metadata should be attached to
+        entity (URN): Entity URN the metadata should be attached to
         metadata (MetaDict): Metadata (aspect) to be attached to 'entity_id'
-        schema (Optional[str], optional): Schema defining 'metadata'
+        schema (Optional[URN], optional): Schema defining 'metadata'
+        name (Optional[str], optional): Human friendly name for this record
 
     Returns:
         str: Metadata record URN
     """
-    if not entity_id:
-        raise MissingParameterValue('entity_id')
-    if not metadata:
-        raise MissingParameterValue('metadata')
+    entity = _validate_is_urn(entity, 'entity')
+    if not aspect:
+        raise MissingParameterValue('aspect')
     if not schema:
-        schema = metadata.get(SCHEMA_KEY)
-    if not schema:
-        raise MissingSchemaDeclaration()
-    return get_config().IO_ADAPTER.write_metadata(entity_id, schema, metadata)
+        schema = aspect.get(SCHEMA_KEY)
+    schema = _validate_is_urn(schema, 'schema')
+
+    if not ignore_order_warning and not aspect.get("order"):
+        logger.warn(f"Did you forget to add a 'order' reference to aspect '{schema}'?")
+
+    return get_config().IO_ADAPTER.write_metadata(entity, schema, aspect, name=name)
     
-def publish_result(metadata: MetaDict, schema: Optional[str] = None) -> str:
-    """Add a 'metadata' aspect with 'schema' to the order record for this 
+def _validate_is_urn(val, name):
+    if not isinstance(val, str):
+        try:
+            val = val.urn
+        except: 
+            raise Exception(f"{name} '{val}' does not have a URN")
+    if not val.startswith("urn:"):
+        raise Exception(f"{name} '{val}' is not a URN")
+    return val
+    
+def create_aspect(schema: str, mdict:Optional[AspectDict] = {}, **args) -> AspectDict:
+    """Return a dict which has a 'proper' schema declaration added.
+
+    Args:
+        schema (str): Schema URN
+
+    Returns:
+        Dict: A copy of 'args' plus a 'SCHEMA_KEY' entry
+    """
+    d = dict(mdict, **args)
+    d[SCHEMA_KEY] = schema
+    return d
+
+
+@deprecated("Use 'publish_aspect' instead")
+def publish_metadata(
+    entity_id: str, 
+    metadata: MetaDict, 
+    schema: Optional[str] = None,
+    name: Optional[str] = None
+) -> str:
+    return publish_aspect(entity_id, metadata, schema, name)
+
+def publish_result(metadata: MetaDict, schema: Optional[str] = None, name: Optional[str] = None,) -> str:
+    """Add an aspect with 'schema' to the order record for this 
     service instance.
     If 'schema' is ommited, 'metadata' is expected to contain a SCHEMA_KEY entry
     
+    NOTE: Please consider if this is the right way to publish an analytics result
+    
     Args:
         metadata (MetaDict): Metadata (aspect) to be attached to 'entity_id'
         schema (Optional[str], optional): Schema defining 'metadata'
+        name (Optional[str], optional): Human friendly name for this record
 
     Returns:
         str: Metadata record URN
     """
-    entity_id = get_config().ORDER_ID
-    return publish_metadata(entity_id, metadata, schema)
+    entity = get_order_id()
+    return publish_aspect(entity, metadata, schema, name=name)
 
 def fetch_data(url: Url, binary_content=True, no_caching=False, seekable=False) -> IOReadable:
     """Return an 'IOReadable' on the content referenced by 'url'.

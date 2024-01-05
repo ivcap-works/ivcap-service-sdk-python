@@ -15,8 +15,10 @@ class SupportedMimeTypes(Enum):
     JPEG = 'image/jpeg'
 
 # type
+URN = str
 Url = str
-MetaDict = Dict[str, Union[str, Number, bool]]
+AspectDict = Dict[str, Union[str, Number, bool]]
+MetaDict = AspectDict
 FilePath = str
 ServiceArgs = NamedTuple
 
