@@ -38,6 +38,7 @@ class Type(Enum):
     BOOL = 'bool'
     OPTION = 'option'
     ARTIFACT = 'artifact'
+    ASPECT = 'aspect'
     COLLECTION = 'collection'
 
 @dataclass()
@@ -203,6 +204,11 @@ class Service(JSONWizard):
                 args['type'] = verify_artifact
                 args['metavar'] = "URN"
                 args['action'] = ArtifactAction
+                pass
+            elif p.type == Type.ASPECT:
+                args['type'] = verify_aspect
+                args['metavar'] = "URN"
+                args['action'] = AspectAction
                 pass
             elif p.type == Type.COLLECTION:
                 args['type'] = verify_collection

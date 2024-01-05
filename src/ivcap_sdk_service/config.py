@@ -36,6 +36,7 @@ class Resource(Enum):
     ORDER = 'order'
     SERVICE = 'service'
     ARTIFACT = 'artifact'  
+    ASPECT = 'aspect'  
     COLLECTION = 'collection'
     ACCOUNT = 'account'
 

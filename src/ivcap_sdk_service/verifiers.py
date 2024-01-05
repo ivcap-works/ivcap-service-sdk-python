@@ -63,7 +63,33 @@ class CollectionAction(Action):
             setattr(namespace, self.dest, v)
         except Exception as err:
             raise ArgumentTypeError(err)
-        
+  
+def verify_aspect(urn):
+    if is_valid_resource_urn(urn, Resource.ASPECT):
+        return urn
+
+    # if INSIDE_CONTAINER:
+    #     if not validators.url(urn):
+    #         raise ArgumentTypeError(f"Illegal aspect reference '{urn}' - expected url")
+    #     return urn
+    # else:
+    
+    if validators.url(urn):
+        return urn
+    
+    # could be local file 
+    if not get_config().IO_ADAPTER.artifact_readable(urn):
+        raise ArgumentTypeError(f"Cannot find local file '{urn}' - {get_config().IO_ADAPTER}")
+    return urn
+
+class AspectAction(Action):
+    def __call__(self, _1, namespace, value, _2=None):
+        try:
+            v = get_config().IO_ADAPTER.read_metadata(value)
+            setattr(namespace, self.dest, v)
+        except Exception as err:
+            raise ArgumentTypeError(err)
+      
 def is_valid_resource_urn(urn: str, resource: Resource) -> bool:
     prefix = f"{get_config().SCHEMA_PREFIX}{resource.value}:"
     return urn.startswith(prefix)
