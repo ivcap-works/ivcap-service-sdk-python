@@ -15,7 +15,7 @@ from .cio.io_adapter import IOAdapter, IOReadable, IOWritable, OnCloseF
 
 from .logger import sys_logger as logger
 from .config import Config
-from .itypes import MetaDict, MissingSchemaDeclaration, SupportedMimeTypes, Url 
+from .itypes import URN, MetaDict, MissingSchemaDeclaration, SupportedMimeTypes, Url 
 from .itypes import MissingParameterValue, UnsupportedMimeType, SCHEMA_KEY, ENTITY_KEY
 
 DELIVERED = []
@@ -171,10 +171,9 @@ def publish_aspect(
         schema = aspect.get(SCHEMA_KEY)
     schema = _validate_is_urn(schema, 'schema')
 
-    if not aspect.get(ENTITY_KEY):
-        aspect[ENTITY_KEY] = entity
-    if not aspect.get(SCHEMA_KEY):
-        aspect[SCHEMA_KEY] = schema
+    # enforce mandatory fields
+    aspect[ENTITY_KEY] = entity
+    aspect[SCHEMA_KEY] = schema
         
     if not ignore_order_warning and not aspect.get("order"):
         logger.warn(f"Did you forget to add a 'order' reference to aspect '{schema}'?")

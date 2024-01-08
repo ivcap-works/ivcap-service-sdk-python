@@ -27,5 +27,7 @@ from .run import register_service
 from .service import Service, Parameter, Option, Type
 from .service import Workflow, BasicWorkflow, PythonWorkflow
 
-from .cio.io_adapter import IOAdapter, OnCloseF, IOWritable, IOReadable
+from .cio.io_adapter import IOAdapter, IOWritable, IOReadable, QueueMessage
+from .cio.io_adapter import ASPECT_MSG_SCHEMA, END_OF_STREAM_SCHEMA
+from .cio.io_adapter import OnCloseF, Queue
 from .itypes import MissingParameterValue, UnsupportedMimeType, SupportedMimeTypes, ServiceArgs, MetaDict

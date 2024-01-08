@@ -4,10 +4,13 @@
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import AnyStr, List, Callable, Optional, Sequence, Union
 import io
 
-from ..itypes import MetaDict, Url
+from dataclass_wizard import JSONWizard
+
+from ..itypes import URN, MetaDict, Url
 
 class _IOBase(ABC):
     @property
@@ -123,14 +126,68 @@ class Collection(ABC):
     def name(self) -> str:
         pass
 
-class Collection(ABC):
-    """A collection of artifacts
+ASPECT_MSG_SCHEMA = "urn:ivcap:schema:message:aspect"
+END_OF_STREAM_SCHEMA = "urn:ivcap:schema:message:eos"
+
+@dataclass
+class QueueMessage(JSONWizard):
+    """Defines a message to send or receive from a queue
+    """
+    
+    @classmethod
+    def from_aspect(cls, a) -> "QueueMessage":
+        return cls(
+            content=a, 
+            schema=ASPECT_MSG_SCHEMA,
+            content_type = "application/json"
+        )
+        
+    class _(JSONWizard.Meta):
+        skip_defaults = False
+        json_key_to_field = {
+            '__all__': True, # add inverse
+            'content-type': 'content_type'
+        }
+        # optional: if you need (serialized) field names to be `snake_cased`
+        # key_transform_with_dump = 'SNAKE'
+        
+    schema: URN
+    content: any
+    id: URN = None
+    content_type: str = "application/json"
+    
+class AcknowledgableQueueMessage(QueueMessage):
+
+    @abstractmethod
+    def ack(self) -> None:
+        """Acknowledge message as being processed"""
+        pass
+
+
+DEF_LEASE_TIME_SEC = 60
+
+class Queue(ABC):
+    """A queue of messages
     """
     @property
     @abstractmethod
     def name(self) -> str:
         pass
 
+    @property
+    @abstractmethod
+    def urn(self) -> str:
+        pass
+
+    @abstractmethod
+    def push(self, m: QueueMessage) -> URN:
+        pass
+
+    @abstractmethod
+    def pull(self, lease_time: int = DEF_LEASE_TIME_SEC) -> AcknowledgableQueueMessage:
+        pass  
+
+    
 OnCloseF = Callable[[Url], None]
 
 class IOAdapter(ABC):
@@ -262,6 +319,32 @@ class IOAdapter(ABC):
 
         Returns:
             Collection: An instance of a collection object appropriate for
+            the current context
+        """
+        pass
+    
+    @abstractmethod
+    def read_aspect(self, aspect_urn: URN, no_caching=False) -> dict:
+        """Return an aspect as a dict
+
+        Args:
+            aspect_urn (URN): URN of aspect to read
+            no_caching (bool, optional): If true, content is not cached nor read from cache. Defaults to False.
+
+        Returns:
+            dict: The content of the aspect as a dict
+        """
+        pass
+
+    @abstractmethod
+    def get_queue(self, queue_urn: str) -> Queue:
+        """Return a queue representing a set of messages
+
+        Args:
+            queue_urn (URN): Queue identifies
+
+        Returns:
+            Queue: An instance of a queue object appropriate for
             the current context
         """
         pass

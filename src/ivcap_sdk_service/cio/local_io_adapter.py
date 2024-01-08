@@ -7,13 +7,19 @@
 FileAdapter a thin wrapper around io.IOBase that sets a storage path with
 standard filesystem backend
 """
+import glob
+import json
 import os
-from pathlib import Path
-from typing import Optional
+from pathlib import Path, PurePath
+import pathlib
+import shutil
+from typing import Optional, Union
 from os import access, R_OK
 from os.path import isfile, join
 from urllib.parse import urlparse
 import time
+from filelock import FileLock
+
 
 from .readable_file import ReadableFile
 
@@ -22,10 +28,12 @@ from .writable_file import WritableFile
 
 from .utils import get_cache_name
 from ..utils import json_dump
-from ..itypes import MetaDict, Url, SupportedMimeTypes
+from ..itypes import URN, MetaDict, Url, SupportedMimeTypes
+
+
 
 from ..logger import sys_logger as logger
-from .io_adapter import Collection, IOAdapter, IOReadable, IOWritable, OnCloseF
+from .io_adapter import DEF_LEASE_TIME_SEC, END_OF_STREAM_SCHEMA, AcknowledgableQueueMessage, Collection, IOAdapter, IOReadable, IOWritable, OnCloseF, Queue, QueueMessage
 
 class LocalIOAdapter(IOAdapter):
     """
@@ -184,18 +192,23 @@ class LocalIOAdapter(IOAdapter):
         name = os.path.basename(path)
         return ReadableFile(name, path, is_binary=binary_content)
 
-    def _to_path(self, prefix: str, name: str, collection_name: str = None) -> str:
+    def _to_path(self, prefix: str, name: str, collection_name: str = None, ext = None) -> str:
+
         if name.startswith('/'):
-            return name
+            path = name
         elif name.startswith('file:'):
-            return name[len('file://'):]
+            path = name[len('file://'):]
         elif name.startswith('urn:file:'):
-            return name[len('urn:file://'):]
+            path = name[len('urn:file://'):]
         else:
             if collection_name:
-                return os.path.join(prefix, collection_name, name)
+                path = os.path.join(prefix, collection_name, name)
             else:
-                return os.path.join(prefix, name)
+                path = os.path.join(prefix, name)
+        if ext:
+            path = PurePath(path).with_suffix(f".{ext}").as_posix()
+                
+        return path
 
     def write_metadata(
         self,
@@ -223,6 +236,23 @@ class LocalIOAdapter(IOAdapter):
         json_dump(metadata, fname)
         return e
                               
+    def read_aspect(self, aspect_urn: URN, no_caching=False) -> dict:
+        """Return an aspect as a dict
+
+        Args:
+            aspect_urn (URN): URN of aspect to read
+            no_caching (bool, optional): If true, content is not cached nor read from cache. Defaults to False.
+
+        Returns:
+            dict: The content of the aspect as a dict
+        """
+        fname = self._to_path(self.out_dir, aspect_urn, ext="json")
+        if os.path.isfile(fname):
+            with open(fname) as f:
+                a = json.load(f)
+                return a
+        else:
+            raise ValueError(f"Cannot find local file for aspect '{fname}")
                                    
     def get_collection(self, collection_urn: str) -> Collection:
         u = urlparse(collection_urn)
@@ -233,7 +263,10 @@ class LocalIOAdapter(IOAdapter):
                 raise ValueError(f"Cannot find local file or directory '{u.path}")
         else:
             raise ValueError(f"Remote collection is not supported, yet")
-        
+
+    def get_queue(self, queue_urn: str) -> Queue:
+        return LocalQueue(queue_urn, self)
+    
     def __repr__(self):
         return f"<LocalIOAdapter in_dir={self.in_dir} out_dir={self.out_dir}>"
 
@@ -285,3 +318,127 @@ class DirectoryIter:
     def __next__(self):
         f = str(next(self._iter))
         return self._adapter.read_local(f)
+
+### QUEUE
+
+class LocalQueueMessage(AcknowledgableQueueMessage): 
+    pending: str = None
+    
+    def ack(self) -> None:
+        if self.pending:
+            pathlib.Path(self.pending).unlink(missing_ok=True)
+            
+ 
+    
+class LocalQueue(Queue):
+    """A queue of messages"""
+    
+    def __init__(self, urn: str, adapter: LocalIOAdapter) -> None:
+        from ..config import Resource
+        from ..ivcap import get_config # break import loop
+        
+        self._urn = urn
+        self._path = resource_urn_path(urn, Resource.QUEUE, adapter.in_dir)
+        self._pending_path = os.path.join(self._path, "_pending")
+        if not os.path.isdir(self._pending_path):
+            os.mkdir(self._pending_path)
+        
+        self._name = Path(self._path).stem
+        self._id_prefix = f"{get_config().SCHEMA_PREFIX}{Resource.MESSAGE.value}#{self._name}-"
+        self._lock_file = os.path.join(self._path, "_queue.lock")
+        self._msg_glob = os.path.join(self._path, "*.json")
+        self._adapter = adapter
+        
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def urn(self) -> str:
+        return self._urn
+
+    def push(self, m: QueueMessage) -> URN:
+        with FileLock(self._lock_file):
+            h = self._get_msg_index(highest=True)
+            n = 1 if not h else h + 1
+            fn = "{:08d}.json".format(n)
+            with open(os.path.join(self._path, fn), "w") as f:
+                m.id = f"{self._id_prefix}{n}"
+                f.write(m.to_json(indent=2))
+
+    def pull(self, lease=DEF_LEASE_TIME_SEC) -> AcknowledgableQueueMessage:
+       with FileLock(self._lock_file):
+            n = self._get_msg_index(highest=False)
+            if not n:
+                # no more messages, lets return DONE message 
+                return LocalQueueMessage(schema=END_OF_STREAM_SCHEMA, content={})
+            
+            fn = "{:08d}.json".format(n)
+            mpath = os.path.join(self._path, fn)
+            with open(mpath, "r") as f:
+                s = f.read()
+                m = LocalQueueMessage.from_json(s)
+                # make pending
+                pfn = f"{int(time.time()) + lease}--{fn}"
+                ppath = os.path.join(self._pending_path, pfn)
+                shutil.move(mpath, ppath)
+                m.pending = ppath
+                return m
+    
+    def _get_msg_index(self, highest: bool) -> Union[int, None]:
+        fl = sorted(filter(os.path.isfile, glob.glob(self._msg_glob)), reverse=highest)
+        if len(fl) == 0:
+            return None
+        p = fl[0]
+        s = Path(p).stem
+        return int(s)
+    
+    def __iter__(self):
+        return QueueIter(self)
+
+    def __repr__(self):
+        return f"<LocalQueue path={self._path}>"
+
+class QueueIter:
+    def __init__(self, queue: LocalQueue) -> None:
+        self._queue = queue
+        self._last_msg = None
+        
+    def __next__(self):
+        if self._last_msg:
+            # assume previious message is processed
+            self._last_msg.ack()
+        m = self._queue.pull()
+        if m.schema == END_OF_STREAM_SCHEMA:
+            self._last_msg = None
+            raise StopIteration
+
+        self._last_msg = m
+        return m
+
+
+def resource_urn_path(urn: str, resource: str, in_dir: str) -> str:
+    """Returns the 'path' of a resource urn (eveything after ':' or '#')"""
+
+    u = urlparse(urn)
+    if u.scheme == '' or u.scheme == 'file':
+        path = u.path
+    elif u.scheme == 'urn':
+        from ..ivcap import get_config # break import loop
+
+        if u.fragment != "":
+            dname = u.fragment
+        else:
+            prefix = f"{get_config().SCHEMA_PREFIX}{resource.value}:"
+            dname = u.path[len(prefix)]
+        path = os.path.join(in_dir, dname)
+        if not os.path.isdir(path):
+            path = os.path.join(get_config().OUT_DIR, dname)
+            os.mkdir(path)
+    else:
+        raise ValueError(f"Cannot map '{urn}' to a local resource")
+
+    if os.path.isdir(path):
+        return path
+    else:
+        raise ValueError(f"Cannot find local file or directory '{path}")

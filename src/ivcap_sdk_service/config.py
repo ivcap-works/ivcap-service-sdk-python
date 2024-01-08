@@ -38,7 +38,9 @@ class Resource(Enum):
     ARTIFACT = 'artifact'  
     ASPECT = 'aspect'  
     COLLECTION = 'collection'
+    QUEUE = 'queue'
     ACCOUNT = 'account'
+    MESSAGE = 'message'
 
 @dataclass(init=False)
 class Config:

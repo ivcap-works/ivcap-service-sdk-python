@@ -17,8 +17,8 @@ from typing import Dict
 
 from ivcap_sdk_service.itypes import URN
 
-from .verifiers import verify_artifact, verify_collection, ArtifactAction, CollectionAction
-from .verifiers import verify_aspect, AspectAction
+from .verifiers import QueueAction, verify_artifact, verify_collection, ArtifactAction
+from .verifiers import verify_aspect, AspectAction, CollectionAction, verify_queue
 from .utils import read_yaml_no_dates
 
 @dataclass
@@ -41,6 +41,7 @@ class Type(Enum):
     ARTIFACT = 'artifact'
     ASPECT = 'aspect'
     COLLECTION = 'collection'
+    QUEUE = 'queue'
 
 @dataclass()
 class Parameter(JSONWizard):
@@ -216,6 +217,10 @@ class Service(JSONWizard):
                 args['metavar'] = "URN"
                 args['action'] = CollectionAction
                 pass
+            elif p.type == Type.QUEUE:
+                args['type'] = verify_queue
+                args['metavar'] = "URN"
+                args['action'] = QueueAction
             elif p.type == Type.BOOL:
                 args['action'] ='store_true'
                 args['required'] = False

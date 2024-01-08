@@ -17,10 +17,10 @@ import requests
 
 from .readable_file import ReadableFile
 from .readable_proxy import ReadableProxy
-from ..itypes import MetaDict, Url, SCHEMA_KEY
+from ..itypes import URN, MetaDict, Url, SCHEMA_KEY
 from ..logger import sys_logger as logger
 
-from .io_adapter import Collection, IOAdapter, IOReadable, IOWritable, OnCloseF
+from .io_adapter import Collection, IOAdapter, IOReadable, IOWritable, OnCloseF, Queue, QueueMessage
 from .writable_proxy import WritableProxy, upload_metadata
 
 class IvcapIOAdapter(IOAdapter):
@@ -187,6 +187,18 @@ class IvcapIOAdapter(IOAdapter):
         path = self._to_path(self.in_dir, name, collection_name)
         return ReadableFile(name, path, None, is_binary=binary_content)
 
+    def read_aspect(self, aspect_urn: URN, no_caching=False) -> dict:
+        """Return an aspect as a dict
+
+        Args:
+            aspect_urn (URN): URN of aspect to read
+            no_caching (bool, optional): If true, content is not cached nor read from cache. Defaults to False.
+
+        Returns:
+            dict: The content of the aspect as a dict
+        """
+        raise Exception("read_aspect: not implemented, yet")
+
     def _to_path(self, prefix: str, name: str, collection_name: str = None) -> str:
         if name.startswith('/'):
             return name
@@ -200,6 +212,9 @@ class IvcapIOAdapter(IOAdapter):
 
     def get_collection(self, collection_urn: str) -> Collection:
         return IvcapCollection(collection_urn, self)
+
+    def get_queue(self, queue_urn: str) -> Queue:
+        raise Exception("get_queue: not implemented, yet")
 
     def __repr__(self):
         return f"<IvcapIOAdapter in_dir={self.in_dir} out_dir={self.out_dir}>"
@@ -284,5 +299,22 @@ class IvcapCollectionIter:
         except:
             logger.fatal(f"while ack previous artifact '{self._urn}' - {self._url} - {sys.exc_info()}")
             sys.exit(-1)
-        
+
+class IvcapQueue(Queue):
+    """A queue of messages
+    """
+    @property
+    def name(self) -> str:
+        pass
+
+    @property
+    def urn(self) -> str:
+        pass
+
+    def push(self, m: QueueMessage) -> URN:
+        pass
+
+    def pull(self) -> QueueMessage:
+        pass  
+
         
