@@ -11,9 +11,11 @@ SCHEMA_KEY = '$schema'
 ENTITY_KEY = '$entity'
 
 class SupportedMimeTypes(Enum):
+    TEXT = 'text'
     NETCDF = 'application/netcdf'
     PNG = 'image/png'
     JPEG = 'image/jpeg'
+    PARQUET = "application/vnd.apache.parquet"
 
 # type
 URN = str

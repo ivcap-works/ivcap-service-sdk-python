@@ -74,6 +74,8 @@ class LocalIOAdapter(IOAdapter):
         Returns:
             IOReadable: The content of the artifact as a file-like object
         """
+        if artifact_id.startswith("urn:"):
+            artifact_id = artifact_id[4:]
         u = urlparse(artifact_id)
         if u.scheme == '' or u.scheme == 'file':
             return self.read_local(u.path, binary_content=binary_content)
