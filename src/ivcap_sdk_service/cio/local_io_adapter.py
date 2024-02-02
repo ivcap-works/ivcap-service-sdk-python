@@ -33,7 +33,7 @@ from .utils import get_cache_name
 from ..utils import json_dump
 from ..itypes import URN, MetaDict, Url, SupportedMimeTypes
 from ..logger import sys_logger as logger
-from .io_adapter import DEF_LEASE_TIME_SEC, END_OF_STREAM_SCHEMA, AcknowledgableQueueMessage, Collection, IOAdapter, IOReadable, IOWritable, OnCloseF, Queue, QueueMessage, QueueTimeoutException
+from .io_adapter import DEF_LEASE_TIME_SEC, DEF_MAX_WAIT_TIME_SEC, END_OF_STREAM_SCHEMA, AcknowledgableQueueMessage, Collection, IOAdapter, IOReadable, IOWritable, OnCloseF, Queue, QueueMessage, QueueTimeoutException
 
 class LocalIOAdapter(IOAdapter):
     """
@@ -386,7 +386,7 @@ class LocalQueue(Queue):
                 m.id = f"{self._id_prefix}{n}"
                 f.write(m.to_json(indent=2))
 
-    def pull(self, lease=DEF_LEASE_TIME_SEC, timeout=None) -> AcknowledgableQueueMessage:
+    def pull(self, lease=DEF_LEASE_TIME_SEC, timeout=DEF_MAX_WAIT_TIME_SEC) -> AcknowledgableQueueMessage:
         if self._is_closed:
             return LocalQueueMessage(schema=END_OF_STREAM_SCHEMA, content={})
 
