@@ -66,12 +66,12 @@ class IOReadable(_IOBase):
     @abstractmethod
     def urn(self) -> str:
         pass
-    
+
     @property
     @abstractmethod
     def mime_type(self) -> str:
         pass
-    
+
     @abstractmethod
     def read(self, n: int = -1) -> AnyStr:
         pass
@@ -133,15 +133,15 @@ END_OF_STREAM_SCHEMA = "urn:ivcap:schema:message:eos"
 class QueueMessage(JSONWizard):
     """Defines a message to send or receive from a queue
     """
-    
+
     @classmethod
     def from_aspect(cls, a) -> "QueueMessage":
         return cls(
-            content=a, 
+            content=a,
             schema=ASPECT_MSG_SCHEMA,
             content_type = "application/json"
         )
-        
+
     class _(JSONWizard.Meta):
         skip_defaults = False
         json_key_to_field = {
@@ -150,12 +150,12 @@ class QueueMessage(JSONWizard):
         }
         # optional: if you need (serialized) field names to be `snake_cased`
         # key_transform_with_dump = 'SNAKE'
-        
+
     schema: URN
     content: any
     id: URN = None
     content_type: str = "application/json"
-    
+
 class AcknowledgableQueueMessage(QueueMessage):
 
     @abstractmethod
@@ -165,6 +165,10 @@ class AcknowledgableQueueMessage(QueueMessage):
 
 
 DEF_LEASE_TIME_SEC = 60
+DEF_MAX_WAIT_TIME_SEC = 3600 # 1 hour
+
+class QueueTimeoutException(Exception):
+    pass
 
 class Queue(ABC):
     """A queue of messages
@@ -184,10 +188,12 @@ class Queue(ABC):
         pass
 
     @abstractmethod
-    def pull(self, lease_time: int = DEF_LEASE_TIME_SEC) -> AcknowledgableQueueMessage:
-        pass  
+    def pull(self, lease_time:float = DEF_LEASE_TIME_SEC, timeout:float = DEF_MAX_WAIT_TIME_SEC) -> AcknowledgableQueueMessage:
+        """ May throw QueueTimeoutException
+        """
+        pass
 
-    
+
 OnCloseF = Callable[[Url], None]
 
 class IOAdapter(ABC):
@@ -241,15 +247,15 @@ class IOAdapter(ABC):
     @abstractmethod
     def write_artifact(
         self,
-        mime_type: str, 
+        mime_type: str,
         name: Optional[str] = None,
         collection_name: Optional[str] = None,
-        metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None, 
+        metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None,
         seekable=False,
         on_close: Optional[OnCloseF] = None
     ) -> IOWritable:
         """Returns a IOWritable to create a new artifact. It needs to be closed
-        in order to be persisted. If `on_close` is provided it is called with the 
+        in order to be persisted. If `on_close` is provided it is called with the
         artifactID.
 
         Args:
@@ -264,19 +270,19 @@ class IOAdapter(ABC):
             IOWritable: A file-like object to write deliver artifact content - needs to be closed
         """
         pass
-    
+
     @abstractmethod
     def write_artifact(
         self,
-        mime_type: str, 
+        mime_type: str,
         *,
         name: Optional[str] = None,
-        metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None, 
+        metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None,
         seekable=False,
         on_close: Optional[OnCloseF] = None
     ) -> IOWritable:
         """Returns a IOWritable to create a new artifact. It needs to be closed
-        in order to be persisted. If `on_close` is provided it is called with the 
+        in order to be persisted. If `on_close` is provided it is called with the
         artifactID.
 
         Args:
@@ -290,7 +296,7 @@ class IOAdapter(ABC):
             IOWritable: A file-like object to write deliver artifact content - needs to be closed
         """
         pass
-    
+
     @abstractmethod
     def write_metadata(
         self,
@@ -322,7 +328,7 @@ class IOAdapter(ABC):
             the current context
         """
         pass
-    
+
     @abstractmethod
     def read_aspect(self, aspect_urn: URN, no_caching=False) -> dict:
         """Return an aspect as a dict
