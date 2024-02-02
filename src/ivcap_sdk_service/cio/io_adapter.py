@@ -187,6 +187,9 @@ class Queue(ABC):
     def push(self, m: QueueMessage) -> URN:
         pass
 
+    def push_eos(self) -> URN:
+        return self.push(QueueMessage(schema=END_OF_STREAM_SCHEMA, content="{}"))
+
     @abstractmethod
     def pull(self, lease_time:float = DEF_LEASE_TIME_SEC, timeout:float = DEF_MAX_WAIT_TIME_SEC) -> AcknowledgableQueueMessage:
         """ May throw QueueTimeoutException
