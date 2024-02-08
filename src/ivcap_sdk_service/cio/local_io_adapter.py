@@ -349,8 +349,9 @@ class LocalQueueMessage(AcknowledgableQueueMessage):
                 pathlib.Path(self._pendingPath).unlink(missing_ok=True)
                 self._origPath = None
                 self._pendingPath = None
-                with open(self._queue._log_file, "a") as f:
-                    f.write(f"{os.path.basename(self._origPath)},{MsgState.Consumed},{int(time.time())}")
+                self._queue._log(self._origPath, MsgState.Consumed)
+                # with open(self._queue._log_file, "a") as f:
+                #     f.write(f"{os.path.basename(self._origPath)},{MsgState.Consumed},{int(time.time())}\n")
 
     def release(self) -> None:
         """Release a message as not being processed and should be put back into the queue"""
@@ -359,8 +360,9 @@ class LocalQueueMessage(AcknowledgableQueueMessage):
                 if os.path.exists(self._pendingPath):
                     shutil.move(self._pendingPath, self._origPath)
                 self._pendingPath = None
-                with open(self._queue._log_file, "a") as f:
-                    f.write(f"{os.path.basename(self._origPath)},{MsgState.Released},{int(time.time())}")
+                self._queue._log(self._origPath, MsgState.Released)
+                # with open(self._queue._log_file, "a") as f:
+                #     f.write(f"{os.path.basename(self._origPath)},{MsgState.Released},{int(time.time())}\n")
 
 EOS_LABEL = 99999999999
 
@@ -451,8 +453,9 @@ class LocalQueue(Queue):
                 m.id = f"{self._id_prefix}{n}"
                 logger.debug(f"LocalQueue: pushing message id '{n}'")
                 f.write(m.to_json(indent=2))
-            with open(self._log_file, "a") as f:
-                f.write(f"{fn},{MsgState.Added},{int(time.time())}")
+            self._log(fn, MsgState.Added)
+            # with open(self._log_file, "a") as f:
+            #     f.write(f"{fn},{MsgState.Added},{int(time.time())}")
 
     def _get_next_msg_id(self):
         with open(self._idx_file, "r+") as f:
@@ -514,8 +517,9 @@ class LocalQueue(Queue):
         m._pendingPath = ppath
         m._origPath = mpath
         m._queue = self
-        with open(self._log_file, "a") as f:
-            f.write(f"{fn},{MsgState.Pending},{int(time.time())}")
+        self._log(fn, MsgState.Pending)
+        # with open(self._log_file, "a") as f:
+        #     f.write(f"{fn},{MsgState.Pending},{int(time.time())}")
 
     def _pull_eos(self, m: LocalQueueMessage, mpath: str) -> AcknowledgableQueueMessage:
         if self.has_pending_messages():
@@ -557,8 +561,9 @@ class LocalQueue(Queue):
                 logger.debug(f"LocalQueue: restoring msg '{mp}'")
                 self._get_queue().put(mp)
                 timeout = 0
-                with open(self._log_file, "a") as f:
-                    f.write(f"{msg},{MsgState.Timedout},{now}")
+                self._log(msg, MsgState.Timedout)
+                # with open(self._log_file, "a") as f:
+                #     f.write(f"{msg},{MsgState.Timedout},{now}")
             elif rem < timeout:
                 timeout = rem
         return timeout
@@ -586,6 +591,10 @@ class LocalQueue(Queue):
                 self._observer.schedule(Handler(), self._path)
                 self._observer.start()
         return self._queue
+
+    def _log(self, path: str, state: MsgState):
+        with open(self._log_file, "a") as f:
+            f.write(f"{os.path.basename(path)},{state},{int(time.time())}\n")
 
     def __iter__(self):
         return QueueIter(self)
