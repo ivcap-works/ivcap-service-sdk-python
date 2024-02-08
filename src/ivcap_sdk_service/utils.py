@@ -10,6 +10,7 @@ from typing import Any
 import yaml
 
 from .logger import sys_logger as logger
+from .aspect import Aspect
 
 try:
     from yaml import CSafeLoader as SafeLoader, CDumper as Dumper
@@ -68,7 +69,10 @@ class _CustomEncoder(json.JSONEncoder):
 
 def json_dump(obj: Any, fileName: str = None, failQuietly=True) -> str:
     try:
-        js = json.dumps(obj, indent=2, cls=_CustomEncoder)
+        if isinstance(obj, Aspect):
+            js = obj.dump_json(indent=2)
+        else:
+            js = json.dumps(obj, indent=2, cls=_CustomEncoder)
         if fileName:
             with open(fileName, "w") as fp:
                 fp.write(js)

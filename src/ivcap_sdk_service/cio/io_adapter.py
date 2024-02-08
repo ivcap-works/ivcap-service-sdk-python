@@ -5,8 +5,9 @@
 #
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import AnyStr, List, Callable, Optional, Sequence, Union
+from typing import AnyStr, List, Callable, Optional, Sequence, Union, Dict
 import io
+
 
 from dataclass_wizard import JSONWizard
 
@@ -129,6 +130,8 @@ class Collection(ABC):
 ASPECT_MSG_SCHEMA = "urn:ivcap:schema:message:aspect"
 END_OF_STREAM_SCHEMA = "urn:ivcap:schema:message:eos"
 
+
+
 @dataclass
 class QueueMessage(JSONWizard):
     """Defines a message to send or receive from a queue
@@ -163,6 +166,11 @@ class AcknowledgableQueueMessage(QueueMessage):
         """Acknowledge message as being processed"""
         pass
 
+    @abstractmethod
+    def release(self) -> None:
+        """Release a message as not being processed and should be put back into the queue"""
+        pass
+
 
 DEF_LEASE_TIME_SEC = 60
 DEF_MAX_WAIT_TIME_SEC = 3600 # 1 hour
@@ -191,10 +199,30 @@ class Queue(ABC):
         return self.push(QueueMessage(schema=END_OF_STREAM_SCHEMA, content="{}"))
 
     @abstractmethod
-    def pull(self, lease_time:float = DEF_LEASE_TIME_SEC, timeout:float = DEF_MAX_WAIT_TIME_SEC) -> AcknowledgableQueueMessage:
+    def pull(self) -> AcknowledgableQueueMessage:
         """ May throw QueueTimeoutException
         """
         pass
+
+    @property
+    @abstractmethod
+    def lease(self) -> float:
+        pass
+
+    @abstractmethod
+    def withLease(self, lease: float) -> 'Queue':
+        pass
+
+    @property
+    @abstractmethod
+    def timeout(self) -> float:
+        pass
+
+    @abstractmethod
+    def withTimeout(self, timeout: float) -> 'Queue':
+        pass
+
+
 
 
 OnCloseF = Callable[[Url], None]

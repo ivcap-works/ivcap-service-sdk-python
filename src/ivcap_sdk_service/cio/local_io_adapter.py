@@ -7,6 +7,7 @@
 FileAdapter a thin wrapper around io.IOBase that sets a storage path with
 standard filesystem backend
 """
+from enum import Enum
 import fnmatch
 import glob
 import json
@@ -25,6 +26,7 @@ import time
 from filelock import FileLock
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+import random
 
 from .readable_file import ReadableFile
 from .readable_proxy import ReadableProxy
@@ -152,13 +154,18 @@ class LocalIOAdapter(IOAdapter):
             IOWritable: A file-like object to write deliver artifact content - needs to be closed
         """
         fname = self._to_path(self.out_dir, name)
+        if os.path.exists(fname):
+            p = pathlib.Path(name)
+            r = "{:05d}".format(random.randint(0,99999))
+            n = f"{p.stem}-{r}{p.suffix}"
+            fname = self._to_path(self.out_dir, n)
         if isinstance(mime_type, SupportedMimeTypes):
             mime_type = mime_type.value
         is_binary = not mime_type.startswith('text')
 
         def _on_close(urn, _2):
             logger.info("Written artifact '%s' to '%s'", name, fname)
-            if metadata != {}:
+            if metadata and metadata != {}:
                 json_dump(metadata, f"{fname}-meta.json")
             if on_close:
                 on_close(urn)
@@ -323,34 +330,75 @@ class DirectoryIter:
 
 ### QUEUE
 
+class MsgState(str, Enum):
+    Added = 'A'
+    Consumed = 'C'
+    Pending = 'P'
+    Timedout = 'T'
+    Released = 'R'
+
 class LocalQueueMessage(AcknowledgableQueueMessage):
-    pending: str = None
+    _pendingPath: str = None
+    _origPath: str = None
+    _queue: 'LocalQueue' = None
 
     def ack(self) -> None:
-        if self.pending:
-            pathlib.Path(self.pending).unlink(missing_ok=True)
+        if self._pendingPath:
+            with FileLock(self._queue._lock_file):
+                pathlib.Path(self._origPath).unlink(missing_ok=True)
+                pathlib.Path(self._pendingPath).unlink(missing_ok=True)
+                self._origPath = None
+                self._pendingPath = None
+                with open(self._queue._log_file, "a") as f:
+                    f.write(f"{os.path.basename(self._origPath)},{MsgState.Consumed},{int(time.time())}")
+
+    def release(self) -> None:
+        """Release a message as not being processed and should be put back into the queue"""
+        if self._pendingPath:
+            with FileLock(self._queue._lock_file):
+                if os.path.exists(self._pendingPath):
+                    shutil.move(self._pendingPath, self._origPath)
+                self._pendingPath = None
+                with open(self._queue._log_file, "a") as f:
+                    f.write(f"{os.path.basename(self._origPath)},{MsgState.Released},{int(time.time())}")
 
 EOS_LABEL = 99999999999
+
 
 class LocalQueue(Queue):
     """A queue of messages"""
 
-    def __init__(self, urn: str, adapter: LocalIOAdapter) -> None:
+    def __init__(self,
+                 urn: str,
+                 adapter: LocalIOAdapter,
+                 lease:float = DEF_LEASE_TIME_SEC,
+                 timeout:float = DEF_MAX_WAIT_TIME_SEC
+    ) -> None:
         from ..config import Resource
         from ..ivcap import get_config # break import loop
 
         self._urn = urn
+        self._adapter = adapter
+        self._lease = lease
+        self._timeout = timeout
+
         self._path = resource_urn_path(urn, Resource.QUEUE, adapter.in_dir)
         self._pending_path = os.path.join(self._path, "_pending")
-        if not os.path.isdir(self._pending_path):
-            os.mkdir(self._pending_path)
+        self._idx_file = os.path.join(self._path, "_idx")
+        self._log_file = os.path.join(self._path, "_log.csv")
+        self._lock_file = os.path.join(self._path, "_queue.lock")
+        with FileLock(self._lock_file):
+            if not os.path.isdir(self._pending_path):
+                os.mkdir(self._pending_path)
+            if not os.path.exists(self._idx_file):
+                with open(self._idx_file, "a") as f:
+                    f.write("0")
 
         self._name = Path(self._path).stem
         self._id_prefix = f"{get_config().SCHEMA_PREFIX}{Resource.MESSAGE.value}#{self._name}-"
-        self._lock_file = os.path.join(self._path, "_queue.lock")
+        self._idx_file = os.path.join(self._path, "_idx")
         self._msg_glob = os.path.join(self._path, "*.json")
         self._pending_glob = os.path.join(self._pending_path, "*.json")
-        self._adapter = adapter
         self._is_closed = False
         self._queue = None
         self._lock = Lock()
@@ -363,6 +411,24 @@ class LocalQueue(Queue):
     @property
     def urn(self) -> str:
         return self._urn
+
+    @property
+    def lease(self) -> float:
+        return self._lease
+
+    def withLease(self, lease: float) -> 'Queue':
+        q = self.__class__(self._urn, self._adapter, lease, self._timeout)
+        q._is_closed = self._is_closed
+        return q
+
+    @property
+    def timeout(self) -> float:
+        return self._timeout
+
+    def withTimeout(self, timeout: float) -> 'Queue':
+        q = self.__class__(self._urn, self._adapter, self._lease, timeout)
+        q._is_closed = self._is_closed
+        return q
 
     def close(self):
         self._is_closed = True
@@ -379,19 +445,31 @@ class LocalQueue(Queue):
 
     def push(self, m: QueueMessage) -> URN:
         with FileLock(self._lock_file):
-            h = self._get_msg_index(highest=True)
-            n = 1 if not h else h + 1
+            n = self._get_next_msg_id()
             fn = "{:08d}.json".format(n)
             with open(os.path.join(self._path, fn), "w") as f:
                 m.id = f"{self._id_prefix}{n}"
+                logger.debug(f"LocalQueue: pushing message id '{n}'")
                 f.write(m.to_json(indent=2))
+            with open(self._log_file, "a") as f:
+                f.write(f"{fn},{MsgState.Added},{int(time.time())}")
 
-    def pull(self, lease=DEF_LEASE_TIME_SEC, timeout=DEF_MAX_WAIT_TIME_SEC) -> AcknowledgableQueueMessage:
+    def _get_next_msg_id(self):
+        with open(self._idx_file, "r+") as f:
+            c = f.read()
+            logger.debug(f"LocalQueue: {self._idx_file} - '{c}'")
+            n = int(c) + 1
+            f.seek(0)
+            f.write(f"{n}")
+            f.flush()
+            return n
+
+    def pull(self) -> AcknowledgableQueueMessage:
         if self._is_closed:
             return LocalQueueMessage(schema=END_OF_STREAM_SCHEMA, content={})
 
         q = self._get_queue()
-        abs_timeout = int(time.time()) + timeout
+        abs_timeout = int(time.time()) + self._timeout
         block = False # let's be optimisitc and assume there is a message waiting
         _timeout = 0
         while True:
@@ -399,7 +477,7 @@ class LocalQueue(Queue):
                 if _timeout:
                     logger.debug(f"LocalQueue: waiting for new messages - {_timeout}")
                 p = q.get(block, _timeout)
-                m = self._pull(p, lease)
+                m = self._pull(p)
                 if m:
                     if m.schema == END_OF_STREAM_SCHEMA:
                         self.close()
@@ -412,7 +490,7 @@ class LocalQueue(Queue):
                 block = True
                 _timeout = self._calc_queue_timeout(rem)
 
-    def _pull(self, mpath, lease=DEF_LEASE_TIME_SEC) -> AcknowledgableQueueMessage:
+    def _pull(self, mpath) -> AcknowledgableQueueMessage:
        with FileLock(self._lock_file):
             logger.debug(f"LocalQueue: checking for '{mpath}'")
             if not os.path.exists(mpath):
@@ -425,7 +503,7 @@ class LocalQueue(Queue):
                 if m.schema == END_OF_STREAM_SCHEMA:
                     return self._pull_eos(m, mpath)
                 # make pending
-                self._move_pending(m, mpath, int(time.time()) + lease)
+                self._move_pending(m, mpath, int(time.time()) + self._lease)
                 return m
 
     def _move_pending(self, m: LocalQueueMessage, mpath: str, timeout: int):
@@ -433,7 +511,11 @@ class LocalQueue(Queue):
         pfn = f"{timeout}--{fn}"
         ppath = os.path.join(self._pending_path, pfn)
         shutil.move(mpath, ppath)
-        m.pending = ppath
+        m._pendingPath = ppath
+        m._origPath = mpath
+        m._queue = self
+        with open(self._log_file, "a") as f:
+            f.write(f"{fn},{MsgState.Pending},{int(time.time())}")
 
     def _pull_eos(self, m: LocalQueueMessage, mpath: str) -> AcknowledgableQueueMessage:
         if self.has_pending_messages():
@@ -469,11 +551,14 @@ class LocalQueue(Queue):
             is_single_eos = (i == 0 and mtout == EOS_LABEL)
             if rem <= 0 or is_single_eos:
                 # timed out - put back in service
-                mp = os.path.join(self._path, f"{m[2]}.json")
+                msg = f"{m[2]}.json"
+                mp = os.path.join(self._path, msg)
                 shutil.move(pp, mp)
                 logger.debug(f"LocalQueue: restoring msg '{mp}'")
                 self._get_queue().put(mp)
                 timeout = 0
+                with open(self._log_file, "a") as f:
+                    f.write(f"{msg},{MsgState.Timedout},{now}")
             elif rem < timeout:
                 timeout = rem
         return timeout
