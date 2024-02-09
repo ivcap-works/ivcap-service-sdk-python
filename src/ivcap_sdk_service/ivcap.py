@@ -137,8 +137,11 @@ def publish_file_as_artifact(
     if not os.path.exists(path):
         raise MissingFile(path)
 
+    mt = mime_type.value if isinstance(mime_type, SupportedMimeTypes) else mime_type
+    if is_binary == None: is_binary = not mt.startswith('text')
     def copy(fd):
-        with open(path, "r") as f:
+        mode = "r+b" if is_binary else "r"
+        with open(path, mode) as f:
             shutil.copyfileobj(f, fd)
     return publish_artifact(name, copy, mime_type,
                             metadata=metadata, seekable=seekable,
