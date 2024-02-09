@@ -21,10 +21,10 @@ def verify_artifact(urn):
     #         raise ArgumentTypeError(f"Illegal artifact reference '{urn}' - expected url")
     #     return urn
     # else:
-    
+
     if validators.url(urn):
         return urn
-    # could be local file 
+    # could be local file
     if not get_config().IO_ADAPTER.artifact_readable(urn):
         raise ArgumentTypeError(f"Cannot find local file '{urn}' - {get_config().IO_ADAPTER}")
     return urn
@@ -49,12 +49,12 @@ def verify_collection(urn: str):
         # inside a container we get collections served from a queue
         if urn.startswith(get_config().QUEUE_PREFIX):
             return urn
-        
+
         raise ArgumentTypeError(f"Illegal collection reference '{urn}' - expected url")
     else:
         # throws an exception if we can't create a collection object
         get_config().IO_ADAPTER.get_collection(urn)
-        return urn 
+        return urn
 
 class CollectionAction(Action):
     def __call__(self, _1, namespace, value, _2=None):
@@ -63,7 +63,7 @@ class CollectionAction(Action):
             setattr(namespace, self.dest, v)
         except Exception as err:
             raise ArgumentTypeError(err)
-  
+
 def verify_aspect(urn):
     if is_valid_resource_urn(urn, Resource.ASPECT):
         return urn
@@ -73,14 +73,15 @@ def verify_aspect(urn):
     #         raise ArgumentTypeError(f"Illegal aspect reference '{urn}' - expected url")
     #     return urn
     # else:
-    
+
     if validators.url(urn):
         return urn
-    
-    # could be local file 
-    if not get_config().IO_ADAPTER.artifact_readable(urn):
-        raise ArgumentTypeError(f"Cannot find local file '{urn}' - {get_config().IO_ADAPTER}")
-    return urn
+
+    # could be local file
+    if get_config().IO_ADAPTER.artifact_readable(urn):
+        return urn
+
+    raise ArgumentTypeError(f"URN '{urn}' is not a valid Aspect identifier")
 
 class AspectAction(Action):
     def __call__(self, _1, namespace, value, _2=None):
@@ -99,14 +100,15 @@ def verify_queue(urn):
     #         raise ArgumentTypeError(f"Illegal queue reference '{urn}' - expected url")
     #     return urn
     # else:
-    
+
     if validators.url(urn):
         return urn
-    
-    # could be local file 
-    # if not get_config().IO_ADAPTER.artifact_readable(urn):
-    #     raise ArgumentTypeError(f"Cannot find local file '{urn}' - {get_config().IO_ADAPTER}")
-    # return urn
+
+    # could be local file
+    if get_config().IO_ADAPTER.artifact_readable(urn):
+        return urn
+
+    raise ArgumentTypeError(f"URN '{urn}' is not a valid Queue identifier")
 
 class QueueAction(Action):
     def __call__(self, _1, namespace, value, _2=None):
@@ -115,7 +117,7 @@ class QueueAction(Action):
             setattr(namespace, self.dest, v)
         except Exception as err:
             raise ArgumentTypeError(err)
-      
+
 def is_valid_resource_urn(urn: str, resource: Resource) -> bool:
     prefix = f"{get_config().SCHEMA_PREFIX}{resource.value}"
     return urn.startswith(prefix)

@@ -18,7 +18,7 @@ from queue import Empty, SimpleQueue
 import re
 import shutil
 from threading import Lock
-from typing import Optional, Union
+from typing import Any, Callable, Optional, Type, TypeVar, Union
 from os import access, R_OK
 from os.path import isfile, join
 from urllib.parse import urlparse
@@ -33,9 +33,10 @@ from .readable_proxy import ReadableProxy
 from .writable_file import WritableFile
 from .utils import get_cache_name
 from ..utils import json_dump
-from ..itypes import URN, MetaDict, Url, SupportedMimeTypes
+from ..itypes import URN, AspectDict, MetaDict, Url, SupportedMimeTypes
 from ..logger import sys_logger as logger
-from .io_adapter import DEF_LEASE_TIME_SEC, DEF_MAX_WAIT_TIME_SEC, END_OF_STREAM_SCHEMA, AcknowledgableQueueMessage, Collection, IOAdapter, IOReadable, IOWritable, OnCloseF, Queue, QueueMessage, QueueTimeoutException
+from .io_adapter import ASPECT_MSG_SCHEMA, DEF_LEASE_TIME_SEC, DEF_MAX_WAIT_TIME_SEC, END_OF_STREAM_SCHEMA, AcknowledgableQueueMessage, Collection, IOAdapter, IOReadable, IOWritable, OnCloseF, Queue, QueueMessage, QueueTimeoutException
+from ..aspect import Aspect
 
 class LocalIOAdapter(IOAdapter):
     """
@@ -136,6 +137,7 @@ class LocalIOAdapter(IOAdapter):
         name: Optional[str] = None,
         metadata: Optional[MetaDict] = {},
         seekable=False,
+        is_binary: Optional[bool]=None,
         on_close: Optional[OnCloseF] = None
     ) -> IOWritable:
         """Returns a IOWritable to create a new artifact. It needs to be closed
@@ -161,7 +163,8 @@ class LocalIOAdapter(IOAdapter):
             fname = self._to_path(self.out_dir, n)
         if isinstance(mime_type, SupportedMimeTypes):
             mime_type = mime_type.value
-        is_binary = not mime_type.startswith('text')
+        if is_binary == None:
+            is_binary = not mime_type.startswith('text')
 
         def _on_close(urn, _2):
             logger.info("Written artifact '%s' to '%s'", name, fname)
@@ -274,6 +277,9 @@ class LocalIOAdapter(IOAdapter):
             raise ValueError(f"Remote collection is not supported, yet")
 
     def get_queue(self, queue_urn: str) -> Queue:
+        if queue_urn.startswith("urn:file:"):
+            # for testing and debugging, we support a queue with a single file
+            return TestQueue(queue_urn, self)
         return LocalQueue(queue_urn, self)
 
     def __repr__(self):
@@ -366,45 +372,21 @@ class LocalQueueMessage(AcknowledgableQueueMessage):
 
 EOS_LABEL = 99999999999
 
+T = TypeVar("T")
 
-class LocalQueue(Queue):
-    """A queue of messages"""
-
+class BaseQueue(Queue):
     def __init__(self,
                  urn: str,
                  adapter: LocalIOAdapter,
                  lease:float = DEF_LEASE_TIME_SEC,
                  timeout:float = DEF_MAX_WAIT_TIME_SEC
     ) -> None:
-        from ..config import Resource
-        from ..ivcap import get_config # break import loop
-
         self._urn = urn
+        self._name = urn[len("urn:ivcap:queue#")]
         self._adapter = adapter
         self._lease = lease
         self._timeout = timeout
-
-        self._path = resource_urn_path(urn, Resource.QUEUE, adapter.in_dir)
-        self._pending_path = os.path.join(self._path, "_pending")
-        self._idx_file = os.path.join(self._path, "_idx")
-        self._log_file = os.path.join(self._path, "_log.csv")
-        self._lock_file = os.path.join(self._path, "_queue.lock")
-        with FileLock(self._lock_file):
-            if not os.path.isdir(self._pending_path):
-                os.mkdir(self._pending_path)
-            if not os.path.exists(self._idx_file):
-                with open(self._idx_file, "a") as f:
-                    f.write("0")
-
-        self._name = Path(self._path).stem
-        self._id_prefix = f"{get_config().SCHEMA_PREFIX}{Resource.MESSAGE.value}#{self._name}-"
-        self._idx_file = os.path.join(self._path, "_idx")
-        self._msg_glob = os.path.join(self._path, "*.json")
-        self._pending_glob = os.path.join(self._pending_path, "*.json")
         self._is_closed = False
-        self._queue = None
-        self._lock = Lock()
-        self._observer = None
 
     @property
     def name(self) -> str:
@@ -434,6 +416,81 @@ class LocalQueue(Queue):
 
     def close(self):
         self._is_closed = True
+
+    def map(self, out_queue: Queue, mapper: Callable[[QueueMessage], QueueMessage]):
+        count = 0
+        for m in self:
+            if m.schema == END_OF_STREAM_SCHEMA:
+                out_queue.push(m)
+                break
+            else:
+                outm = mapper(m)
+                if outm:
+                    if type(outm) in [list,tuple]:
+                        for m in outm: out_queue.push(m)
+                    else:
+                        out_queue.push(outm)
+                    count += 1
+                else:
+                    m.release()
+        logger.info(f"done processing {count} message")
+
+    def map_aspect(self, out_queue: Queue, in_cls: Type[Aspect], mapper: Callable[[Aspect], Aspect]):
+        def f(m):
+            if m.schema != ASPECT_MSG_SCHEMA:
+                return None
+            inA = in_cls(**m.content)
+            inA.MESSAGE_ID = m.id
+            outA = mapper(inA)
+            if outA:
+                if type(outA) in [list,tuple]:
+                    return [QueueMessage.from_aspect(a) for a in outA]
+                else:
+                    return QueueMessage.from_aspect(outA)
+            else:
+                return None
+
+        self.map(out_queue, f)
+
+    def __iter__(self):
+        return QueueIter(self)
+
+class LocalQueue(BaseQueue):
+    """A queue of messages"""
+
+    def __init__(self,
+                 urn: str,
+                 adapter: LocalIOAdapter,
+                 lease:float = DEF_LEASE_TIME_SEC,
+                 timeout:float = DEF_MAX_WAIT_TIME_SEC
+    ) -> None:
+        from ..config import Resource
+        from ..ivcap import get_config # break import loop
+
+        super().__init__(urn, adapter, lease, timeout)
+        self._path = resource_urn_path(urn, Resource.QUEUE, adapter.in_dir)
+        self._pending_path = os.path.join(self._path, "_pending")
+        self._idx_file = os.path.join(self._path, "_idx")
+        self._log_file = os.path.join(self._path, "_log.csv")
+        self._lock_file = os.path.join(self._path, "_queue.lock")
+        with FileLock(self._lock_file):
+            if not os.path.isdir(self._pending_path):
+                os.mkdir(self._pending_path)
+            if not os.path.exists(self._idx_file):
+                with open(self._idx_file, "a") as f:
+                    f.write("0")
+
+        self._name = Path(self._path).stem
+        self._id_prefix = f"{get_config().SCHEMA_PREFIX}{Resource.MESSAGE.value}#{self._name}-"
+        self._idx_file = os.path.join(self._path, "_idx")
+        self._msg_glob = os.path.join(self._path, "*.json")
+        self._pending_glob = os.path.join(self._pending_path, "*.json")
+        self._queue = None
+        self._lock = Lock()
+        self._observer = None
+
+    def close(self):
+        self._is_closed = True
         with self._lock:
             self._queue = None
             if self._observer:
@@ -443,7 +500,7 @@ class LocalQueue(Queue):
         # clean out pending - should only be EOS messages
         for f in glob.glob(os.path.join(self._pending_path, "*")):
             os.remove(f)
-        logger.debug(f"LocalQueue: closed")
+        logger.debug(f"Queue#{self._name} closed")
 
     def push(self, m: QueueMessage) -> URN:
         with FileLock(self._lock_file):
@@ -451,7 +508,7 @@ class LocalQueue(Queue):
             fn = "{:08d}.json".format(n)
             with open(os.path.join(self._path, fn), "w") as f:
                 m.id = f"{self._id_prefix}{n}"
-                logger.debug(f"LocalQueue: pushing message id '{n}'")
+                logger.debug(f"Queue#{self._name} pushing message id '{n}'")
                 f.write(m.to_json(indent=2))
             self._log(fn, MsgState.Added)
             # with open(self._log_file, "a") as f:
@@ -460,7 +517,6 @@ class LocalQueue(Queue):
     def _get_next_msg_id(self):
         with open(self._idx_file, "r+") as f:
             c = f.read()
-            logger.debug(f"LocalQueue: {self._idx_file} - '{c}'")
             n = int(c) + 1
             f.seek(0)
             f.write(f"{n}")
@@ -478,7 +534,7 @@ class LocalQueue(Queue):
         while True:
             try:
                 if _timeout:
-                    logger.debug(f"LocalQueue: waiting for new messages - {_timeout}")
+                    logger.debug(f"Queue#{self._name}: waiting for new messages - {_timeout}")
                 p = q.get(block, _timeout)
                 m = self._pull(p)
                 if m:
@@ -495,11 +551,11 @@ class LocalQueue(Queue):
 
     def _pull(self, mpath) -> AcknowledgableQueueMessage:
        with FileLock(self._lock_file):
-            logger.debug(f"LocalQueue: checking for '{mpath}'")
+            logger.debug(f"Queue#{self._name} checking for '{mpath}'")
             if not os.path.exists(mpath):
                 return None
             fn = os.path.basename(mpath)
-            logger.debug(f"LocalQueue: found '{fn}'")
+            logger.debug(f"Queue#{self._name} found '{fn}'")
             with open(mpath, "r") as f:
                 s = f.read()
                 m = LocalQueueMessage.from_json(s)
@@ -558,7 +614,7 @@ class LocalQueue(Queue):
                 msg = f"{m[2]}.json"
                 mp = os.path.join(self._path, msg)
                 shutil.move(pp, mp)
-                logger.debug(f"LocalQueue: restoring msg '{mp}'")
+                logger.debug(f"Queue#{self._name} restoring msg '{mp}'")
                 self._get_queue().put(mp)
                 timeout = 0
                 self._log(msg, MsgState.Timedout)
@@ -575,7 +631,7 @@ class LocalQueue(Queue):
                 queue = SimpleQueue()
                 with FileLock(self._lock_file):
                     for fn in sorted(filter(os.path.isfile, glob.glob(self._msg_glob))):
-                        logger.debug(f"LocalQueue: adding msg '{fn}'")
+                        logger.debug(f"Queue#{self._name} adding msg '{fn}'")
                         queue.put(fn)
 
                 # track new incoming messages
@@ -584,7 +640,7 @@ class LocalQueue(Queue):
                     def on_closed(self, event):
                         mpath = event.src_path
                         if fnmatch.fnmatch(mpath, msg_glob):
-                            logger.debug(f"LocalQueue: adding msg '{mpath}'")
+                            logger.debug(f"Queue#{self._name} adding msg '{mpath}'")
                             queue.put(mpath)
                 self._queue = queue
                 self._observer = Observer()
@@ -596,14 +652,38 @@ class LocalQueue(Queue):
         with open(self._log_file, "a") as f:
             f.write(f"{os.path.basename(path)},{state},{int(time.time())}\n")
 
-    def __iter__(self):
-        return QueueIter(self)
-
     def __repr__(self):
         return f"<LocalQueue path={self._path}>"
 
+class TestQueue(BaseQueue):
+    def __init__(self,
+                 urn: str,
+                 adapter: LocalIOAdapter,
+                 lease:float = DEF_LEASE_TIME_SEC,
+                 timeout:float = DEF_MAX_WAIT_TIME_SEC
+    ) -> None:
+        super().__init__(urn, adapter, lease, timeout)
+
+        mpath = urn[len("urn:file://"):]
+        with open(mpath, "r") as f:
+            s = f.read()
+            self._msg = LocalQueueMessage.from_json(s)
+
+    def push(self, m: QueueMessage) -> URN:
+        raise Exception("TestQueue: 'push' not supported")
+
+    def pull(self) -> AcknowledgableQueueMessage:
+        if self._is_closed:
+            return LocalQueueMessage(schema=END_OF_STREAM_SCHEMA, content={})
+        else:
+            self._is_closed = True
+            return self._msg
+
+    def __repr__(self):
+        return f"<TestQueue urn={self._urn}>"
+
 class QueueIter:
-    def __init__(self, queue: LocalQueue) -> None:
+    def __init__(self, queue: Queue) -> None:
         self._queue = queue
         self._last_msg = None
 
@@ -618,6 +698,8 @@ class QueueIter:
 
         self._last_msg = m
         return m
+
+
 
 def resource_urn_path(urn: str, resource: str, in_dir: str) -> str:
     """Returns the 'path' of a resource urn (eveything after ':' or '#')"""

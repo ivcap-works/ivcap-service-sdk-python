@@ -12,6 +12,7 @@ import io
 from dataclass_wizard import JSONWizard
 
 from ..itypes import URN, MetaDict, Url
+from ..aspect import Aspect
 
 class _IOBase(ABC):
     @property
@@ -139,6 +140,8 @@ class QueueMessage(JSONWizard):
 
     @classmethod
     def from_aspect(cls, a) -> "QueueMessage":
+        if isinstance(a, Aspect):
+            a = a.to_dict()
         return cls(
             content=a,
             schema=ASPECT_MSG_SCHEMA,
@@ -275,32 +278,32 @@ class IOAdapter(ABC):
         """
         pass
 
-    @abstractmethod
-    def write_artifact(
-        self,
-        mime_type: str,
-        name: Optional[str] = None,
-        collection_name: Optional[str] = None,
-        metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None,
-        seekable=False,
-        on_close: Optional[OnCloseF] = None
-    ) -> IOWritable:
-        """Returns a IOWritable to create a new artifact. It needs to be closed
-        in order to be persisted. If `on_close` is provided it is called with the
-        artifactID.
+    # @abstractmethod
+    # def write_artifact(
+    #     self,
+    #     mime_type: str,
+    #     name: Optional[str] = None,
+    #     collection_name: Optional[str] = None,
+    #     metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None,
+    #     seekable=False,
+    #     on_close: Optional[OnCloseF] = None
+    # ) -> IOWritable:
+    #     """Returns a IOWritable to create a new artifact. It needs to be closed
+    #     in order to be persisted. If `on_close` is provided it is called with the
+    #     artifactID.
 
-        Args:
-            mime_type (str): _description_
-            name (Optional[str], optional): Optional name. Defaults to None.
-            collection_name (Optional[str], optional): Optional collection name. Defaults to None.
-            metadata (Optional[MetaDict | List[MetaDict]], optional): Key/value pairs (or list of key/value pairs) to add as metadata. Defaults to {}.
-            seekable (bool, optional): If true, writable should be seekable (needed for NetCDF). Defaults to False.
-            on_close (Optional[OnCloseF], optional): Called with assigned artifact ID. Defaults to None.
+    #     Args:
+    #         mime_type (str): _description_
+    #         name (Optional[str], optional): Optional name. Defaults to None.
+    #         collection_name (Optional[str], optional): Optional collection name. Defaults to None.
+    #         metadata (Optional[MetaDict | List[MetaDict]], optional): Key/value pairs (or list of key/value pairs) to add as metadata. Defaults to {}.
+    #         seekable (bool, optional): If true, writable should be seekable (needed for NetCDF). Defaults to False.
+    #         on_close (Optional[OnCloseF], optional): Called with assigned artifact ID. Defaults to None.
 
-        Returns:
-            IOWritable: A file-like object to write deliver artifact content - needs to be closed
-        """
-        pass
+    #     Returns:
+    #         IOWritable: A file-like object to write deliver artifact content - needs to be closed
+    #     """
+    #     pass
 
     @abstractmethod
     def write_artifact(
@@ -310,6 +313,7 @@ class IOAdapter(ABC):
         name: Optional[str] = None,
         metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None,
         seekable=False,
+        is_binary: Optional[bool]=None,
         on_close: Optional[OnCloseF] = None
     ) -> IOWritable:
         """Returns a IOWritable to create a new artifact. It needs to be closed

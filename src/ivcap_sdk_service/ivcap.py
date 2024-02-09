@@ -10,12 +10,14 @@ from __future__ import annotations
 from argparse import ArgumentParser
 from typing import Callable, Dict, Any, Optional, Sequence, Union, cast
 from typing_extensions import deprecated
+import shutil
+import os
 
 from .cio.io_adapter import IOAdapter, IOReadable, IOWritable, OnCloseF
 
 from .logger import sys_logger as logger
 from .config import Config
-from .itypes import URN, MetaDict, MissingSchemaDeclaration, SupportedMimeTypes, Url 
+from .itypes import URN, MetaDict, MissingFile, SupportedMimeTypes, Url
 from .itypes import MissingParameterValue, UnsupportedMimeType, SCHEMA_KEY, ENTITY_KEY
 
 DELIVERED = []
@@ -41,19 +43,20 @@ _MIME_TYPE2SAVER: Dict[str, SaverF] = {
 }
 
 def publish_artifact(
-    name: str, 
+    name: str,
     data_or_lambda: Union[Any, Callable[[IOWritable], None]],
     mime_type: Union[str, SupportedMimeTypes],
     *,
-    metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None, 
+    metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None,
     seekable=False,
+    is_binary: Optional[bool]=None,
     on_close: Optional[OnCloseF] = None
 ) -> str:
     """Deliver a result of this service
 
     Args:
         name (str): A user friendly name
-        data_or_lambda (Union[Any, Callable[[IOWritable], None]]): The data to deliver. Either directly or a callback 
+        data_or_lambda (Union[Any, Callable[[IOWritable], None]]): The data to deliver. Either directly or a callback
              providing a file-like handle to provide the data then.
         mime_type (Union[str, SupportedMimeTypes]): The mime type of the data. Anything not starting with 'text' is assumed to be a binary content
         metadata (Optional[Union[MetaDict, Sequence[MetaDict]]], optional): Key/value pairs (or list of k/v pairs) to add as metadata. Defaults to None.
@@ -83,11 +86,11 @@ def publish_artifact(
         l = cast(Callable[[IOWritable], None],  data_or_lambda)
         if not mime_type:
             raise MissingParameterValue('mime_type')
-        fhdl: IOWritable = get_config().IO_ADAPTER.write_artifact(mime_type, 
+        fhdl: IOWritable = get_config().IO_ADAPTER.write_artifact(mime_type,
                 name=name, metadata=metadata, seekable=seekable, on_close=_on_close)
         l(fhdl)
         fhdl.close()
-    else: 
+    else:
         data = data_or_lambda
         if not mime_type:
             cls = str(type(data))
@@ -97,13 +100,49 @@ def publish_artifact(
 
         sf = _MIME_TYPE2SAVER.get(mime_type)
         if sf:
-            sf(name, data, get_config().IO_ADAPTER, 
-                metadata=metadata, 
-                seekable=seekable, 
+            sf(name, data, get_config().IO_ADAPTER,
+                metadata=metadata,
+                seekable=seekable,
                 on_close=_on_close)
         else:
             raise UnsupportedMimeType(mime_type)
     return url_
+
+def publish_file_as_artifact(
+    name: str,
+    path: str,
+    mime_type: Union[str, SupportedMimeTypes],
+    *,
+    metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None,
+    seekable=False,
+    is_binary: Optional[bool]=None,
+    on_close: Optional[OnCloseF] = None
+) -> str:
+    """Publish a local file as artifact
+
+    Args:
+        name (str): A user friendly name
+        path (str): Path to local file
+        mime_type (Union[str, SupportedMimeTypes]): The mime type of the data. Anything not starting with 'text' is assumed to be a binary content
+        metadata (Optional[Union[MetaDict, Sequence[MetaDict]]], optional): Key/value pairs (or list of k/v pairs) to add as metadata. Defaults to None.
+        seekable (bool, optional): If true, writable should be seekable (needed for NetCDF). Defaults to False.
+        on_close (Optional[Callable[[Url]]], optional): Called with assigned artifact ID. Defaults to None.
+
+    Raises:
+        NotImplementedError: Raised when no saver function is defined for 'type'
+
+    Returns:
+        URL of published artifact
+    """
+    if not os.path.exists(path):
+        raise MissingFile(path)
+
+    def copy(fd):
+        with open(path, "r") as f:
+            shutil.copyfileobj(f, fd)
+    return publish_artifact(name, copy, mime_type,
+                            metadata=metadata, seekable=seekable,
+                            is_binary=is_binary, on_close=on_close)
 
 def create_metadata(schema: str, mdict:Optional[MetaDict] = {}, **args) -> MetaDict:
     """Return a dict which has a 'proper' schema declaration added.
@@ -120,16 +159,16 @@ def create_metadata(schema: str, mdict:Optional[MetaDict] = {}, **args) -> MetaD
 
 @deprecated("Use 'publish_artifact' instead")
 def deliver_data(
-    name: str, 
+    name: str,
     data_or_lambda: Union[Any, Callable[[IOWritable], None]],
-    mime_type: Union[str, SupportedMimeTypes], 
-    metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None, 
+    mime_type: Union[str, SupportedMimeTypes],
+    metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None,
     seekable=False,
     on_close: Optional[OnCloseF] = None
 ) -> str:
-    publish_artifact(name, data_or_lambda, mime_type, 
-                     metadata = metadata, 
-                     seekable = seekable, 
+    publish_artifact(name, data_or_lambda, mime_type,
+                     metadata = metadata,
+                     seekable = seekable,
                      on_close = on_close,
                      )
 
@@ -145,8 +184,8 @@ def register_saver(mime_type: str, obj_type: Any, saverF: SaverF):
     _MIME_TYPE2SAVER[mime_type] = saverF
 
 def publish_aspect(
-    entity: Any, 
-    aspect: MetaDict, 
+    entity: Any,
+    aspect: MetaDict,
     schema: Optional[URN] = None,
     *,
     name: Optional[str] = None,
@@ -154,7 +193,7 @@ def publish_aspect(
 ) -> URN:
     """Add an aspect to 'entity_id' with 'schema'.
     If 'schema' is ommited, 'metadata' is expected to contain a SCHEMA_KEY entry
-    
+
     Args:
         entity (URN): Entity URN the metadata should be attached to
         metadata (MetaDict): Metadata (aspect) to be attached to 'entity_id'
@@ -174,22 +213,22 @@ def publish_aspect(
     # enforce mandatory fields
     aspect[ENTITY_KEY] = entity
     aspect[SCHEMA_KEY] = schema
-        
+
     if not ignore_order_warning and not aspect.get("order"):
         logger.warn(f"Did you forget to add a 'order' reference to aspect '{schema}'?")
 
     return get_config().IO_ADAPTER.write_metadata(entity, schema, aspect, name=name)
-    
+
 def _validate_is_urn(val, name):
     if not isinstance(val, str):
         try:
             val = val.urn
-        except: 
+        except:
             raise Exception(f"{name} '{val}' does not have a URN")
     if not val.startswith("urn:"):
         raise Exception(f"{name} '{val}' is not a URN")
     return val
-    
+
 def create_aspect(schema: str, mdict:Optional[AspectDict] = {}, **args) -> AspectDict:
     """Return a dict which has a 'proper' schema declaration added.
 
@@ -206,20 +245,20 @@ def create_aspect(schema: str, mdict:Optional[AspectDict] = {}, **args) -> Aspec
 
 @deprecated("Use 'publish_aspect' instead")
 def publish_metadata(
-    entity_id: str, 
-    metadata: MetaDict, 
+    entity_id: str,
+    metadata: MetaDict,
     schema: Optional[str] = None,
     name: Optional[str] = None
 ) -> str:
     return publish_aspect(entity_id, metadata, schema, name)
 
 def publish_result(metadata: MetaDict, schema: Optional[str] = None, name: Optional[str] = None,) -> str:
-    """Add an aspect with 'schema' to the order record for this 
+    """Add an aspect with 'schema' to the order record for this
     service instance.
     If 'schema' is ommited, 'metadata' is expected to contain a SCHEMA_KEY entry
-    
+
     NOTE: Please consider if this is the right way to publish an analytics result
-    
+
     Args:
         metadata (MetaDict): Metadata (aspect) to be attached to 'entity_id'
         schema (Optional[str], optional): Schema defining 'metadata'
@@ -233,8 +272,8 @@ def publish_result(metadata: MetaDict, schema: Optional[str] = None, name: Optio
 
 def fetch_data(url: Url, binary_content=True, no_caching=False, seekable=False) -> IOReadable:
     """Return an 'IOReadable' on the content referenced by 'url'.
-    
-    This simply calls 'cio.IOAdapter.read_artifact' through the 
+
+    This simply calls 'cio.IOAdapter.read_artifact' through the
     configured 'IOAdapter'.
 
     Args:
@@ -260,7 +299,7 @@ def get_node_id():
 class ExitException(Exception):
     def __init__(self, msg):
         self.msg = msg
-            
+
 
 def notify(msg, schema=None):
     """Publish 'msg' to indicate progress."""
