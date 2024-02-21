@@ -4,7 +4,7 @@
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
 from builtins import BaseException
-import collections
+import collections.abc
 import sys
 from typing import AnyStr, Callable, List, Optional, Sequence, Union
 import tempfile
@@ -33,13 +33,13 @@ class WritableProxy(IOWritable):
         encoding (_type_, optional): _description_. Defaults to None.
     """
 
-    def __init__(self, 
+    def __init__(self,
         storage_url: str,
-        mime_type: str, 
+        mime_type: str,
         metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None,
         name: Optional[str] = None,
         is_seekable=False,
-        on_close: Optional[Callable[[str, str], str]]=None, 
+        on_close: Optional[Callable[[str, str], str]]=None,
         encoding=None,
     ):
         self._storage_url = storage_url
@@ -126,7 +126,7 @@ class WritableProxy(IOWritable):
             self._file_obj.close()
 
     def _upload(
-        self, 
+        self,
     ) -> str:
         fd = self._file_obj
         logger.info("Upload artifact '%s'", self._name)
@@ -135,7 +135,7 @@ class WritableProxy(IOWritable):
 
         metadata = self._metadata
         if metadata:
-            if not isinstance(metadata, collections.Sequence):
+            if not isinstance(metadata, collections.abc.Sequence):
                 metadata = [metadata]
         else:
             metadata = []
@@ -178,7 +178,7 @@ class WritableProxy(IOWritable):
         return artifactID
 
     # def _upload_metadata(
-    #     self, 
+    #     self,
     #     metadata: Sequence[MetaDict],
     #     artifactID: str,
     #     url: str,
