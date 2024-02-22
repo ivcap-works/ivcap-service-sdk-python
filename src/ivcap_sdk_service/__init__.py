@@ -19,14 +19,14 @@ except Exception:
 
 
 from .ivcap import deliver_data, publish_artifact, fetch_data, register_saver
-from .ivcap import create_aspect, publish_aspect, publish_file_as_artifact
+from .ivcap import create_aspect, publish_aspect, find_aspect, publish_file_as_artifact
 from .ivcap import create_metadata, publish_metadata
 from .ivcap import SCHEMA_KEY, publish_result
 from .ivcap import get_config, register_saver, get_order_id, get_node_id
 from .run import register_service
 from .service import Service, Parameter, Option, Type
 from .service import Workflow, BasicWorkflow, PythonWorkflow
-from .aspect import Aspect
+from .aspect import Aspect, GenericAspect
 
 from .cio.io_adapter import IOAdapter, IOWritable, IOReadable, QueueMessage
 from .cio.io_adapter import ASPECT_MSG_SCHEMA, END_OF_STREAM_SCHEMA

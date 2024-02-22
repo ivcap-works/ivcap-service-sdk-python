@@ -18,8 +18,8 @@ from queue import Empty, SimpleQueue
 import re
 import shutil
 from threading import Lock
-from typing import Any, Callable, Optional, Type, TypeVar, Union
-from os import access, R_OK
+from typing import Any, Callable, Dict, List, Optional, Type, TypeVar, Union
+from os import access, R_OK, walk
 from os.path import isfile, join
 from urllib.parse import urlparse
 import time
@@ -27,6 +27,8 @@ from filelock import FileLock
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import random
+from jsonpath_ng import JSONPath
+from jsonpath_ng.ext import parse as jp_parse
 
 from .readable_file import ReadableFile
 from .readable_proxy import ReadableProxy
@@ -35,8 +37,8 @@ from .utils import get_cache_name
 from ..utils import json_dump
 from ..itypes import URN, AspectDict, MetaDict, Url, SupportedMimeTypes
 from ..logger import sys_logger as logger
-from .io_adapter import ASPECT_MSG_SCHEMA, DEF_LEASE_TIME_SEC, DEF_MAX_WAIT_TIME_SEC, END_OF_STREAM_SCHEMA, AcknowledgableQueueMessage, Collection, IOAdapter, IOReadable, IOWritable, OnCloseF, Queue, QueueMessage, QueueTimeoutException
-from ..aspect import Aspect
+from .io_adapter import A, ASPECT_MSG_SCHEMA, DEF_LEASE_TIME_SEC, DEF_MAX_WAIT_TIME_SEC, END_OF_STREAM_SCHEMA, AcknowledgableQueueMessage, Collection, IOAdapter, IOReadable, IOWritable, OnCloseF, Queue, QueueMessage, QueueTimeoutException, UnexpectedMessgeException
+from ..aspect import Aspect, GenericAspect
 
 class LocalIOAdapter(IOAdapter):
     """
@@ -155,12 +157,12 @@ class LocalIOAdapter(IOAdapter):
         Returns:
             IOWritable: A file-like object to write deliver artifact content - needs to be closed
         """
-        fname = self._to_path(self.out_dir, name)
-        if os.path.exists(fname):
-            p = pathlib.Path(name)
-            r = "{:05d}".format(random.randint(0,99999))
-            n = f"{p.stem}-{r}{p.suffix}"
-            fname = self._to_path(self.out_dir, n)
+        fname = self._to_path(self.out_dir, name, ensure_uniqueness=True)
+        # if os.path.exists(fname):
+        #     p = pathlib.Path(name)
+        #     r = "{:05d}".format(random.randint(0,99999))
+        #     n = f"{p.stem}-{r}{p.suffix}"
+        #     fname = self._to_path(self.out_dir, n)
         if isinstance(mime_type, SupportedMimeTypes):
             mime_type = mime_type.value
         if is_binary == None:
@@ -169,7 +171,7 @@ class LocalIOAdapter(IOAdapter):
         def _on_close(urn, _2):
             logger.info("Written artifact '%s' to '%s'", name, fname)
             if metadata and metadata != {}:
-                json_dump(metadata, f"{fname}-meta.json")
+                json_dump(metadata, f"{fname}-meta.json", entity=urn)
             if on_close:
                 on_close(urn)
 
@@ -204,8 +206,13 @@ class LocalIOAdapter(IOAdapter):
         name = os.path.basename(path)
         return ReadableFile(name, path, is_binary=binary_content)
 
-    def _to_path(self, prefix: str, name: str, collection_name: str = None, ext = None) -> str:
-
+    def _to_path(self,
+                 prefix: str,
+                 name: str,
+                 collection_name: str = None,
+                 ext = None,
+                 ensure_uniqueness: bool = False,
+    ) -> str:
         if name.startswith('/'):
             path = name
         elif name.startswith('file:'):
@@ -220,6 +227,11 @@ class LocalIOAdapter(IOAdapter):
         if ext:
             path = PurePath(path).with_suffix(f".{ext}").as_posix()
 
+        if ensure_uniqueness and os.path.exists(path):
+            p = pathlib.Path(path)
+            r = "{:05d}".format(random.randint(0,99999))
+            n = f"{p.stem}-{r}{p.suffix}"
+            path = self._to_path(self.out_dir, n)
         return path
 
     def write_metadata(
@@ -244,7 +256,7 @@ class LocalIOAdapter(IOAdapter):
             e = os.path.basename(fn)
             if not e.startswith("urn"):
                 e = f"urn:{e}"
-        fname = self._to_path(self.out_dir, e)
+        fname = self._to_path(self.out_dir, e, ensure_uniqueness=True)
         json_dump(metadata, fname)
         return e
 
@@ -265,6 +277,64 @@ class LocalIOAdapter(IOAdapter):
                 return a
         else:
             raise ValueError(f"Cannot find local file for aspect '{fname}")
+
+    def find_aspect(self,
+                    schema: URN = None,
+                    entity: URN = None,
+                    json_path: str = None,
+                    schema2type: Dict[str, Type[A]] = None
+    ) -> List[Aspect]:
+        expr = self._create_jsonpath(json_path) if json_path else None
+        results = []
+        for fn in Path(self.out_dir).glob('*.json'):
+            with open(fn) as f:
+                aj = json.load(f)
+                if not aj:
+                    logger.warning(f"can't parse json in '{fn}'")
+                    continue
+                aschema = aj.get("$schema")
+                if not aschema:
+                    logger.warning(f"aspect does not have '$schema' - {fn}")
+                    continue
+
+                if schema and aschema != schema:
+                        continue
+                if entity:
+                    aentity = aj.get("$entity")
+                    if not aentity:
+                        logger.warning(f"aspect does not have '$entity' - {fn}")
+                        continue
+                    if aentity != entity:
+                        continue
+                if expr:
+                    m = expr.find([aj])
+                    logger.debug(f"checking json path in '{fn}' - matched: {len(m) == 1}")
+                    if len(m) == 0:
+                        continue
+                klass = schema2type.get(aschema) if schema2type else None
+                if klass:
+                    a = klass(**aj)
+                    aentity = aj.get("$entity")
+                    if aentity:
+                        a.ENTITY = aentity
+                else:
+                    a = GenericAspect(aschema, **aj)
+                results.append(a)
+        return results
+
+    def _create_jsonpath(self, path: str = None) -> Optional[JSONPath]:
+        if not path:
+            return None
+
+        if path.startswith('$'):
+            # hope the caller knows what they are doing :)
+            p = path
+        elif (path.startswith('@') or path.startswith('(')):
+            p = f"$[?{path}]"
+        else:
+            raise Exception("json_path should start with either '@' or '('")
+        logger.debug(f"final json path '{p}'")
+        return jp_parse(p)
 
     def get_collection(self, collection_urn: str) -> Collection:
         u = urlparse(collection_urn)
@@ -435,22 +505,34 @@ class BaseQueue(Queue):
                     m.release()
         logger.info(f"done processing {count} message")
 
-    def map_aspect(self, out_queue: Queue, in_cls: Type[Aspect], mapper: Callable[[Aspect], Aspect]):
-        def f(m):
-            if m.schema != ASPECT_MSG_SCHEMA:
-                return None
-            inA = in_cls(**m.content)
-            inA.MESSAGE_ID = m.id
-            outA = mapper(inA)
-            if outA:
-                if type(outA) in [list,tuple]:
-                    return [QueueMessage.from_aspect(a) for a in outA]
-                else:
-                    return QueueMessage.from_aspect(outA)
-            else:
-                return None
+    # def map_aspect(self, out_queue: Queue, in_cls: Type[A], mapper: Callable[[A], Aspect]):
+    #     def f(m):
+    #         if m.schema != ASPECT_MSG_SCHEMA:
+    #             return None
+    #         inA = in_cls(**m.content)
+    #         inA.MESSAGE_ID = m.id
+    #         outA = mapper(inA)
+    #         if outA:
+    #             if type(outA) in [list,tuple]:
+    #                 return [QueueMessage.from_aspect(a) for a in outA]
+    #             else:
+    #                 return QueueMessage.from_aspect(outA)
+    #         else:
+    #             return None
 
-        self.map(out_queue, f)
+    #     self.map(out_queue, f)
+
+    # def pull_aspect(self, msg_cls: Type[A]) -> A:
+    #     m = self.pop()
+    #     if m.schema == END_OF_STREAM_SCHEMA:
+    #         raise StopIteration
+    #     if m.schema != ASPECT_MSG_SCHEMA:
+    #         return UnexpectedMessgeException
+
+    #     a = msg_cls(**m.content)
+    #     return
+
+
 
     def __iter__(self):
         return QueueIter(self)
@@ -664,20 +746,29 @@ class TestQueue(BaseQueue):
     ) -> None:
         super().__init__(urn, adapter, lease, timeout)
 
+        self._queue = []
         mpath = urn[len("urn:file://"):]
+        if os.path.isdir(mpath):
+            for f in glob.glob(os.path.join(mpath, "*.json")):
+                self.__fill_q(f)
+        else:
+            self.__fill_q(mpath)
+
+    def __fill_q(self, mpath):
         with open(mpath, "r") as f:
             s = f.read()
-            self._msg = LocalQueueMessage.from_json(s)
+            self._queue.append(LocalQueueMessage.from_json(s))
 
     def push(self, m: QueueMessage) -> URN:
         raise Exception("TestQueue: 'push' not supported")
 
     def pull(self) -> AcknowledgableQueueMessage:
-        if self._is_closed:
+        if self._is_closed or len(self._queue) == 0:
             return LocalQueueMessage(schema=END_OF_STREAM_SCHEMA, content={})
         else:
-            self._is_closed = True
-            return self._msg
+            m = self._queue.pop(0)
+            self._is_closed = len(self._queue) == 0
+            return m
 
     def __repr__(self):
         return f"<TestQueue urn={self._urn}>"

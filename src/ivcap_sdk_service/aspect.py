@@ -3,6 +3,8 @@ from typing import Dict
 from pydantic import RootModel, TypeAdapter
 from pydantic.dataclasses import dataclass
 
+from .itypes import URN
+
 @dataclass
 class Aspect():
 
@@ -18,8 +20,9 @@ class Aspect():
         ))
         return d
 
-    def dump_json(self, indent = 2) -> str:
+    def dump_json(self, indent = 2, entity: URN = None) -> str:
         d = self.to_dict()
+        if entity: d["$entity"] = entity
         return json.dumps(d, indent=indent)
 
     @classmethod
@@ -38,3 +41,27 @@ class Aspect():
         if hasattr(cls, 'TITLE'):
             s['title'] = cls.TITLE
         return s
+
+class GenericAspect(Aspect):
+    """Used for reading unknown aspects"""
+    def __init__(self, schema: URN, **entries):
+        entries.pop("$schema")
+        self.__dict__.update(entries)
+        self.SCHEMA = schema
+        self.ENTITY = entries.get("$entity")
+
+    def to_dict(self) -> Dict[str, any]:
+        d = super().to_dict()
+        d.update(self.__dict__)
+        d.pop("SCHEMA")
+        return d
+
+    def __repr__(self):
+        if self.ENTITY:
+            return f"<GenericAspect schema={self.SCHEMA} entity={self.ENTITY}>"
+        else:
+            return f"<GenericAspect schema={self.SCHEMA}>"
+
+    @classmethod
+    def json_schema(cls, json_schema=None):
+        raise Exception(f"json_schema: not a valid call for a '{cls}'")

@@ -8,7 +8,7 @@ from __future__ import annotations
 # Helper funtions to interface with CSE services
 #
 from argparse import ArgumentParser
-from typing import Callable, Dict, Any, Optional, Sequence, Union, cast
+from typing import Callable, Dict, Any, List, Optional, Sequence, Type, Union, cast
 from typing_extensions import deprecated
 import shutil
 import os
@@ -19,6 +19,7 @@ from .logger import sys_logger as logger
 from .config import Config
 from .itypes import URN, MetaDict, MissingFile, SupportedMimeTypes, Url
 from .itypes import MissingParameterValue, UnsupportedMimeType, SCHEMA_KEY, ENTITY_KEY
+from .aspect import Aspect
 
 DELIVERED = []
 _CONFIG: Config = None # only use internally and only after calling init()
@@ -187,7 +188,7 @@ def register_saver(mime_type: str, obj_type: Any, saverF: SaverF):
     _MIME_TYPE2SAVER[mime_type] = saverF
 
 def publish_aspect(
-    entity: Any,
+    entity: URN,
     aspect: MetaDict,
     schema: Optional[URN] = None,
     *,
@@ -209,6 +210,8 @@ def publish_aspect(
     entity = _validate_is_urn(entity, 'entity')
     if not aspect:
         raise MissingParameterValue('aspect')
+    if isinstance(aspect, Aspect):
+        aspect = aspect.to_dict()
     if not schema:
         schema = aspect.get(SCHEMA_KEY)
     schema = _validate_is_urn(schema, 'schema')
@@ -219,8 +222,25 @@ def publish_aspect(
 
     if not ignore_order_warning and not aspect.get("order"):
         logger.warn(f"Did you forget to add a 'order' reference to aspect '{schema}'?")
-
     return get_config().IO_ADAPTER.write_metadata(entity, schema, aspect, name=name)
+
+def find_aspect(*,
+                schema: URN = None,
+                entity: URN = None,
+                json_path: str = None,
+                schema2type: Dict[str, Type[Aspect]] = None,
+                aspect_type: Type[Aspect] = None
+) -> List[Aspect]:
+    if aspect_type:
+        if not schema: schema = aspect_type.SCHEMA
+        if not schema2type:
+            schema2type = {aspect_type.SCHEMA: aspect_type}
+
+    return get_config().IO_ADAPTER.find_aspect(schema=schema,
+                                               entity=entity,
+                                               json_path=json_path,
+                                               schema2type=schema2type)
+
 
 def _validate_is_urn(val, name):
     if not isinstance(val, str):

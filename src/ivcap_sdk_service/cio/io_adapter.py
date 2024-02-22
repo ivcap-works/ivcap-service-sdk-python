@@ -5,7 +5,7 @@
 #
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import AnyStr, List, Callable, Optional, Sequence, Union, Dict
+from typing import AnyStr, List, Callable, Optional, Sequence, Type, TypeVar, Union, Dict
 import io
 
 
@@ -13,6 +13,9 @@ from dataclass_wizard import JSONWizard
 
 from ..itypes import URN, MetaDict, Url
 from ..aspect import Aspect
+from ..logger import sys_logger as logger
+
+A = TypeVar('A', bound=Aspect)
 
 class _IOBase(ABC):
     @property
@@ -142,6 +145,8 @@ class QueueMessage(JSONWizard):
     def from_aspect(cls, a) -> "QueueMessage":
         if isinstance(a, Aspect):
             a = a.to_dict()
+        else:
+            logger.warn(f"Not an aspect type - {a}")
         return cls(
             content=a,
             schema=ASPECT_MSG_SCHEMA,
@@ -181,6 +186,9 @@ DEF_MAX_WAIT_TIME_SEC = 3600 # 1 hour
 class QueueTimeoutException(Exception):
     pass
 
+class UnexpectedMessgeException(Exception):
+    pass
+
 class Queue(ABC):
     """A queue of messages
     """
@@ -206,6 +214,52 @@ class Queue(ABC):
         """ May throw QueueTimeoutException
         """
         pass
+
+    def pull_aspect(self, msg_cls: Type[A]) -> A:
+        """
+        """
+        m = self.pull()
+        if m.schema == END_OF_STREAM_SCHEMA:
+            raise StopIteration
+        if m.schema != ASPECT_MSG_SCHEMA:
+            return UnexpectedMessgeException
+
+        a = msg_cls(**m.content)
+        a.__message__ = m
+        return a
+
+    def map_aspect(self, out_queue: 'Queue', in_cls: Type[A], mapper: Callable[[A], Aspect]):
+        def f(m):
+            if m.schema != ASPECT_MSG_SCHEMA:
+                return None
+            inA = in_cls(**m.content)
+            inA.MESSAGE_ID = m.id
+            outA = mapper(inA)
+            if outA:
+                if type(outA) in [list,tuple]:
+                    return [QueueMessage.from_aspect(a) for a in outA]
+                else:
+                    return QueueMessage.from_aspect(outA)
+            else:
+                return None
+        self.map(out_queue, f)
+
+    def ack_aspect(self, aspect: Aspect) -> None:
+        """Acknowledge the message behind the aspect"""
+        if hasattr(aspect, '__message__'):
+            aspect.__message__.ack()
+        else:
+            logger.Warn(f"attempting to 'ack' non-message aspecct - {aspect}")
+        pass
+
+    def release_aspect(self, aspect: Aspect) -> None:
+        """Release the message behind the aspect"""
+        if hasattr(aspect, '__message__'):
+            aspect.__message__.ack()
+        else:
+            logger.Warn(f"attempting to 'ack' non-message aspecct - {aspect}")
+        pass
+
 
     @property
     @abstractmethod
@@ -374,6 +428,26 @@ class IOAdapter(ABC):
 
         Returns:
             dict: The content of the aspect as a dict
+        """
+        pass
+
+    @abstractmethod
+    def find_aspect(self,
+                    schema: URN = None,
+                    entity: URN = None,
+                    json_path: str = None,
+                    schema2type: Dict[str, Type[Aspect]] = None
+    ) -> List[Aspect]:
+        """Return a list of aspects
+
+        Args:
+            schema (URN, optional): Optional schema to filter on
+            schema (URN, optional): Optional entiy to filter on
+            json_path (str, optional): Optional json_path expr to filter on
+            schema2type: (Dict[str, Type[Aspect]], optional): Mapping from schema URN to aspect class
+
+        Returns:
+            list[Aspect]: List of aspects fulfilling filter
         """
         pass
 

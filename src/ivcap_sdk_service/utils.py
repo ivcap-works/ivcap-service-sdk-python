@@ -11,6 +11,7 @@ import yaml
 
 from .logger import sys_logger as logger
 from .aspect import Aspect
+from .itypes import URN
 
 try:
     from yaml import CSafeLoader as SafeLoader, CDumper as Dumper
@@ -67,11 +68,15 @@ class _CustomEncoder(json.JSONEncoder):
             return o.to_json()
         return json.JSONEncoder.default(self, o)
 
-def json_dump(obj: Any, fileName: str = None, failQuietly=True) -> str:
+def json_dump(obj: Any, fileName: str = None, entity: URN = None, failQuietly=True) -> str:
     try:
         if isinstance(obj, Aspect):
-            js = obj.dump_json(indent=2)
+            js = obj.dump_json(indent=2, entity=entity)
         else:
+            d = obj if isinstance(obj, dict) else obj.__dict__
+            if not d.get("$schema"):
+                logger.warning("metadata has no '$schema' declaration - {d}")
+            if entity: d["$entity"] = entity
             js = json.dumps(obj, indent=2, cls=_CustomEncoder)
         if fileName:
             with open(fileName, "w") as fp:
