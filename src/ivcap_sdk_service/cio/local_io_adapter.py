@@ -423,11 +423,9 @@ class LocalQueueMessage(AcknowledgableQueueMessage):
             with FileLock(self._queue._lock_file):
                 pathlib.Path(self._origPath).unlink(missing_ok=True)
                 pathlib.Path(self._pendingPath).unlink(missing_ok=True)
+                self._queue._log(self._origPath, MsgState.Consumed)
                 self._origPath = None
                 self._pendingPath = None
-                self._queue._log(self._origPath, MsgState.Consumed)
-                # with open(self._queue._log_file, "a") as f:
-                #     f.write(f"{os.path.basename(self._origPath)},{MsgState.Consumed},{int(time.time())}\n")
 
     def release(self) -> None:
         """Release a message as not being processed and should be put back into the queue"""
@@ -489,50 +487,24 @@ class BaseQueue(Queue):
 
     def map(self, out_queue: Queue, mapper: Callable[[QueueMessage], QueueMessage]):
         count = 0
-        for m in self:
+        while True:
+            m = self.pull()
             if m.schema == END_OF_STREAM_SCHEMA:
                 out_queue.push(m)
+                m.ack()
                 break
             else:
                 outm = mapper(m)
                 if outm:
                     if type(outm) in [list,tuple]:
-                        for m in outm: out_queue.push(m)
+                        for m2 in outm: out_queue.push(m2)
                     else:
                         out_queue.push(outm)
+                    m.ack()
                     count += 1
                 else:
                     m.release()
         logger.info(f"done processing {count} message")
-
-    # def map_aspect(self, out_queue: Queue, in_cls: Type[A], mapper: Callable[[A], Aspect]):
-    #     def f(m):
-    #         if m.schema != ASPECT_MSG_SCHEMA:
-    #             return None
-    #         inA = in_cls(**m.content)
-    #         inA.MESSAGE_ID = m.id
-    #         outA = mapper(inA)
-    #         if outA:
-    #             if type(outA) in [list,tuple]:
-    #                 return [QueueMessage.from_aspect(a) for a in outA]
-    #             else:
-    #                 return QueueMessage.from_aspect(outA)
-    #         else:
-    #             return None
-
-    #     self.map(out_queue, f)
-
-    # def pull_aspect(self, msg_cls: Type[A]) -> A:
-    #     m = self.pop()
-    #     if m.schema == END_OF_STREAM_SCHEMA:
-    #         raise StopIteration
-    #     if m.schema != ASPECT_MSG_SCHEMA:
-    #         return UnexpectedMessgeException
-
-    #     a = msg_cls(**m.content)
-    #     return
-
-
 
     def __iter__(self):
         return QueueIter(self)
@@ -684,13 +656,19 @@ class LocalQueue(BaseQueue):
         p = re.compile('(\d+)--(\d+)')
         now = int(time.time())
         timeout = max_timeout
+        found_eos = False
         for i, pp in enumerate(filter(os.path.isfile, glob.glob(self._pending_glob))):
             m = p.match(os.path.basename(pp))
             if not m:
                 raise Exception(f"Unexpected pending message file name - '{pp}'")
             mtout = int(m[1])
+            if found_eos and mtout == EOS_LABEL:
+                # additional EOS - remove
+                pathlib.Path(pp).unlink(missing_ok=True)
+                continue
             rem = mtout - now
-            is_single_eos = (i == 0 and mtout == EOS_LABEL)
+            found_eos = mtout == EOS_LABEL
+            is_single_eos = (i == 0 and found_eos)
             if rem <= 0 or is_single_eos:
                 # timed out - put back in service
                 msg = f"{m[2]}.json"
@@ -718,11 +696,12 @@ class LocalQueue(BaseQueue):
 
                 # track new incoming messages
                 msg_glob = self._msg_glob
+                qname = self._name
                 class Handler(FileSystemEventHandler):
                     def on_closed(self, event):
                         mpath = event.src_path
                         if fnmatch.fnmatch(mpath, msg_glob):
-                            logger.debug(f"Queue#{self._name} adding msg '{mpath}'")
+                            logger.debug(f"Queue#{qname} adding msg '{mpath}'")
                             queue.put(mpath)
                 self._queue = queue
                 self._observer = Observer()
@@ -804,8 +783,11 @@ def resource_urn_path(urn: str, resource: str, in_dir: str) -> str:
         if u.fragment != "":
             dname = u.fragment
         else:
-            prefix = f"{get_config().SCHEMA_PREFIX}{resource.value}:"
-            dname = u.path[len(prefix)]
+            prefix = f"{get_config().SCHEMA_PREFIX}{resource.value}."
+            plen = len(prefix)
+            if len(urn) < plen:
+                raise ValueError(f"URN'{urn}'is not a valid one for resource '{resource.value}'")
+            dname = urn[plen:]
         path = os.path.join(in_dir, dname)
         if not os.path.isdir(path):
             path = os.path.join(get_config().OUT_DIR, dname)
