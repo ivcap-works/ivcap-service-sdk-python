@@ -22,7 +22,7 @@ INSIDE_ARGO = not not os.getenv('ARGO_NODE_ID', None) # make it a bool
 DEF_OUT_DIR = '/data/out'
 DEF_IN_DIR = '/data/in'
 
-DEF_CACHE_DIR = '/cache'
+DEF_CACHE_DIR = '/data/cache'
 DEF_SCHEMA_PREFIX = 'urn:ivcap:'
 
 SUPPORTED_PROTOCOLS = ['httpserver', 'opendap']
@@ -36,8 +36,11 @@ class Resource(Enum):
     ORDER = 'order'
     SERVICE = 'service'
     ARTIFACT = 'artifact'  
+    ASPECT = 'aspect'  
     COLLECTION = 'collection'
+    QUEUE = 'queue'
     ACCOUNT = 'account'
+    MESSAGE = 'message'
 
 @dataclass(init=False)
 class Config:
@@ -51,7 +54,8 @@ class Config:
   OUT_DIR: str
 
   SCHEMA_PREFIX: str
-
+  QUEUE_PREFIX: str  
+  
   SERVICE_ARGS: MutableSequence[str]
   SERVICE_COMMAND: Command = Command.SERVICE_RUN
 
@@ -114,7 +118,8 @@ class Config:
       self.IO_ADAPTER = LocalIOAdapter(in_dir=in_dir, out_dir=self.OUT_DIR, cache_dir=cacheDir)
 
     self.SCHEMA_PREFIX = args.pop('ivcap:schema_prefix', None)
-
+    self.QUEUE_PREFIX = f"{self.SCHEMA_PREFIX}queue:"
+    
   def add_arguments(self, ap):
     order_id_def = os.getenv('IVCAP_ORDER_ID')
     node_id_def = os.getenv('ARGO_NODE_ID')

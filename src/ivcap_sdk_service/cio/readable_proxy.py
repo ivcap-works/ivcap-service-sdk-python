@@ -7,6 +7,8 @@ from builtins import BaseException
 from typing import IO, AnyStr, Callable, List, Optional
 import tempfile
 import io
+import os
+import shutil
 
 from ivcap_sdk_service.cio.utils import download
 from ..logger import sys_logger as logger
@@ -24,6 +26,7 @@ class ReadableProxy(IOReadable):
         cache: Optional[IOWritable] = None
     ):
         self._name = name if name else url
+        self._urn = self._get_urn(name, url)
         self._is_binary = is_binary
         self._mode = "rb" if is_binary else "r"
         self._download_url = url
@@ -32,7 +35,14 @@ class ReadableProxy(IOReadable):
         self._cache = cache
         self._offset = 0
         self._file_obj = None
-        self._closed = False
+        self._closed = True
+        self._content_type = 'unknown'
+        
+    def _get_urn(self, name: str, url:str) -> str:
+        if name.startswith("urn:"):
+            return name
+        if url.startswith("http"):
+            return "urn:" + url
     
     @property
     def closed(self) -> bool:
@@ -43,12 +53,32 @@ class ReadableProxy(IOReadable):
         return self._mode
 
     @property
+    def urn(self) -> str:
+        return self._urn
+
+    @property
     def name(self) -> str:
         return self._name
+    
+    @property
+    def mime_type(self) -> str:
+        # if not set, maybe we should do a HEAD request
+        return self._content_type
 
     def as_local_file(self) -> str:
-        self._get_file_obj()
-        return self._path
+        fp = self._get_file_obj(False)
+        if self._will_delete_on_close:
+            # need to create a more permanent copy
+            fp2 = tempfile.NamedTemporaryFile(fp.mode, encoding=self._encoding, delete=False)
+            fname = fp2.name
+            shutil.copyfile(fp.name, fname)
+        else:
+            fname = fp.name
+            self.close()
+            
+        # we are handing this file over to somebody elses control
+        logger.info(f"handing over '{fname}' - make sure to clean up after use")
+        return fname
 
     def writable(self) -> bool:
         return self._writable_also
@@ -101,7 +131,11 @@ class ReadableProxy(IOReadable):
         return s
 
     def close(self):
+        if self._closed:
+            return
+        
         self._closed = True
+        self._path = None
  
         if self._cache:
             try:
@@ -118,16 +152,19 @@ class ReadableProxy(IOReadable):
                 self._on_close(f)
         except BaseException as err:
             logger.warn("ReadableProxyclose: on_close '%s' failed with '%s'", self._on_close, err)
-        finally:
+        
+        try:
             f.close()
+        finally:
+            self._file_obj = None
  
 
-    def _get_file_obj(self):
+    def _get_file_obj(self, delete_on_close = True):
         if self._file_obj == None:
-            self._open_file_obj()
+            self._open_file_obj(delete_on_close)
         return self._file_obj
     
-    def _open_file_obj(self):
+    def _open_file_obj(self, delete_on_close = True):
         """Open and ensure that the local file object is properly "filled".
 
         If the content is from an external source, ensure that it is fully
@@ -136,17 +173,19 @@ class ReadableProxy(IOReadable):
 
         if self._download_url:
             mode = "w+b" if self._is_binary else "w+"
-            self._file_obj = tempfile.NamedTemporaryFile(mode, encoding=self._encoding)
+            self._file_obj = tempfile.NamedTemporaryFile(mode, encoding=self._encoding, delete=delete_on_close)
+            self._closed = False
             self._path = self._file_obj.name
+            self._will_delete_on_close = delete_on_close
             try:
-                cacheID = download(self._download_url, self._file_obj, close_fhdl=False)
-                if cacheID:
-                    self._name = f"{self._name} ({cacheID})"
+                (self._content_type, cache_id) = download(self._download_url, self._file_obj, close_fhdl=False)
+                if cache_id:
+                    self._name = f"{self._name} ({cache_id})"
             except BaseException as ex:
                 logger.error("ReadableProxy#_open_file_obj: While downloading - %s", ex.__repr__())
                 raise ex
             
-            logger.debug("ReadableProxy#_open_file_obj: Read external content '%s' into '%s'", self._download_url, self._path)
+            logger.debug("ReadableProxy#_open_file_obj: Successfully read external content '%s' into '%s'", self._download_url, self._path)
 
         elif self._path:
             self._file_obj = io.open(self._path, mode=self._mode, encoding=self._encoding)

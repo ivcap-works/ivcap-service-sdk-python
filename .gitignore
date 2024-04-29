@@ -6,7 +6,6 @@ cache/
 
 # Byte-compiled / optimized / DLL files
 **/__pycache__
-src/
 src/ivcap_sdk_service/__pycache__/
 __pycache__
 __pycache__/
@@ -119,6 +118,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.pypi-token
 
 # Spyder project settings
 .spyderproject
@@ -150,3 +150,4 @@ dmypy.json
 
 # MacOS
 .DS_Store
+

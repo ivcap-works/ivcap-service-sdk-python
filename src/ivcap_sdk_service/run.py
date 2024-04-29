@@ -27,12 +27,12 @@ def run(args: Dict, handler: Callable[[Dict], int]) -> int:
 def _print_banner(service: Service):
     from .__init__ import __version__
     sdk_v = os.getenv('IVCAP_SDK_VERSION', __version__)
-    sdk_c = os.getenv('IVCAP_SDK_COMMIT', '#?')
+    #sdk_c = os.getenv('IVCAP_SDK_COMMIT', '#?')
     svc_v = os.getenv('IVCAP_SERVICE_VERSION', '?')
     svc_c = os.getenv('IVCAP_SERVICE_COMMIT', '?')
     svc_d = os.getenv('IVCAP_SERVICE_BUILD', '?')
 
-    sys_logger.info(f"IVCAP Service '{service.name}' {svc_v}/{svc_c} (sdk {sdk_v}/{sdk_c}) built on {svc_d}.")
+    sys_logger.info(f"IVCAP Service '{service.name}' {svc_v}/{svc_c} (sdk {sdk_v}) built on {svc_d}.")
 
 def register_service(service: Service, handler: Callable[[Dict], int]):
     if INSIDE_ARGO:

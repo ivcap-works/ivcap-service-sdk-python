@@ -75,6 +75,7 @@ jobs:
           git config user.email github-actions@github.com
           cp -r -r docs/_build/html /tmp
           git checkout --orphan gh-pages
+          git pull origin gh-pages
           rm -rf *
           cp -r /tmp/html/* .
           touch .nojekyll

@@ -12,13 +12,14 @@ import requests
 from ..logger import sys_logger as logger
 from ..itypes import Url
 
-def download(url: Url, fhdl: BinaryIO, chunk_size=None, close_fhdl=True) -> str:
-    cacheID = None
+def download(url: Url, fhdl: BinaryIO, chunk_size=None, close_fhdl=True) -> (str, str):
+    cache_id = None
+    content_type = None
     with requests.get(url, stream=True) as r:
         r.raise_for_status()
-        ct = r.headers.get('Content-Type')
-        cacheID = r.headers.get('X-Cache-Id')
-        logger.debug(f"cio#download: request {r} - {ct} - {r.headers}")
+        content_type = r.headers.get('Content-Type')
+        cache_id = r.headers.get('X-Cache-Id')
+        logger.debug(f"cio#download: request {r} - {content_type} - {r.headers}")
 
         # if ct:
         #     cname = f"{cname}.{ct.replace('/', '.')}"
@@ -34,7 +35,7 @@ def download(url: Url, fhdl: BinaryIO, chunk_size=None, close_fhdl=True) -> str:
     fhdl.flush()
     if close_fhdl:         
         fhdl.close()
-    return cacheID
+    return (content_type, cache_id)
 
 def get_cache_name(url: Url) -> str:
     name = re.search('.*/([^/]+)', url)[1]

@@ -25,7 +25,7 @@ SERVICE = Service(
         Parameter(name="msg", type=Type.STRING, description="Message to echo"),
         Parameter(name="times", type=Type.INT, default=2, description="Times to repeat"),
     ],
-    workflow = PythonWorkflow(min_memory='2Gi')
+    workflow = PythonWorkflow(min_memory='2Gi', min_cpu='500m', min_ephemeral_storage='4Gi')
 )
 
 def hello_world(args: Dict, logger: logging):

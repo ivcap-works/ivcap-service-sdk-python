@@ -15,7 +15,10 @@ import os
 
 from typing import Dict
 
-from .verifiers import verify_artifact, verify_collection, ArtifactAction, CollectionAction
+from ivcap_sdk_service.itypes import URN
+
+from .verifiers import QueueAction, verify_artifact, verify_collection, ArtifactAction
+from .verifiers import verify_aspect, AspectAction, CollectionAction, verify_queue
 from .utils import read_yaml_no_dates
 
 @dataclass
@@ -30,12 +33,15 @@ class Type(Enum):
     """Enumerates the different types of service `Parameters`
     """
     STRING = 'string'
+    URN = 'urn'
     INT = 'int'
     FLOAT = 'float'
     BOOL = 'bool'
     OPTION = 'option'
     ARTIFACT = 'artifact'
+    ASPECT = 'aspect'
     COLLECTION = 'collection'
+    QUEUE = 'queue'
 
 @dataclass()
 class Parameter(JSONWizard):
@@ -86,11 +92,15 @@ class BasicWorkflow(Workflow):
         image (str): Name of docker image ['IVCAP_CONTAINER', '@CONTAINER@']
         command (str): Path to init executable/script
         min_memory (int): Min memory requirement in ???
+        min_cpu (int): Min cpu requirement in ???
+        min_ephemeral_storage (int): Min ephemeral storage requirement in ???
     """
     type: str = "basic"
     image: str = os.getenv('IVCAP_CONTAINER', '@CONTAINER@')
     command: List[str] = field(default_factory=list)
     min_memory: str = None
+    min_cpu:    str = None
+    min_ephemeral_storage: str = None
 
     def to_dict(self):
         basic = {
@@ -98,7 +108,11 @@ class BasicWorkflow(Workflow):
             'image': self.image
         }
         if self.min_memory:
-            basic['memory'] = { 'request': self.min_memory}
+            basic['memory'] = {'request': self.min_memory}
+        if self.min_cpu:
+            basic['cpu'] = {'request': self.min_cpu}
+        if self.min_ephemeral_storage:
+            basic['ephemeral-storage'] = {'request': self.min_ephemeral_storage}
         return {
             'type': 'basic',
             'basic': basic
@@ -112,12 +126,14 @@ class PythonWorkflow(BasicWorkflow):
         image (str): Name of docker image ['IVCAP_CONTAINER', '@CONTAINER@']
         script (str): Path to main python script ['/app/service.py']
         min_memory (int): Min memory requirement in ???
+        min_cpu (int): Min cpu requirement in ???
+        min_ephemeral_storage (int): Min ephemeral storage requirement in ???
     """
-   
+
     script: str = '/app/service.py'
 
     @classmethod
-    def def_workflow(cls): 
+    def def_workflow(cls):
         return cls()
 
     def to_dict(self):
@@ -163,11 +179,14 @@ class Service(JSONWizard):
         return d
 
     def to_yaml(self) -> str:
-        return yaml.dump(self.to_dict(), default_flow_style=False)
+        as_dict = self.to_dict()
+        as_yaml = yaml.dump(as_dict, default_flow_style=False, default_style='"')
+        return as_yaml
 
     def append_arguments(self, ap: ArgumentParser) -> ArgumentParser:
         type2type = {
             Type.STRING: str,
+            Type.URN: URN,
             Type.INT: int,
             Type.FLOAT: float,
             Type.BOOL: bool,
@@ -182,24 +201,33 @@ class Service(JSONWizard):
             args:Dict[str, Any] = dict(required = True)
             if p.type == Type.OPTION:
                 ca = list(map(lambda o: o.value, p.options))
-                args['choices'] = ca      
+                args['choices'] = ca
             elif p.type == Type.ARTIFACT:
                 args['type'] = verify_artifact
                 args['metavar'] = "URN"
                 args['action'] = ArtifactAction
+                pass
+            elif p.type == Type.ASPECT:
+                args['type'] = verify_aspect
+                args['metavar'] = "URN"
+                args['action'] = AspectAction
                 pass
             elif p.type == Type.COLLECTION:
                 args['type'] = verify_collection
                 args['metavar'] = "URN"
                 args['action'] = CollectionAction
                 pass
+            elif p.type == Type.QUEUE:
+                args['type'] = verify_queue
+                args['metavar'] = "URN"
+                args['action'] = QueueAction
             elif p.type == Type.BOOL:
                 args['action'] ='store_true'
                 args['required'] = False
             else:
                 if not type(p.type) == Type:
                     raise Exception(f"Wrong type declaration for '{name}' - use enum 'Type'")
-                   
+
                 t = type2type.get(p.type)
                 if not t:
                     raise Exception(f"Unsupported type '{p.type}' for '{name}'")
