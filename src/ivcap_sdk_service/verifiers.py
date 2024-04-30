@@ -50,6 +50,7 @@ def verify_collection(urn: str):
         # inside a container we get collections served from a queue
         if urn.startswith(get_config().QUEUE_PREFIX):
             return urn
+
         raise ArgumentTypeError(f"Illegal collection reference '{urn}' - expected url")
     else:
         # throws an exception if we can't create a collection object

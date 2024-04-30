@@ -63,7 +63,7 @@ class IvcapIOAdapter(IOAdapter):
             # Already locally available
             u = urlparse(artifact_id)
             return self.read_local(u.path, binary_content=binary_content)
-          
+
         curl = self.cachable_url(artifact_id)
         ior = ReadableProxy(curl, name=artifact_id, is_binary=binary_content)
         return ior
@@ -162,16 +162,6 @@ class IvcapIOAdapter(IOAdapter):
             metadata[SCHEMA_KEY] = schema
         return upload_metadata(self.storage_url, entity_id, metadata, name=name)
 
-    def write_metadata(
-        self,
-        entity_id: str, # URN
-        schema: str, # URN
-        metadata: MetaDict,
-    ) -> str:
-        if schema:
-            metadata[SCHEMA_KEY] = schema
-        return upload_metadata(self.storage_url, entity_id, metadata)
-
     def readable_local(self, name: str, collection_name: str = None) -> bool:
         """Return true if file exists and is readable. If 'name' starts with a '/'
         it is assumed to be an absolute path. If not, it's assumed to be local to self._in_dir
@@ -211,7 +201,7 @@ class IvcapIOAdapter(IOAdapter):
             dict: The content of the aspect as a dict
         """
         raise Exception("read_aspect: not implemented, yet")
-        
+
     def _to_path(self, prefix: str, name: str, collection_name: str = None) -> str:
         if name.startswith('/'):
             return name
@@ -226,10 +216,6 @@ class IvcapIOAdapter(IOAdapter):
     def get_collection(self, collection_urn: str) -> Collection:
         return IvcapCollection(collection_urn, self)
 
-    def read_aspect(self, aspect_urn: URN, no_caching=False) -> dict:
-        raise Exception("read_aspect: not implemented, yet")
-
-
     def find_aspect(self,
                     schema: URN = None,
                     entity: URN = None,
@@ -237,7 +223,6 @@ class IvcapIOAdapter(IOAdapter):
                     schema2type: Dict[str, Type[Aspect]] = None
     ) -> List[Aspect]:
         raise Exception("find_aspect: not implemented, yet")
-
 
     def get_queue(self, queue_urn: str) -> Queue:
         raise Exception("get_queue: not implemented, yet")
