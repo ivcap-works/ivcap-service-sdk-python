@@ -4,7 +4,7 @@
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
 from builtins import BaseException
-import collections
+import collections.abc
 import sys
 from typing import AnyStr, Callable, List, Optional, Sequence, Union
 import tempfile
@@ -137,7 +137,7 @@ class WritableProxy(IOWritable):
 
         metadata = self._metadata
         if metadata:
-            if not isinstance(metadata, collections.Sequence):
+            if not isinstance(metadata, collections.abc.Sequence):
                 metadata = [metadata]
         else:
             metadata = []
@@ -227,6 +227,7 @@ def upload_metadata(
         headers["X-Meta-Data-For-Url"] = url
     if name:
         headers["X-Name"] = name
+
     try:
         logger.debug("Post artifact metadata data='%s', headers:'%s'", metadata, headers)
         payload = json_dump(metadata)

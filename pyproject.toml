@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ivcap_sdk_service"
-version = "0.5.0"
+version = "0.6.0"
 description = "SDK library for building services for the IVCAP platform"
 authors = ["Max Ott <max.ott@csiro.au>", "Tim Erwin <tim.erwin@csiro.au>"]
 license = "Proprietary"
@@ -19,6 +19,7 @@ typing-extensions = "^4.9.0"
 watchdog = "^3.0.0"
 pydantic = "^2.6.1"
 jsonpath-ng = "^1.6.1"
+
 
 [tool.poetry.dev-dependencies]
 

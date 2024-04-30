@@ -25,6 +25,7 @@ def verify_artifact(urn):
     if validators.url(urn):
         return urn
     # could be local file
+
     if not get_config().IO_ADAPTER.artifact_readable(urn):
         raise ArgumentTypeError(f"Cannot find local file '{urn}' - {get_config().IO_ADAPTER}")
     return urn
@@ -49,7 +50,6 @@ def verify_collection(urn: str):
         # inside a container we get collections served from a queue
         if urn.startswith(get_config().QUEUE_PREFIX):
             return urn
-
         raise ArgumentTypeError(f"Illegal collection reference '{urn}' - expected url")
     else:
         # throws an exception if we can't create a collection object
