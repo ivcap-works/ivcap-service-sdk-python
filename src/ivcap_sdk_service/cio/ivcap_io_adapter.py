@@ -9,29 +9,31 @@ Implementation of the IOAdapter class for use inside the IVCAP platform
 import os
 from pathlib import Path
 import sys
-from typing import Callable, Optional, Sequence, Union
+from typing import Callable, Dict, List, Optional, Sequence, Type, Union
 from os import access, R_OK
 from os.path import isfile
 from urllib.parse import urlparse
 import requests
 
+from ivcap_sdk_service.aspect import Aspect
+
 from .readable_file import ReadableFile
 from .readable_proxy import ReadableProxy
-from ..itypes import MetaDict, Url, SCHEMA_KEY
+from ..itypes import URN, MetaDict, Url, SCHEMA_KEY
 from ..logger import sys_logger as logger
 
-from .io_adapter import Collection, IOAdapter, IOReadable, IOWritable, OnCloseF
+from .io_adapter import Collection, IOAdapter, IOReadable, IOWritable, OnCloseF, Queue, QueueMessage
 from .writable_proxy import WritableProxy, upload_metadata
 
 class IvcapIOAdapter(IOAdapter):
     """
     An adapter for operating inside an IVCAP container.
     """
-    def __init__(self, 
-        storage_url: Url, 
-        in_dir: str, 
-        out_dir: str, 
-        order_id:str, 
+    def __init__(self,
+        storage_url: Url,
+        in_dir: str,
+        out_dir: str,
+        order_id:str,
         cachable_url: Callable[[str], str],
     ) -> None:
         super().__init__()
@@ -56,20 +58,20 @@ class IvcapIOAdapter(IOAdapter):
             # this is ectually an external link disguised as an artifact type (which it actually is)
             url = artifact_id[4:]
             return self.read_external(url, binary_content, no_caching, seekable)
-        
+
         if artifact_id.startswith("file://"):
             # Already locally available
             u = urlparse(artifact_id)
             return self.read_local(u.path, binary_content=binary_content)
-        
+          
         curl = self.cachable_url(artifact_id)
         ior = ReadableProxy(curl, name=artifact_id, is_binary=binary_content)
         return ior
 
-    def read_external(self, 
-        url: Url, 
-        binary_content=True, 
-        no_caching=False, 
+    def read_external(self,
+        url: Url,
+        binary_content=True,
+        no_caching=False,
         seekable=False,
         local_file_name=None
     ) -> IOReadable:
@@ -84,6 +86,7 @@ class IvcapIOAdapter(IOAdapter):
         Returns:
             IOReadable: The content of the external data item as a file-like object
         """
+        name = url
         if no_caching:
             curl = url
         else:
@@ -91,7 +94,13 @@ class IvcapIOAdapter(IOAdapter):
                 curl = url
             else:
                 curl = self.cachable_url(url)
-        ior = ReadableProxy(curl, name=url, is_binary=binary_content)
+        r = requests.head(curl)
+        if r.status_code >= 400:
+            raise Exception(f"cannot get HEAD of {curl}")
+        n = r.headers.get('X-Artifact-Id')
+        if n:
+            name = n
+        ior = ReadableProxy(curl, name=name, is_binary=binary_content)
         return ior
 
     def artifact_readable(self, artifact_id: str) -> bool:
@@ -108,18 +117,19 @@ class IvcapIOAdapter(IOAdapter):
             return self.readable_local(u.path)
         else:
             return True # assume that all external urls are at least conceptually readable
-    
+
     def write_artifact(
         self,
-        mime_type: str, 
+        mime_type: str,
         *,
         name: Optional[str] = None,
-        metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None, 
+        metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None,
         seekable=False,
+        is_binary: Optional[bool]=None,
         on_close: Optional[OnCloseF] = None
     ) -> IOWritable:
         """Returns a IOWritable to create a new artifact. It needs to be closed
-        in order to be persisted. If `on_close` is provided it is called with the 
+        in order to be persisted. If `on_close` is provided it is called with the
         artifactID.
 
         Args:
@@ -139,7 +149,18 @@ class IvcapIOAdapter(IOAdapter):
             if on_close:
                 on_close(url)
 
-        return WritableProxy(self.storage_url, mime_type, metadata, name, on_close=_on_close)
+        return WritableProxy(self.storage_url, mime_type, metadata, name, on_close=_on_close, is_binary=is_binary)
+
+    def write_metadata(
+        self,
+        entity_id: str, # URN
+        schema: str, # URN
+        metadata: MetaDict,
+        name: Optional[str] = None,
+    ) -> str:
+        if schema:
+            metadata[SCHEMA_KEY] = schema
+        return upload_metadata(self.storage_url, entity_id, metadata, name=name)
 
     def write_metadata(
         self,
@@ -179,6 +200,18 @@ class IvcapIOAdapter(IOAdapter):
         path = self._to_path(self.in_dir, name, collection_name)
         return ReadableFile(name, path, None, is_binary=binary_content)
 
+    def read_aspect(self, aspect_urn: URN, no_caching=False) -> dict:
+        """Return an aspect as a dict
+
+        Args:
+            aspect_urn (URN): URN of aspect to read
+            no_caching (bool, optional): If true, content is not cached nor read from cache. Defaults to False.
+
+        Returns:
+            dict: The content of the aspect as a dict
+        """
+        raise Exception("read_aspect: not implemented, yet")
+        
     def _to_path(self, prefix: str, name: str, collection_name: str = None) -> str:
         if name.startswith('/'):
             return name
@@ -193,6 +226,22 @@ class IvcapIOAdapter(IOAdapter):
     def get_collection(self, collection_urn: str) -> Collection:
         return IvcapCollection(collection_urn, self)
 
+    def read_aspect(self, aspect_urn: URN, no_caching=False) -> dict:
+        raise Exception("read_aspect: not implemented, yet")
+
+
+    def find_aspect(self,
+                    schema: URN = None,
+                    entity: URN = None,
+                    json_path: str = None,
+                    schema2type: Dict[str, Type[Aspect]] = None
+    ) -> List[Aspect]:
+        raise Exception("find_aspect: not implemented, yet")
+
+
+    def get_queue(self, queue_urn: str) -> Queue:
+        raise Exception("get_queue: not implemented, yet")
+
     def __repr__(self):
         return f"<IvcapIOAdapter in_dir={self.in_dir} out_dir={self.out_dir}>"
 
@@ -202,7 +251,12 @@ class IvcapCollection(Collection):
         self._collection_urn = collection_urn
         self._adapter = adapter
 
+    @property
     def name(self) -> str:
+        return self._collection_urn
+
+    @property
+    def urn(self) -> str:
         return self._collection_urn
 
     def __iter__(self):
@@ -224,17 +278,17 @@ class IvcapSingleIter:
     def __next__(self):
         if (self._already_served):
             raise StopIteration()
-        
+
         self._already_served = True
         return self._adapter.read_artifact(self._artifact_urn)
-   
+
 class IvcapCollectionIter:
     def __init__(self, collection_urn: str, adapter: IvcapIOAdapter) -> None:
         self._urn = collection_urn
         self._url = adapter.cachable_url(collection_urn)
         self._adapter = adapter
         self._ack_token = None
-        
+
     def __next__(self):
         self._send_ack() # for potentially previous artifact
         r = self._get_queue()
@@ -246,8 +300,8 @@ class IvcapCollectionIter:
             art_urn = h["Location"]
             self._ack_token = h["X-Ack-Token"]
             a = self._adapter.read_external(art_urn)
-            a.as_local_file()
-            return a 
+            #a.as_local_file()
+            return a
         logger.fatal(f"error response {r.status_code} while checking queue {self._urn}")
         sys.exit(-1)
 
@@ -259,7 +313,7 @@ class IvcapCollectionIter:
         except:
             logger.fatal(f"while checking queue '{self._urn}' - {self._url} - {sys.exc_info()}")
             sys.exit(-1)
-            
+
     def _send_ack(self):
         if not self._ack_token:
             return
@@ -271,5 +325,21 @@ class IvcapCollectionIter:
         except:
             logger.fatal(f"while ack previous artifact '{self._urn}' - {self._url} - {sys.exc_info()}")
             sys.exit(-1)
-        
-        
+
+class IvcapQueue(Queue):
+    """A queue of messages
+    """
+    @property
+    def name(self) -> str:
+        pass
+
+    @property
+    def urn(self) -> str:
+        pass
+
+    def push(self, m: QueueMessage) -> URN:
+        pass
+
+    def pull(self) -> QueueMessage:
+        pass
+

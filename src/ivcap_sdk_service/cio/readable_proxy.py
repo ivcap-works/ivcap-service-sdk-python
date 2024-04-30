@@ -26,7 +26,7 @@ class ReadableProxy(IOReadable):
         cache: Optional[IOWritable] = None
     ):
         self._name = name if name else url
-        self._urn = url
+        self._urn = self._get_urn(name, url)
         self._is_binary = is_binary
         self._mode = "rb" if is_binary else "r"
         self._download_url = url
@@ -37,6 +37,12 @@ class ReadableProxy(IOReadable):
         self._file_obj = None
         self._closed = True
         self._content_type = 'unknown'
+        
+    def _get_urn(self, name: str, url:str) -> str:
+        if name.startswith("urn:"):
+            return name
+        if url.startswith("http"):
+            return "urn:" + url
     
     @property
     def closed(self) -> bool:

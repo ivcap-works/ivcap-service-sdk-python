@@ -15,7 +15,10 @@ import os
 
 from typing import Dict
 
-from .verifiers import verify_artifact, verify_collection, ArtifactAction, CollectionAction
+from ivcap_sdk_service.itypes import URN
+
+from .verifiers import QueueAction, verify_artifact, verify_collection, ArtifactAction
+from .verifiers import verify_aspect, AspectAction, CollectionAction, verify_queue
 from .utils import read_yaml_no_dates
 
 @dataclass
@@ -30,12 +33,15 @@ class Type(Enum):
     """Enumerates the different types of service `Parameters`
     """
     STRING = 'string'
+    URN = 'urn'
     INT = 'int'
     FLOAT = 'float'
     BOOL = 'bool'
     OPTION = 'option'
     ARTIFACT = 'artifact'
+    ASPECT = 'aspect'
     COLLECTION = 'collection'
+    QUEUE = 'queue'
 
 @dataclass()
 class Parameter(JSONWizard):
@@ -181,6 +187,7 @@ class Service(JSONWizard):
     def append_arguments(self, ap: ArgumentParser) -> ArgumentParser:
         type2type = {
             Type.STRING: str,
+            Type.URN: URN,
             Type.INT: int,
             Type.FLOAT: float,
             Type.BOOL: bool,
@@ -201,11 +208,20 @@ class Service(JSONWizard):
                 args['metavar'] = "URN"
                 args['action'] = ArtifactAction
                 pass
+            elif p.type == Type.ASPECT:
+                args['type'] = verify_aspect
+                args['metavar'] = "URN"
+                args['action'] = AspectAction
+                pass
             elif p.type == Type.COLLECTION:
                 args['type'] = verify_collection
                 args['metavar'] = "URN"
                 args['action'] = CollectionAction
                 pass
+            elif p.type == Type.QUEUE:
+                args['type'] = verify_queue
+                args['metavar'] = "URN"
+                args['action'] = QueueAction
             elif p.type == Type.BOOL:
                 args['action'] ='store_true'
                 args['required'] = False
