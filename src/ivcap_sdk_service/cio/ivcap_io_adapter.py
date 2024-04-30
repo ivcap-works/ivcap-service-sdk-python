@@ -9,11 +9,13 @@ Implementation of the IOAdapter class for use inside the IVCAP platform
 import os
 from pathlib import Path
 import sys
-from typing import Callable, Optional, Sequence, Union
+from typing import Callable, Dict, List, Optional, Sequence, Type, Union
 from os import access, R_OK
 from os.path import isfile
 from urllib.parse import urlparse
 import requests
+
+from ivcap_sdk_service.aspect import Aspect
 
 from .readable_file import ReadableFile
 from .readable_proxy import ReadableProxy
@@ -214,6 +216,14 @@ class IvcapIOAdapter(IOAdapter):
     def get_collection(self, collection_urn: str) -> Collection:
         return IvcapCollection(collection_urn, self)
 
+    def find_aspect(self,
+                    schema: URN = None,
+                    entity: URN = None,
+                    json_path: str = None,
+                    schema2type: Dict[str, Type[Aspect]] = None
+    ) -> List[Aspect]:
+        raise Exception("find_aspect: not implemented, yet")
+
     def get_queue(self, queue_urn: str) -> Queue:
         raise Exception("get_queue: not implemented, yet")
 
@@ -317,3 +327,4 @@ class IvcapQueue(Queue):
 
     def pull(self) -> QueueMessage:
         pass
+

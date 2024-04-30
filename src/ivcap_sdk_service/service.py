@@ -58,6 +58,7 @@ class Parameter(JSONWizard):
     unit: str = None
     help: str = None
     optional: bool = False
+    unary: bool = False
     constant: bool = False
 
     def __post_init__(self):
@@ -247,5 +248,3 @@ class Service(JSONWizard):
                 args['required'] = False
             ap.add_argument(f"--{name}", **args)
         return ap
-
-

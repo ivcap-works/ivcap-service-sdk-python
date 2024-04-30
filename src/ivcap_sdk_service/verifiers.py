@@ -25,6 +25,7 @@ def verify_artifact(urn):
     if validators.url(urn):
         return urn
     # could be local file
+
     if not get_config().IO_ADAPTER.artifact_readable(urn):
         raise ArgumentTypeError(f"Cannot find local file '{urn}' - {get_config().IO_ADAPTER}")
     return urn

@@ -4,7 +4,7 @@
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
 from builtins import BaseException
-import collections
+import collections.abc
 import sys
 from typing import AnyStr, Callable, List, Optional, Sequence, Union
 import tempfile
@@ -137,7 +137,7 @@ class WritableProxy(IOWritable):
 
         metadata = self._metadata
         if metadata:
-            if not isinstance(metadata, collections.Sequence):
+            if not isinstance(metadata, collections.abc.Sequence):
                 metadata = [metadata]
         else:
             metadata = []
@@ -151,10 +151,11 @@ class WritableProxy(IOWritable):
         if self._name:
             headers["X-Name"] = self._name
 
-        if len(metadata) == 1 and len(metadata[0].keys()) <= 3:
+        if len(metadata) == 1 and len(metadata[0].keys()) <= 5:
             # Immediately upload simple metadata
             metadataUploaded = True
-            headers['Upload-Metadata'] = ','. join(map(lambda e: f"{e[0]} {encode64(str(e[1]))}", metadata[0].items()))
+            headers['X-Metadata'] = ','. join(map(lambda e: f"{e[0]} {encode64(str(e[1]))}", metadata[0].items()))
+
         try:
             logger.debug("Post artifact data='%s', headers:'%s'", fd, headers)
             r = requests.post(self._storage_url, data=fd, headers=headers)
@@ -226,6 +227,7 @@ def upload_metadata(
         headers["X-Meta-Data-For-Url"] = url
     if name:
         headers["X-Name"] = name
+
     try:
         logger.debug("Post artifact metadata data='%s', headers:'%s'", metadata, headers)
         payload = json_dump(metadata)
