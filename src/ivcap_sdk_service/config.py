@@ -22,7 +22,7 @@ INSIDE_ARGO = not not os.getenv('ARGO_NODE_ID', None) # make it a bool
 DEF_OUT_DIR = '/data/out'
 DEF_IN_DIR = '/data/in'
 
-DEF_CACHE_DIR = '/cache'
+DEF_CACHE_DIR = '/data/cache'
 DEF_SCHEMA_PREFIX = 'urn:ivcap:'
 
 SUPPORTED_PROTOCOLS = ['httpserver', 'opendap']
@@ -36,8 +36,11 @@ class Resource(Enum):
     ORDER = 'order'
     SERVICE = 'service'
     ARTIFACT = 'artifact'  
+    ASPECT = 'aspect'  
     COLLECTION = 'collection'
+    QUEUE = 'queue'
     ACCOUNT = 'account'
+    MESSAGE = 'message'
 
 @dataclass(init=False)
 class Config:
