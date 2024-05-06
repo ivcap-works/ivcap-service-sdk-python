@@ -95,6 +95,9 @@ class BasicWorkflow(Workflow):
         min_memory (int): Min memory requirement in ???
         min_cpu (int): Min cpu requirement in ???
         min_ephemeral_storage (int): Min ephemeral storage requirement in ???
+        gpu_type: only nvidia-tesla-t4 allowed for now, check the avalibility at https://cloud.google.com/compute/docs/gpus/gpu-regions-zones and
+                  https://cloud.google.com/kubernetes-engine/docs/how-to/autopilot-gpus#use-cases
+        gpu_number: specify the number of gpu cards, 1,2 or 4 allowed for now.
     """
     type: str = "basic"
     image: str = os.getenv('IVCAP_CONTAINER', '@CONTAINER@')
@@ -102,12 +105,18 @@ class BasicWorkflow(Workflow):
     min_memory: str = None
     min_cpu:    str = None
     min_ephemeral_storage: str = None
+    gpu_type:   str = None
+    gpu_number: int = 0
 
     def to_dict(self):
         basic = {
             'command': self.command,
             'image': self.image
         }
+        if self.gpu_type:
+            basic['gpu-type'] = self.gpu_type
+        if self.gpu_number:
+            basic['gpu-number'] = self.gpu_number
         if self.min_memory:
             basic['memory'] = {'request': self.min_memory}
         if self.min_cpu:
