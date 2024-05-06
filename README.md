@@ -35,7 +35,7 @@ def hello_world(args: Dict, logger: logging):
 register_service(SERVICE, hello_world)
 ```
 
-For more useful examples see the [examples](./examples) directory.
+For more useful examples see the [examples](./examples) directory or for a git repo which could work as a starting point, check out [ivcap-python-service-example](https://github.com/ivcap-works/ivcap-python-service-example) and [ivcap-python-service-example-collection](https://github.com/ivcap-works/ivcap-python-service-example-collection).
 
 ## Contributing
 
@@ -43,7 +43,8 @@ Interested in contributing? Check out the contributing guidelines. Please note t
 
 ## License
 
-`ivcap_sdk_service` was created by Max Ott <max.ott@csiro.au>, Tim Erwin <tim.erwin@csiro.au>. See [LICENSE](./LICENSE) for licensing terms.
+`ivcap_sdk_service` was initially created by Max Ott <max.ott@csiro.au>, Tim Erwin <tim.erwin@csiro.au> with additional contributions from Ben CLews <ben.clews@csiro.au>" and
+"John Zhang <j.zhang@csiro.au>". See [LICENSE](./LICENSE) for licensing terms.
 
 ## Credits
 
@@ -54,7 +55,7 @@ Interested in contributing? Check out the contributing guidelines. Please note t
 ### Setup
 
 ```
-conda create --name ivcap_service python=3.7 -y
+conda create --name ivcap_service python=3.9 -y
 conda activate ivcap_service
 pip install poetry
 ```
