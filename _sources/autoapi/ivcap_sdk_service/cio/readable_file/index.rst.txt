@@ -41,6 +41,10 @@ Classes
       :type: str
 
 
+   .. py:property:: mime_type
+      :type: str
+
+
    .. py:method:: as_local_file() -> str
 
 

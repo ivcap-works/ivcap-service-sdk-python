@@ -58,6 +58,11 @@ Classes
 
       
 
+   .. py:attribute:: URN
+      :value: 'urn'
+
+      
+
    .. py:attribute:: INT
       :value: 'int'
 
@@ -83,8 +88,18 @@ Classes
 
       
 
+   .. py:attribute:: ASPECT
+      :value: 'aspect'
+
+      
+
    .. py:attribute:: COLLECTION
       :value: 'collection'
+
+      
+
+   .. py:attribute:: QUEUE
+      :value: 'queue'
 
       
 
@@ -152,6 +167,12 @@ Classes
 
       
 
+   .. py:attribute:: unary
+      :type: bool
+      :value: False
+
+      
+
    .. py:attribute:: constant
       :type: bool
       :value: False
@@ -211,6 +232,13 @@ Classes
    :type command: str
    :param min_memory: Min memory requirement in ???
    :type min_memory: int
+   :param min_cpu: Min cpu requirement in ???
+   :type min_cpu: int
+   :param min_ephemeral_storage: Min ephemeral storage requirement in ???
+   :type min_ephemeral_storage: int
+   :param gpu_type: only nvidia-tesla-t4 allowed for now, check the avalibility at https://cloud.google.com/compute/docs/gpus/gpu-regions-zones and
+                    https://cloud.google.com/kubernetes-engine/docs/how-to/autopilot-gpus#use-cases
+   :param gpu_number: specify the number of gpu cards, 1,2 or 4 allowed for now.
 
    .. py:attribute:: type
       :type: str
@@ -230,6 +258,27 @@ Classes
 
    .. py:attribute:: min_memory
       :type: str
+
+      
+
+   .. py:attribute:: min_cpu
+      :type: str
+
+      
+
+   .. py:attribute:: min_ephemeral_storage
+      :type: str
+
+      
+
+   .. py:attribute:: gpu_type
+      :type: str
+
+      
+
+   .. py:attribute:: gpu_number
+      :type: int
+      :value: 0
 
       
 
@@ -253,6 +302,10 @@ Classes
    :type script: str
    :param min_memory: Min memory requirement in ???
    :type min_memory: int
+   :param min_cpu: Min cpu requirement in ???
+   :type min_cpu: int
+   :param min_ephemeral_storage: Min ephemeral storage requirement in ???
+   :type min_ephemeral_storage: int
 
    .. py:attribute:: script
       :type: str

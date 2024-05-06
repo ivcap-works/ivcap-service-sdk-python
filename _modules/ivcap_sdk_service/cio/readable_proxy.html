@@ -12,10 +12,9 @@
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/doctools.js"></script>
         <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -83,6 +82,8 @@
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">IO</span><span class="p">,</span> <span class="n">AnyStr</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
 
 <span class="kn">from</span> <span class="nn">ivcap_sdk_service.cio.utils</span> <span class="kn">import</span> <span class="n">download</span>
 <span class="kn">from</span> <span class="nn">..logger</span> <span class="kn">import</span> <span class="n">sys_logger</span> <span class="k">as</span> <span class="n">logger</span>
@@ -100,6 +101,7 @@
         <span class="n">cache</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">IOWritable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="k">else</span> <span class="n">url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_urn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_urn</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_is_binary</span> <span class="o">=</span> <span class="n">is_binary</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span> <span class="o">=</span> <span class="s2">&quot;rb&quot;</span> <span class="k">if</span> <span class="n">is_binary</span> <span class="k">else</span> <span class="s2">&quot;r&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_download_url</span> <span class="o">=</span> <span class="n">url</span>
@@ -108,7 +110,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span> <span class="o">=</span> <span class="n">cache</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_offset</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_content_type</span> <span class="o">=</span> <span class="s1">&#39;unknown&#39;</span>
+        
+<div class="viewcode-block" id="ReadableProxy._get_urn"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/readable_proxy/index.html#ivcap_sdk_service.cio.readable_proxy.ReadableProxy._get_urn">[docs]</a>    <span class="k">def</span> <span class="nf">_get_urn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span><span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;urn:&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">name</span>
+        <span class="k">if</span> <span class="n">url</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;http&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">&quot;urn:&quot;</span> <span class="o">+</span> <span class="n">url</span></div>
     
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">closed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
@@ -119,12 +128,32 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mode</span>
 
     <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">urn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_urn</span>
+
+    <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span>
+    
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">mime_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># if not set, maybe we should do a HEAD request</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_content_type</span>
 
 <div class="viewcode-block" id="ReadableProxy.as_local_file"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/readable_proxy/index.html#ivcap_sdk_service.cio.readable_proxy.ReadableProxy.as_local_file">[docs]</a>    <span class="k">def</span> <span class="nf">as_local_file</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_get_file_obj</span><span class="p">()</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path</span></div>
+        <span class="n">fp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_file_obj</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_will_delete_on_close</span><span class="p">:</span>
+            <span class="c1"># need to create a more permanent copy</span>
+            <span class="n">fp2</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">fp</span><span class="o">.</span><span class="n">mode</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_encoding</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">fp2</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">fp</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">name</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            
+        <span class="c1"># we are handing this file over to somebody elses control</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;handing over &#39;</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">&#39; - make sure to clean up after use&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">fname</span></div>
 
 <div class="viewcode-block" id="ReadableProxy.writable"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/readable_proxy/index.html#ivcap_sdk_service.cio.readable_proxy.ReadableProxy.writable">[docs]</a>    <span class="k">def</span> <span class="nf">writable</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_writable_also</span></div>
@@ -177,7 +206,11 @@
         <span class="k">return</span> <span class="n">s</span></div>
 
 <div class="viewcode-block" id="ReadableProxy.close"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/readable_proxy/index.html#ivcap_sdk_service.cio.readable_proxy.ReadableProxy.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span><span class="p">:</span>
+            <span class="k">return</span>
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_path</span> <span class="o">=</span> <span class="kc">None</span>
  
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cache</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
@@ -194,16 +227,19 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">_on_close</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;ReadableProxyclose: on_close &#39;</span><span class="si">%s</span><span class="s2">&#39; failed with &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_on_close</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+        
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="k">finally</span><span class="p">:</span>
-            <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span> <span class="o">=</span> <span class="kc">None</span></div>
  
 
-<div class="viewcode-block" id="ReadableProxy._get_file_obj"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/readable_proxy/index.html#ivcap_sdk_service.cio.readable_proxy.ReadableProxy._get_file_obj">[docs]</a>    <span class="k">def</span> <span class="nf">_get_file_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadableProxy._get_file_obj"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/readable_proxy/index.html#ivcap_sdk_service.cio.readable_proxy.ReadableProxy._get_file_obj">[docs]</a>    <span class="k">def</span> <span class="nf">_get_file_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delete_on_close</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_open_file_obj</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_open_file_obj</span><span class="p">(</span><span class="n">delete_on_close</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span></div>
     
-<div class="viewcode-block" id="ReadableProxy._open_file_obj"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/readable_proxy/index.html#ivcap_sdk_service.cio.readable_proxy.ReadableProxy._open_file_obj">[docs]</a>    <span class="k">def</span> <span class="nf">_open_file_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ReadableProxy._open_file_obj"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/readable_proxy/index.html#ivcap_sdk_service.cio.readable_proxy.ReadableProxy._open_file_obj">[docs]</a>    <span class="k">def</span> <span class="nf">_open_file_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delete_on_close</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Open and ensure that the local file object is properly &quot;filled&quot;.</span>
 
 <span class="sd">        If the content is from an external source, ensure that it is fully</span>
@@ -212,17 +248,19 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_download_url</span><span class="p">:</span>
             <span class="n">mode</span> <span class="o">=</span> <span class="s2">&quot;w+b&quot;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_binary</span> <span class="k">else</span> <span class="s2">&quot;w+&quot;</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_encoding</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">(</span><span class="n">mode</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_encoding</span><span class="p">,</span> <span class="n">delete</span><span class="o">=</span><span class="n">delete_on_close</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_closed</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span><span class="o">.</span><span class="n">name</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_will_delete_on_close</span> <span class="o">=</span> <span class="n">delete_on_close</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="n">cacheID</span> <span class="o">=</span> <span class="n">download</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_download_url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span><span class="p">,</span> <span class="n">close_fhdl</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">cacheID</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">cacheID</span><span class="si">}</span><span class="s2">)&quot;</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_content_type</span><span class="p">,</span> <span class="n">cache_id</span><span class="p">)</span> <span class="o">=</span> <span class="n">download</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_download_url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span><span class="p">,</span> <span class="n">close_fhdl</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">cache_id</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">cache_id</span><span class="si">}</span><span class="s2">)&quot;</span>
             <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
                 <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;ReadableProxy#_open_file_obj: While downloading - </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ex</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">())</span>
                 <span class="k">raise</span> <span class="n">ex</span>
             
-            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ReadableProxy#_open_file_obj: Read external content &#39;</span><span class="si">%s</span><span class="s2">&#39; into &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_download_url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;ReadableProxy#_open_file_obj: Successfully read external content &#39;</span><span class="si">%s</span><span class="s2">&#39; into &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_download_url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="p">)</span>
 
         <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_file_obj</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_mode</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_encoding</span><span class="p">)</span></div>

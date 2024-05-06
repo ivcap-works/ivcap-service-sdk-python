@@ -68,31 +68,7 @@ Classes
       :rtype: bool
 
 
-   .. py:method:: write_artifact(mime_type: str, name: Optional[str] = None, collection_name: Optional[str] = None, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, on_close: Optional[OnCloseF] = None) -> IOWritable
-      :abstractmethod:
-
-      Returns a IOWritable to create a new artifact. It needs to be closed
-      in order to be persisted. If `on_close` is provided it is called with the
-      artifactID.
-
-      :param mime_type: _description_
-      :type mime_type: str
-      :param name: Optional name. Defaults to None.
-      :type name: Optional[str], optional
-      :param collection_name: Optional collection name. Defaults to None.
-      :type collection_name: Optional[str], optional
-      :param metadata: Key/value pairs (or list of key/value pairs) to add as metadata. Defaults to {}.
-      :type metadata: Optional[MetaDict | List[MetaDict]], optional
-      :param seekable: If true, writable should be seekable (needed for NetCDF). Defaults to False.
-      :type seekable: bool, optional
-      :param on_close: Called with assigned artifact ID. Defaults to None.
-      :type on_close: Optional[OnCloseF], optional
-
-      :returns: A file-like object to write deliver artifact content - needs to be closed
-      :rtype: IOWritable
-
-
-   .. py:method:: write_artifact(mime_type: str, *, name: Optional[str] = None, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, on_close: Optional[OnCloseF] = None) -> IOWritable
+   .. py:method:: write_artifact(mime_type: str, *, name: Optional[str] = None, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, is_binary: Optional[bool] = None, on_close: Optional[OnCloseF] = None) -> IOWritable
       :abstractmethod:
 
       Returns a IOWritable to create a new artifact. It needs to be closed
@@ -141,6 +117,50 @@ Classes
       :returns: An instance of a collection object appropriate for
                 the current context
       :rtype: Collection
+
+
+   .. py:method:: read_aspect(aspect_urn: ivcap_sdk_service.itypes.URN, no_caching=False) -> dict
+      :abstractmethod:
+
+      Return an aspect as a dict
+
+      :param aspect_urn: URN of aspect to read
+      :type aspect_urn: URN
+      :param no_caching: If true, content is not cached nor read from cache. Defaults to False.
+      :type no_caching: bool, optional
+
+      :returns: The content of the aspect as a dict
+      :rtype: dict
+
+
+   .. py:method:: find_aspect(schema: ivcap_sdk_service.itypes.URN = None, entity: ivcap_sdk_service.itypes.URN = None, json_path: str = None, schema2type: Dict[str, Type[ivcap_sdk_service.aspect.Aspect]] = None) -> List[ivcap_sdk_service.aspect.Aspect]
+      :abstractmethod:
+
+      Return a list of aspects
+
+      :param schema: Optional schema to filter on
+      :type schema: URN, optional
+      :param schema: Optional entiy to filter on
+      :type schema: URN, optional
+      :param json_path: Optional json_path expr to filter on
+      :type json_path: str, optional
+      :param schema2type: (Dict[str, Type[Aspect]], optional): Mapping from schema URN to aspect class
+
+      :returns: List of aspects fulfilling filter
+      :rtype: list[Aspect]
+
+
+   .. py:method:: get_queue(queue_urn: str) -> Queue
+      :abstractmethod:
+
+      Return a queue representing a set of messages
+
+      :param queue_urn: Queue identifies
+      :type queue_urn: URN
+
+      :returns: An instance of a queue object appropriate for
+                the current context
+      :rtype: Queue
 
 
 

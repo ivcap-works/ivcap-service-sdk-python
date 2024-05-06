@@ -12,10 +12,9 @@
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/doctools.js"></script>
         <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/js/theme.js"></script>
@@ -80,10 +79,18 @@
 <span class="c1"># found in the LICENSE file. See the AUTHORS file for names of contributors.</span>
 <span class="c1">#</span>
 <span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">AnyStr</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">AnyStr</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span>
 <span class="kn">import</span> <span class="nn">io</span>
 
-<span class="kn">from</span> <span class="nn">..itypes</span> <span class="kn">import</span> <span class="n">MetaDict</span><span class="p">,</span> <span class="n">Url</span>
+
+<span class="kn">from</span> <span class="nn">dataclass_wizard</span> <span class="kn">import</span> <span class="n">JSONWizard</span>
+
+<span class="kn">from</span> <span class="nn">..itypes</span> <span class="kn">import</span> <span class="n">URN</span><span class="p">,</span> <span class="n">MetaDict</span><span class="p">,</span> <span class="n">Url</span>
+<span class="kn">from</span> <span class="nn">..aspect</span> <span class="kn">import</span> <span class="n">Aspect</span>
+<span class="kn">from</span> <span class="nn">..logger</span> <span class="kn">import</span> <span class="n">sys_logger</span> <span class="k">as</span> <span class="n">logger</span>
+
+<span class="n">A</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">Aspect</span><span class="p">)</span>
 
 <div class="viewcode-block" id="_IOBase"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/io_adapter/index.html#ivcap_sdk_service.cio._IOBase">[docs]</a><span class="k">class</span> <span class="nc">_IOBase</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
     <span class="nd">@property</span>
@@ -94,6 +101,11 @@
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">urn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">pass</span>
 
     <span class="nd">@abstractmethod</span>
@@ -134,7 +146,12 @@
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">urn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="k">pass</span>
-    
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">mime_type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">pass</span>
+
 <div class="viewcode-block" id="IOReadable.read"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOReadable.read">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnyStr</span><span class="p">:</span>
         <span class="k">pass</span></div>
@@ -178,7 +195,7 @@
 <div class="viewcode-block" id="IO_ReadWritable"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/io_adapter/index.html#ivcap_sdk_service.cio.IO_ReadWritable">[docs]</a><span class="k">class</span> <span class="nc">IO_ReadWritable</span><span class="p">(</span><span class="n">IOReadable</span><span class="p">,</span> <span class="n">IOWritable</span><span class="p">):</span>
     <span class="k">pass</span></div>
 
-<span class="k">class</span> <span class="nc">Collection</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<div class="viewcode-block" id="Collection"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/io_adapter/index.html#ivcap_sdk_service.cio.Collection">[docs]</a><span class="k">class</span> <span class="nc">Collection</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A collection of artifacts</span>
 
 <span class="sd">    Args:</span>
@@ -187,15 +204,158 @@
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">pass</span>
+        <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="Collection"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/io_adapter/index.html#ivcap_sdk_service.cio.Collection">[docs]</a><span class="k">class</span> <span class="nc">Collection</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A collection of artifacts</span>
+<span class="n">ASPECT_MSG_SCHEMA</span> <span class="o">=</span> <span class="s2">&quot;urn:ivcap:schema:message:aspect&quot;</span>
+<span class="n">END_OF_STREAM_SCHEMA</span> <span class="o">=</span> <span class="s2">&quot;urn:ivcap:schema:message:eos&quot;</span>
+
+
+
+<div class="viewcode-block" id="QueueMessage"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.QueueMessage">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">QueueMessage</span><span class="p">(</span><span class="n">JSONWizard</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Defines a message to send or receive from a queue</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="QueueMessage.from_aspect"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.QueueMessage.from_aspect">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_aspect</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;QueueMessage&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">Aspect</span><span class="p">):</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not an aspect type - </span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span>
+            <span class="n">content</span><span class="o">=</span><span class="n">a</span><span class="p">,</span>
+            <span class="n">schema</span><span class="o">=</span><span class="n">ASPECT_MSG_SCHEMA</span><span class="p">,</span>
+            <span class="n">content_type</span> <span class="o">=</span> <span class="s2">&quot;application/json&quot;</span>
+        <span class="p">)</span></div>
+
+<div class="viewcode-block" id="QueueMessage._"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.QueueMessage._">[docs]</a>    <span class="k">class</span> <span class="nc">_</span><span class="p">(</span><span class="n">JSONWizard</span><span class="o">.</span><span class="n">Meta</span><span class="p">):</span>
+        <span class="n">skip_defaults</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">json_key_to_field</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;__all__&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="c1"># add inverse</span>
+            <span class="s1">&#39;content-type&#39;</span><span class="p">:</span> <span class="s1">&#39;content_type&#39;</span>
+        <span class="p">}</span></div>
+        <span class="c1"># optional: if you need (serialized) field names to be `snake_cased`</span>
+        <span class="c1"># key_transform_with_dump = &#39;SNAKE&#39;</span>
+
+    <span class="n">schema</span><span class="p">:</span> <span class="n">URN</span>
+    <span class="n">content</span><span class="p">:</span> <span class="nb">any</span>
+    <span class="nb">id</span><span class="p">:</span> <span class="n">URN</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">content_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;application/json&quot;</span></div>
+
+<div class="viewcode-block" id="AcknowledgableQueueMessage"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/io_adapter/index.html#ivcap_sdk_service.cio.AcknowledgableQueueMessage">[docs]</a><span class="k">class</span> <span class="nc">AcknowledgableQueueMessage</span><span class="p">(</span><span class="n">QueueMessage</span><span class="p">):</span>
+
+<div class="viewcode-block" id="AcknowledgableQueueMessage.ack"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/io_adapter/index.html#ivcap_sdk_service.cio.AcknowledgableQueueMessage.ack">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">ack</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Acknowledge message as being processed&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="AcknowledgableQueueMessage.release"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/io_adapter/index.html#ivcap_sdk_service.cio.AcknowledgableQueueMessage.release">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">release</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Release a message as not being processed and should be put back into the queue&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+
+
+<span class="n">DEF_LEASE_TIME_SEC</span> <span class="o">=</span> <span class="mi">60</span>
+<span class="n">DEF_MAX_WAIT_TIME_SEC</span> <span class="o">=</span> <span class="mi">3600</span> <span class="c1"># 1 hour</span>
+
+<div class="viewcode-block" id="QueueTimeoutException"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/io_adapter/index.html#ivcap_sdk_service.cio.QueueTimeoutException">[docs]</a><span class="k">class</span> <span class="nc">QueueTimeoutException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="UnexpectedMessgeException"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/cio/io_adapter/index.html#ivcap_sdk_service.cio.UnexpectedMessgeException">[docs]</a><span class="k">class</span> <span class="nc">UnexpectedMessgeException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Queue"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.Queue">[docs]</a><span class="k">class</span> <span class="nc">Queue</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A queue of messages</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nd">@property</span>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">urn</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="Queue.push"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.Queue.push">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">push</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="n">QueueMessage</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">URN</span><span class="p">:</span>
         <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Queue.push_eos"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.Queue.push_eos">[docs]</a>    <span class="k">def</span> <span class="nf">push_eos</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">URN</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">QueueMessage</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">END_OF_STREAM_SCHEMA</span><span class="p">,</span> <span class="n">content</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Queue.pull"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.Queue.pull">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">pull</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AcknowledgableQueueMessage</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; May throw QueueTimeoutException</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Queue.pull_aspect"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.Queue.pull_aspect">[docs]</a>    <span class="k">def</span> <span class="nf">pull_aspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg_cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">A</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">A</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pull</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">schema</span> <span class="o">==</span> <span class="n">END_OF_STREAM_SCHEMA</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">StopIteration</span>
+        <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">schema</span> <span class="o">!=</span> <span class="n">ASPECT_MSG_SCHEMA</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">UnexpectedMessgeException</span>
+
+        <span class="n">a</span> <span class="o">=</span> <span class="n">msg_cls</span><span class="p">(</span><span class="o">**</span><span class="n">m</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+        <span class="n">a</span><span class="o">.</span><span class="n">__message__</span> <span class="o">=</span> <span class="n">m</span>
+        <span class="k">return</span> <span class="n">a</span></div>
+
+<div class="viewcode-block" id="Queue.map_aspect"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.Queue.map_aspect">[docs]</a>    <span class="k">def</span> <span class="nf">map_aspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out_queue</span><span class="p">:</span> <span class="s1">&#39;Queue&#39;</span><span class="p">,</span> <span class="n">in_cls</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">A</span><span class="p">],</span> <span class="n">mapper</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">A</span><span class="p">],</span> <span class="n">Aspect</span><span class="p">]):</span>
+        <span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">schema</span> <span class="o">!=</span> <span class="n">ASPECT_MSG_SCHEMA</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="n">inA</span> <span class="o">=</span> <span class="n">in_cls</span><span class="p">(</span><span class="o">**</span><span class="n">m</span><span class="o">.</span><span class="n">content</span><span class="p">)</span>
+            <span class="n">inA</span><span class="o">.</span><span class="n">MESSAGE_ID</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">id</span>
+            <span class="n">outA</span> <span class="o">=</span> <span class="n">mapper</span><span class="p">(</span><span class="n">inA</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">outA</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">outA</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[</span><span class="nb">list</span><span class="p">,</span><span class="nb">tuple</span><span class="p">]:</span>
+                    <span class="k">return</span> <span class="p">[</span><span class="n">QueueMessage</span><span class="o">.</span><span class="n">from_aspect</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">outA</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">QueueMessage</span><span class="o">.</span><span class="n">from_aspect</span><span class="p">(</span><span class="n">outA</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">out_queue</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Queue.ack_aspect"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.Queue.ack_aspect">[docs]</a>    <span class="k">def</span> <span class="nf">ack_aspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aspect</span><span class="p">:</span> <span class="n">Aspect</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Acknowledge the message behind the aspect&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">aspect</span><span class="p">,</span> <span class="s1">&#39;__message__&#39;</span><span class="p">):</span>
+            <span class="n">aspect</span><span class="o">.</span><span class="n">__message__</span><span class="o">.</span><span class="n">ack</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">Warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;attempting to &#39;ack&#39; non-message aspecct - </span><span class="si">{</span><span class="n">aspect</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Queue.release_aspect"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.Queue.release_aspect">[docs]</a>    <span class="k">def</span> <span class="nf">release_aspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aspect</span><span class="p">:</span> <span class="n">Aspect</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Release the message behind the aspect&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">aspect</span><span class="p">,</span> <span class="s1">&#39;__message__&#39;</span><span class="p">):</span>
+            <span class="n">aspect</span><span class="o">.</span><span class="n">__message__</span><span class="o">.</span><span class="n">ack</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">Warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;attempting to &#39;ack&#39; non-message aspecct - </span><span class="si">{</span><span class="n">aspect</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">pass</span></div>
+
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">lease</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="Queue.withLease"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.Queue.withLease">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">withLease</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lease</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Queue&#39;</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+    <span class="nd">@property</span>
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="Queue.withTimeout"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.Queue.withTimeout">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">withTimeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Queue&#39;</span><span class="p">:</span>
+        <span class="k">pass</span></div></div>
+
+
+
 
 <span class="n">OnCloseF</span> <span class="o">=</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Url</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
 
@@ -247,45 +407,46 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-    <span class="nd">@abstractmethod</span>
-    <span class="k">def</span> <span class="nf">write_artifact</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span>
-        <span class="n">mime_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
-        <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">collection_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">MetaDict</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">MetaDict</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
-        <span class="n">seekable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">on_close</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OnCloseF</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IOWritable</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a IOWritable to create a new artifact. It needs to be closed</span>
-<span class="sd">        in order to be persisted. If `on_close` is provided it is called with the </span>
-<span class="sd">        artifactID.</span>
+    <span class="c1"># @abstractmethod</span>
+    <span class="c1"># def write_artifact(</span>
+    <span class="c1">#     self,</span>
+    <span class="c1">#     mime_type: str,</span>
+    <span class="c1">#     name: Optional[str] = None,</span>
+    <span class="c1">#     collection_name: Optional[str] = None,</span>
+    <span class="c1">#     metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None,</span>
+    <span class="c1">#     seekable=False,</span>
+    <span class="c1">#     on_close: Optional[OnCloseF] = None</span>
+    <span class="c1"># ) -&gt; IOWritable:</span>
+    <span class="c1">#     &quot;&quot;&quot;Returns a IOWritable to create a new artifact. It needs to be closed</span>
+    <span class="c1">#     in order to be persisted. If `on_close` is provided it is called with the</span>
+    <span class="c1">#     artifactID.</span>
 
-<span class="sd">        Args:</span>
-<span class="sd">            mime_type (str): _description_</span>
-<span class="sd">            name (Optional[str], optional): Optional name. Defaults to None.</span>
-<span class="sd">            collection_name (Optional[str], optional): Optional collection name. Defaults to None.</span>
-<span class="sd">            metadata (Optional[MetaDict | List[MetaDict]], optional): Key/value pairs (or list of key/value pairs) to add as metadata. Defaults to {}.</span>
-<span class="sd">            seekable (bool, optional): If true, writable should be seekable (needed for NetCDF). Defaults to False.</span>
-<span class="sd">            on_close (Optional[OnCloseF], optional): Called with assigned artifact ID. Defaults to None.</span>
+    <span class="c1">#     Args:</span>
+    <span class="c1">#         mime_type (str): _description_</span>
+    <span class="c1">#         name (Optional[str], optional): Optional name. Defaults to None.</span>
+    <span class="c1">#         collection_name (Optional[str], optional): Optional collection name. Defaults to None.</span>
+    <span class="c1">#         metadata (Optional[MetaDict | List[MetaDict]], optional): Key/value pairs (or list of key/value pairs) to add as metadata. Defaults to {}.</span>
+    <span class="c1">#         seekable (bool, optional): If true, writable should be seekable (needed for NetCDF). Defaults to False.</span>
+    <span class="c1">#         on_close (Optional[OnCloseF], optional): Called with assigned artifact ID. Defaults to None.</span>
 
-<span class="sd">        Returns:</span>
-<span class="sd">            IOWritable: A file-like object to write deliver artifact content - needs to be closed</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">pass</span>
-    
+    <span class="c1">#     Returns:</span>
+    <span class="c1">#         IOWritable: A file-like object to write deliver artifact content - needs to be closed</span>
+    <span class="c1">#     &quot;&quot;&quot;</span>
+    <span class="c1">#     pass</span>
+
 <div class="viewcode-block" id="IOAdapter.write_artifact"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOAdapter.write_artifact">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">write_artifact</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">mime_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> 
+        <span class="n">mime_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
         <span class="o">*</span><span class="p">,</span>
         <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">MetaDict</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">MetaDict</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+        <span class="n">metadata</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">MetaDict</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">MetaDict</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">seekable</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_binary</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">on_close</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">OnCloseF</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IOWritable</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a IOWritable to create a new artifact. It needs to be closed</span>
-<span class="sd">        in order to be persisted. If `on_close` is provided it is called with the </span>
+<span class="sd">        in order to be persisted. If `on_close` is provided it is called with the</span>
 <span class="sd">        artifactID.</span>
 
 <span class="sd">        Args:</span>
@@ -299,7 +460,7 @@
 <span class="sd">            IOWritable: A file-like object to write deliver artifact content - needs to be closed</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
-    
+
 <div class="viewcode-block" id="IOAdapter.write_metadata"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOAdapter.write_metadata">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">write_metadata</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -328,6 +489,52 @@
 
 <span class="sd">        Returns:</span>
 <span class="sd">            Collection: An instance of a collection object appropriate for</span>
+<span class="sd">            the current context</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="IOAdapter.read_aspect"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOAdapter.read_aspect">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">read_aspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">aspect_urn</span><span class="p">:</span> <span class="n">URN</span><span class="p">,</span> <span class="n">no_caching</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return an aspect as a dict</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            aspect_urn (URN): URN of aspect to read</span>
+<span class="sd">            no_caching (bool, optional): If true, content is not cached nor read from cache. Defaults to False.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: The content of the aspect as a dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="IOAdapter.find_aspect"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOAdapter.find_aspect">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">find_aspect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                    <span class="n">schema</span><span class="p">:</span> <span class="n">URN</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">entity</span><span class="p">:</span> <span class="n">URN</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">json_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="n">schema2type</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">[</span><span class="n">Aspect</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Aspect</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a list of aspects</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            schema (URN, optional): Optional schema to filter on</span>
+<span class="sd">            schema (URN, optional): Optional entiy to filter on</span>
+<span class="sd">            json_path (str, optional): Optional json_path expr to filter on</span>
+<span class="sd">            schema2type: (Dict[str, Type[Aspect]], optional): Mapping from schema URN to aspect class</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            list[Aspect]: List of aspects fulfilling filter</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="IOAdapter.get_queue"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOAdapter.get_queue">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queue_urn</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Queue</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a queue representing a set of messages</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            queue_urn (URN): Queue identifies</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Queue: An instance of a queue object appropriate for</span>
 <span class="sd">            the current context</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div></div>

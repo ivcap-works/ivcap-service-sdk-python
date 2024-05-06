@@ -19,6 +19,7 @@ Submodules
    :titlesonly:
    :maxdepth: 1
 
+   aspect/index.rst
    itypes/index.rst
    ivcap/index.rst
    logger/index.rst
@@ -42,9 +43,13 @@ Classes
    ivcap_sdk_service.Workflow
    ivcap_sdk_service.BasicWorkflow
    ivcap_sdk_service.PythonWorkflow
+   ivcap_sdk_service.Aspect
+   ivcap_sdk_service.GenericAspect
    ivcap_sdk_service.IOAdapter
    ivcap_sdk_service.IOWritable
    ivcap_sdk_service.IOReadable
+   ivcap_sdk_service.QueueMessage
+   ivcap_sdk_service.Queue
    ivcap_sdk_service.SupportedMimeTypes
 
 
@@ -57,6 +62,10 @@ Functions
    ivcap_sdk_service.deliver_data
    ivcap_sdk_service.publish_artifact
    ivcap_sdk_service.fetch_data
+   ivcap_sdk_service.create_aspect
+   ivcap_sdk_service.publish_aspect
+   ivcap_sdk_service.find_aspect
+   ivcap_sdk_service.publish_file_as_artifact
    ivcap_sdk_service.create_metadata
    ivcap_sdk_service.publish_metadata
    ivcap_sdk_service.publish_result
@@ -75,8 +84,14 @@ Attributes
 
    ivcap_sdk_service.__version__
    ivcap_sdk_service.SCHEMA_KEY
+   ivcap_sdk_service.ASPECT_MSG_SCHEMA
+   ivcap_sdk_service.END_OF_STREAM_SCHEMA
    ivcap_sdk_service.OnCloseF
    ivcap_sdk_service.ServiceArgs
+   ivcap_sdk_service.MetaDict
+   ivcap_sdk_service.URN
+   ivcap_sdk_service.Url
+   ivcap_sdk_service.AspectDict
 
 
 .. py:data:: __version__
@@ -86,7 +101,7 @@ Attributes
 .. py:function:: deliver_data(name: str, data_or_lambda: Union[Any, Callable[[ivcap_sdk_service.cio.io_adapter.IOWritable], None]], mime_type: Union[str, ivcap_sdk_service.itypes.SupportedMimeTypes], metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, on_close: Optional[ivcap_sdk_service.cio.io_adapter.OnCloseF] = None) -> str
 
 
-.. py:function:: publish_artifact(name: str, data_or_lambda: Union[Any, Callable[[ivcap_sdk_service.cio.io_adapter.IOWritable], None]], mime_type: Union[str, ivcap_sdk_service.itypes.SupportedMimeTypes], *, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, on_close: Optional[ivcap_sdk_service.cio.io_adapter.OnCloseF] = None) -> str
+.. py:function:: publish_artifact(name: str, data_or_lambda: Union[Any, Callable[[ivcap_sdk_service.cio.io_adapter.IOWritable], None]], mime_type: Union[str, ivcap_sdk_service.itypes.SupportedMimeTypes], *, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, is_binary: Optional[bool] = None, on_close: Optional[ivcap_sdk_service.cio.io_adapter.OnCloseF] = None) -> str
 
    Deliver a result of this service
 
@@ -129,7 +144,7 @@ Attributes
    :rtype: IOReadable
 
 
-.. py:function:: create_metadata(schema: str, mdict: Optional[ivcap_sdk_service.itypes.MetaDict] = {}, **args) -> Dict
+.. py:function:: create_aspect(schema: str, mdict: Optional[AspectDict] = {}, **args) -> AspectDict
 
    Return a dict which has a 'proper' schema declaration added.
 
@@ -140,20 +155,61 @@ Attributes
    :rtype: Dict
 
 
-.. py:function:: publish_metadata(entity_id: str, metadata: ivcap_sdk_service.itypes.MetaDict, schema: Optional[str] = None) -> str
+.. py:function:: publish_aspect(entity: ivcap_sdk_service.itypes.URN, aspect: ivcap_sdk_service.itypes.MetaDict, schema: Optional[ivcap_sdk_service.itypes.URN] = None, *, name: Optional[str] = None, ignore_order_warning: Optional[bool] = False) -> ivcap_sdk_service.itypes.URN
 
-   Add a 'metadata' aspect to 'entity_id' with 'schema'.
+   Add an aspect to 'entity_id' with 'schema'.
    If 'schema' is ommited, 'metadata' is expected to contain a SCHEMA_KEY entry
 
-   :param entity_id: Entity URN the metadata should be attached to
-   :type entity_id: str
+   :param entity: Entity URN the metadata should be attached to
+   :type entity: URN
    :param metadata: Metadata (aspect) to be attached to 'entity_id'
    :type metadata: MetaDict
    :param schema: Schema defining 'metadata'
-   :type schema: Optional[str], optional
+   :type schema: Optional[URN], optional
+   :param name: Human friendly name for this record
+   :type name: Optional[str], optional
 
    :returns: Metadata record URN
    :rtype: str
+
+
+.. py:function:: find_aspect(*, schema: ivcap_sdk_service.itypes.URN = None, entity: ivcap_sdk_service.itypes.URN = None, json_path: str = None, schema2type: Dict[str, Type[ivcap_sdk_service.aspect.Aspect]] = None, aspect_type: Type[ivcap_sdk_service.aspect.Aspect] = None) -> List[ivcap_sdk_service.aspect.Aspect]
+
+
+.. py:function:: publish_file_as_artifact(name: str, path: str, mime_type: Union[str, ivcap_sdk_service.itypes.SupportedMimeTypes], *, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, is_binary: Optional[bool] = None, on_close: Optional[ivcap_sdk_service.cio.io_adapter.OnCloseF] = None) -> str
+
+   Publish a local file as artifact
+
+   :param name: A user friendly name
+   :type name: str
+   :param path: Path to local file
+   :type path: str
+   :param mime_type: The mime type of the data. Anything not starting with 'text' is assumed to be a binary content
+   :type mime_type: Union[str, SupportedMimeTypes]
+   :param metadata: Key/value pairs (or list of k/v pairs) to add as metadata. Defaults to None.
+   :type metadata: Optional[Union[MetaDict, Sequence[MetaDict]]], optional
+   :param seekable: If true, writable should be seekable (needed for NetCDF). Defaults to False.
+   :type seekable: bool, optional
+   :param on_close: Called with assigned artifact ID. Defaults to None.
+   :type on_close: Optional[Callable[[Url]]], optional
+
+   :raises NotImplementedError: Raised when no saver function is defined for 'type'
+
+   :returns: URL of published artifact
+
+
+.. py:function:: create_metadata(schema: str, mdict: Optional[ivcap_sdk_service.itypes.MetaDict] = {}, **args) -> ivcap_sdk_service.itypes.MetaDict
+
+   Return a dict which has a 'proper' schema declaration added.
+
+   :param schema: Schema URN
+   :type schema: str
+
+   :returns: A copy of 'args' plus a 'SCHEMA_KEY' entry
+   :rtype: Dict
+
+
+.. py:function:: publish_metadata(entity_id: str, metadata: ivcap_sdk_service.itypes.MetaDict, schema: Optional[str] = None, name: Optional[str] = None) -> str
 
 
 .. py:data:: SCHEMA_KEY
@@ -161,16 +217,20 @@ Attributes
 
    
 
-.. py:function:: publish_result(metadata: ivcap_sdk_service.itypes.MetaDict, schema: Optional[str] = None) -> str
+.. py:function:: publish_result(metadata: ivcap_sdk_service.itypes.MetaDict, schema: Optional[str] = None, name: Optional[str] = None) -> str
 
-   Add a 'metadata' aspect with 'schema' to the order record for this
+   Add an aspect with 'schema' to the order record for this
    service instance.
    If 'schema' is ommited, 'metadata' is expected to contain a SCHEMA_KEY entry
+
+   NOTE: Please consider if this is the right way to publish an analytics result
 
    :param metadata: Metadata (aspect) to be attached to 'entity_id'
    :type metadata: MetaDict
    :param schema: Schema defining 'metadata'
    :type schema: Optional[str], optional
+   :param name: Human friendly name for this record
+   :type name: Optional[str], optional
 
    :returns: Metadata record URN
    :rtype: str
@@ -341,6 +401,12 @@ Attributes
 
       
 
+   .. py:attribute:: unary
+      :type: bool
+      :value: False
+
+      
+
    .. py:attribute:: constant
       :type: bool
       :value: False
@@ -395,6 +461,11 @@ Attributes
 
       
 
+   .. py:attribute:: URN
+      :value: 'urn'
+
+      
+
    .. py:attribute:: INT
       :value: 'int'
 
@@ -420,8 +491,18 @@ Attributes
 
       
 
+   .. py:attribute:: ASPECT
+      :value: 'aspect'
+
+      
+
    .. py:attribute:: COLLECTION
       :value: 'collection'
+
+      
+
+   .. py:attribute:: QUEUE
+      :value: 'queue'
 
       
 
@@ -466,6 +547,13 @@ Attributes
    :type command: str
    :param min_memory: Min memory requirement in ???
    :type min_memory: int
+   :param min_cpu: Min cpu requirement in ???
+   :type min_cpu: int
+   :param min_ephemeral_storage: Min ephemeral storage requirement in ???
+   :type min_ephemeral_storage: int
+   :param gpu_type: only nvidia-tesla-t4 allowed for now, check the avalibility at https://cloud.google.com/compute/docs/gpus/gpu-regions-zones and
+                    https://cloud.google.com/kubernetes-engine/docs/how-to/autopilot-gpus#use-cases
+   :param gpu_number: specify the number of gpu cards, 1,2 or 4 allowed for now.
 
    .. py:attribute:: type
       :type: str
@@ -485,6 +573,27 @@ Attributes
 
    .. py:attribute:: min_memory
       :type: str
+
+      
+
+   .. py:attribute:: min_cpu
+      :type: str
+
+      
+
+   .. py:attribute:: min_ephemeral_storage
+      :type: str
+
+      
+
+   .. py:attribute:: gpu_type
+      :type: str
+
+      
+
+   .. py:attribute:: gpu_number
+      :type: int
+      :value: 0
 
       
 
@@ -508,6 +617,10 @@ Attributes
    :type script: str
    :param min_memory: Min memory requirement in ???
    :type min_memory: int
+   :param min_cpu: Min cpu requirement in ???
+   :type min_cpu: int
+   :param min_ephemeral_storage: Min ephemeral storage requirement in ???
+   :type min_ephemeral_storage: int
 
    .. py:attribute:: script
       :type: str
@@ -523,6 +636,40 @@ Attributes
 
       Converts the dataclass instance to a Python dictionary object that is
       JSON serializable.
+
+
+
+.. py:class:: Aspect
+
+
+   .. py:method:: to_dict() -> Dict[str, any]
+
+
+   .. py:method:: dump_json(indent=2, entity: ivcap_sdk_service.itypes.URN = None) -> str
+
+
+   .. py:method:: json_schema(json_schema='https://json-schema.org/draft/2020-12/schema')
+      :classmethod:
+
+
+
+.. py:class:: GenericAspect(schema: ivcap_sdk_service.itypes.URN, **entries)
+
+
+   Bases: :py:obj:`Aspect`
+
+   Used for reading unknown aspects
+
+   .. py:method:: to_dict() -> Dict[str, any]
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+   .. py:method:: json_schema(json_schema=None)
+      :classmethod:
 
 
 
@@ -564,31 +711,7 @@ Attributes
       :rtype: bool
 
 
-   .. py:method:: write_artifact(mime_type: str, name: Optional[str] = None, collection_name: Optional[str] = None, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, on_close: Optional[OnCloseF] = None) -> IOWritable
-      :abstractmethod:
-
-      Returns a IOWritable to create a new artifact. It needs to be closed
-      in order to be persisted. If `on_close` is provided it is called with the
-      artifactID.
-
-      :param mime_type: _description_
-      :type mime_type: str
-      :param name: Optional name. Defaults to None.
-      :type name: Optional[str], optional
-      :param collection_name: Optional collection name. Defaults to None.
-      :type collection_name: Optional[str], optional
-      :param metadata: Key/value pairs (or list of key/value pairs) to add as metadata. Defaults to {}.
-      :type metadata: Optional[MetaDict | List[MetaDict]], optional
-      :param seekable: If true, writable should be seekable (needed for NetCDF). Defaults to False.
-      :type seekable: bool, optional
-      :param on_close: Called with assigned artifact ID. Defaults to None.
-      :type on_close: Optional[OnCloseF], optional
-
-      :returns: A file-like object to write deliver artifact content - needs to be closed
-      :rtype: IOWritable
-
-
-   .. py:method:: write_artifact(mime_type: str, *, name: Optional[str] = None, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, on_close: Optional[OnCloseF] = None) -> IOWritable
+   .. py:method:: write_artifact(mime_type: str, *, name: Optional[str] = None, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, is_binary: Optional[bool] = None, on_close: Optional[OnCloseF] = None) -> IOWritable
       :abstractmethod:
 
       Returns a IOWritable to create a new artifact. It needs to be closed
@@ -639,10 +762,50 @@ Attributes
       :rtype: Collection
 
 
+   .. py:method:: read_aspect(aspect_urn: ivcap_sdk_service.itypes.URN, no_caching=False) -> dict
+      :abstractmethod:
 
-.. py:data:: OnCloseF
+      Return an aspect as a dict
 
-   
+      :param aspect_urn: URN of aspect to read
+      :type aspect_urn: URN
+      :param no_caching: If true, content is not cached nor read from cache. Defaults to False.
+      :type no_caching: bool, optional
+
+      :returns: The content of the aspect as a dict
+      :rtype: dict
+
+
+   .. py:method:: find_aspect(schema: ivcap_sdk_service.itypes.URN = None, entity: ivcap_sdk_service.itypes.URN = None, json_path: str = None, schema2type: Dict[str, Type[ivcap_sdk_service.aspect.Aspect]] = None) -> List[ivcap_sdk_service.aspect.Aspect]
+      :abstractmethod:
+
+      Return a list of aspects
+
+      :param schema: Optional schema to filter on
+      :type schema: URN, optional
+      :param schema: Optional entiy to filter on
+      :type schema: URN, optional
+      :param json_path: Optional json_path expr to filter on
+      :type json_path: str, optional
+      :param schema2type: (Dict[str, Type[Aspect]], optional): Mapping from schema URN to aspect class
+
+      :returns: List of aspects fulfilling filter
+      :rtype: list[Aspect]
+
+
+   .. py:method:: get_queue(queue_urn: str) -> Queue
+      :abstractmethod:
+
+      Return a queue representing a set of messages
+
+      :param queue_urn: Queue identifies
+      :type queue_urn: URN
+
+      :returns: An instance of a queue object appropriate for
+                the current context
+      :rtype: Queue
+
+
 
 .. py:class:: IOWritable
 
@@ -687,6 +850,11 @@ Attributes
       :abstractmethod:
 
 
+   .. py:property:: mime_type
+      :type: str
+      :abstractmethod:
+
+
    .. py:property:: as_local_file
       :type: str
       :abstractmethod:
@@ -701,6 +869,141 @@ Attributes
 
 
    .. py:method:: readlines(hint: int = -1) -> List[AnyStr]
+      :abstractmethod:
+
+
+
+.. py:class:: QueueMessage
+
+
+   Bases: :py:obj:`dataclass_wizard.JSONWizard`
+
+   Defines a message to send or receive from a queue
+
+
+   .. py:class:: _
+
+
+      Bases: :py:obj:`dataclass_wizard.JSONWizard.Meta`
+
+      Inner meta class that can be extended by sub-classes for additional
+      customization with the JSON load / dump process.
+
+      .. py:attribute:: skip_defaults
+         :value: False
+
+         
+
+      .. py:attribute:: json_key_to_field
+
+         
+
+
+   .. py:attribute:: schema
+      :type: ivcap_sdk_service.itypes.URN
+
+      
+
+   .. py:attribute:: content
+      :type: any
+
+      
+
+   .. py:attribute:: id
+      :type: ivcap_sdk_service.itypes.URN
+
+      
+
+   .. py:attribute:: content_type
+      :type: str
+      :value: 'application/json'
+
+      
+
+   .. py:method:: from_aspect(a) -> QueueMessage
+      :classmethod:
+
+
+
+.. py:data:: ASPECT_MSG_SCHEMA
+   :value: 'urn:ivcap:schema:message:aspect'
+
+   
+
+.. py:data:: END_OF_STREAM_SCHEMA
+   :value: 'urn:ivcap:schema:message:eos'
+
+   
+
+.. py:data:: OnCloseF
+
+   
+
+.. py:class:: Queue
+
+
+   Bases: :py:obj:`abc.ABC`
+
+   A queue of messages
+
+
+   .. py:property:: name
+      :type: str
+      :abstractmethod:
+
+
+   .. py:property:: urn
+      :type: str
+      :abstractmethod:
+
+
+   .. py:property:: lease
+      :type: float
+      :abstractmethod:
+
+
+   .. py:property:: timeout
+      :type: float
+      :abstractmethod:
+
+
+   .. py:method:: push(m: QueueMessage) -> ivcap_sdk_service.itypes.URN
+      :abstractmethod:
+
+
+   .. py:method:: push_eos() -> ivcap_sdk_service.itypes.URN
+
+
+   .. py:method:: pull() -> AcknowledgableQueueMessage
+      :abstractmethod:
+
+      May throw QueueTimeoutException
+
+
+
+   .. py:method:: pull_aspect(msg_cls: Type[A]) -> A
+
+      
+
+
+   .. py:method:: map_aspect(out_queue: Queue, in_cls: Type[A], mapper: Callable[[A], ivcap_sdk_service.aspect.Aspect])
+
+
+   .. py:method:: ack_aspect(aspect: ivcap_sdk_service.aspect.Aspect) -> None
+
+      Acknowledge the message behind the aspect
+
+
+   .. py:method:: release_aspect(aspect: ivcap_sdk_service.aspect.Aspect) -> None
+
+      Release the message behind the aspect
+
+
+   .. py:method:: withLease(lease: float) -> Queue
+      :abstractmethod:
+
+
+   .. py:method:: withTimeout(timeout: float) -> Queue
       :abstractmethod:
 
 
@@ -745,6 +1048,16 @@ Attributes
 
    Derive from this class to define new enumerations.
 
+   .. py:attribute:: TEXT
+      :value: 'text'
+
+      
+
+   .. py:attribute:: CSV
+      :value: 'text/csv'
+
+      
+
    .. py:attribute:: NETCDF
       :value: 'application/netcdf'
 
@@ -760,8 +1073,29 @@ Attributes
 
       
 
+   .. py:attribute:: PARQUET
+      :value: 'application/vnd.apache.parquet'
+
+      
+
 
 .. py:data:: ServiceArgs
+
+   
+
+.. py:data:: MetaDict
+
+   
+
+.. py:data:: URN
+
+   
+
+.. py:data:: Url
+
+   
+
+.. py:data:: AspectDict
 
    
 

@@ -33,8 +33,19 @@ Classes
       :type: str
 
 
+   .. py:property:: urn
+      :type: str
+
+
    .. py:property:: name
       :type: str
+
+
+   .. py:property:: mime_type
+      :type: str
+
+
+   .. py:method:: _get_urn(name: str, url: str) -> str
 
 
    .. py:method:: as_local_file() -> str
@@ -71,10 +82,10 @@ Classes
    .. py:method:: close()
 
 
-   .. py:method:: _get_file_obj()
+   .. py:method:: _get_file_obj(delete_on_close=True)
 
 
-   .. py:method:: _open_file_obj()
+   .. py:method:: _open_file_obj(delete_on_close=True)
 
       Open and ensure that the local file object is properly "filled".
 

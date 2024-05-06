@@ -23,7 +23,10 @@ Attributes
 .. autoapisummary::
 
    ivcap_sdk_service.itypes.SCHEMA_KEY
+   ivcap_sdk_service.itypes.ENTITY_KEY
+   ivcap_sdk_service.itypes.URN
    ivcap_sdk_service.itypes.Url
+   ivcap_sdk_service.itypes.AspectDict
    ivcap_sdk_service.itypes.MetaDict
    ivcap_sdk_service.itypes.FilePath
    ivcap_sdk_service.itypes.ServiceArgs
@@ -31,6 +34,11 @@ Attributes
 
 .. py:data:: SCHEMA_KEY
    :value: '$schema'
+
+   
+
+.. py:data:: ENTITY_KEY
+   :value: '$entity'
 
    
 
@@ -42,6 +50,16 @@ Attributes
    Generic enumeration.
 
    Derive from this class to define new enumerations.
+
+   .. py:attribute:: TEXT
+      :value: 'text'
+
+      
+
+   .. py:attribute:: CSV
+      :value: 'text/csv'
+
+      
 
    .. py:attribute:: NETCDF
       :value: 'application/netcdf'
@@ -58,8 +76,21 @@ Attributes
 
       
 
+   .. py:attribute:: PARQUET
+      :value: 'application/vnd.apache.parquet'
+
+      
+
+
+.. py:data:: URN
+
+   
 
 .. py:data:: Url
+
+   
+
+.. py:data:: AspectDict
 
    
 
@@ -112,5 +143,18 @@ Attributes
    Bases: :py:obj:`Exception`
 
    Common base class for all non-exit exceptions.
+
+
+.. py:exception:: MissingFile(fname: str)
+
+
+   Bases: :py:obj:`Exception`
+
+   Common base class for all non-exit exceptions.
+
+   .. py:attribute:: fname
+      :type: str
+
+      
 
 

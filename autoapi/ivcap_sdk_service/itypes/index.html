@@ -13,17 +13,16 @@
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/jquery.js"></script>
-        <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
         <script src="../../../_static/doctools.js"></script>
         <script src="../../../_static/sphinx_highlight.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
     <link rel="next" title="ivcap_sdk_service.ivcap" href="../ivcap/index.html" />
-    <link rel="prev" title="ivcap_sdk_service.cio.writable_proxy" href="../cio/writable_proxy/index.html" /> 
+    <link rel="prev" title="ivcap_sdk_service.aspect" href="../aspect/index.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -53,6 +52,7 @@
 <li class="toctree-l2 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ivcap_sdk_service</span></code></a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="../index.html#subpackages">Subpackages</a></li>
 <li class="toctree-l3 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../aspect/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ivcap_sdk_service.aspect</span></code></a></li>
 <li class="toctree-l4 current"><a class="current reference internal" href="#"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ivcap_sdk_service.itypes</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../ivcap/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ivcap_sdk_service.ivcap</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="../logger/index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ivcap_sdk_service.logger</span></code></a></li>
@@ -115,16 +115,25 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.itypes.SCHEMA_KEY" title="ivcap_sdk_service.itypes.SCHEMA_KEY"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SCHEMA_KEY</span></code></a></p></td>
 <td><p></p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.itypes.ENTITY_KEY" title="ivcap_sdk_service.itypes.ENTITY_KEY"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ENTITY_KEY</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.itypes.URN" title="ivcap_sdk_service.itypes.URN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">URN</span></code></a></p></td>
+<td><p></p></td>
+</tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.itypes.Url" title="ivcap_sdk_service.itypes.Url"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Url</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.itypes.MetaDict" title="ivcap_sdk_service.itypes.MetaDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MetaDict</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.itypes.AspectDict" title="ivcap_sdk_service.itypes.AspectDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AspectDict</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.itypes.FilePath" title="ivcap_sdk_service.itypes.FilePath"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FilePath</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.itypes.MetaDict" title="ivcap_sdk_service.itypes.MetaDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MetaDict</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.itypes.ServiceArgs" title="ivcap_sdk_service.itypes.ServiceArgs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ServiceArgs</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.itypes.FilePath" title="ivcap_sdk_service.itypes.FilePath"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FilePath</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.itypes.ServiceArgs" title="ivcap_sdk_service.itypes.ServiceArgs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ServiceArgs</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -134,12 +143,27 @@
 <span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.itypes.</span></span><span class="sig-name descname"><span class="pre">SCHEMA_KEY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'$schema'</span></em><a class="headerlink" href="#ivcap_sdk_service.itypes.SCHEMA_KEY" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
+<dl class="py data">
+<dt class="sig sig-object py" id="ivcap_sdk_service.itypes.ENTITY_KEY">
+<span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.itypes.</span></span><span class="sig-name descname"><span class="pre">ENTITY_KEY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'$entity'</span></em><a class="headerlink" href="#ivcap_sdk_service.itypes.ENTITY_KEY" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="ivcap_sdk_service.itypes.SupportedMimeTypes">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.itypes.</span></span><span class="sig-name descname"><span class="pre">SupportedMimeTypes</span></span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/itypes.html#SupportedMimeTypes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.itypes.SupportedMimeTypes" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
 <p>Generic enumeration.</p>
 <p>Derive from this class to define new enumerations.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.itypes.SupportedMimeTypes.TEXT">
+<span class="sig-name descname"><span class="pre">TEXT</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'text'</span></em><a class="headerlink" href="#ivcap_sdk_service.itypes.SupportedMimeTypes.TEXT" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.itypes.SupportedMimeTypes.CSV">
+<span class="sig-name descname"><span class="pre">CSV</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'text/csv'</span></em><a class="headerlink" href="#ivcap_sdk_service.itypes.SupportedMimeTypes.CSV" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ivcap_sdk_service.itypes.SupportedMimeTypes.NETCDF">
 <span class="sig-name descname"><span class="pre">NETCDF</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'application/netcdf'</span></em><a class="headerlink" href="#ivcap_sdk_service.itypes.SupportedMimeTypes.NETCDF" title="Permalink to this definition"></a></dt>
@@ -155,11 +179,26 @@
 <span class="sig-name descname"><span class="pre">JPEG</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'image/jpeg'</span></em><a class="headerlink" href="#ivcap_sdk_service.itypes.SupportedMimeTypes.JPEG" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.itypes.SupportedMimeTypes.PARQUET">
+<span class="sig-name descname"><span class="pre">PARQUET</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'application/vnd.apache.parquet'</span></em><a class="headerlink" href="#ivcap_sdk_service.itypes.SupportedMimeTypes.PARQUET" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 </dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ivcap_sdk_service.itypes.URN">
+<span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.itypes.</span></span><span class="sig-name descname"><span class="pre">URN</span></span><a class="headerlink" href="#ivcap_sdk_service.itypes.URN" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="ivcap_sdk_service.itypes.Url">
 <span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.itypes.</span></span><span class="sig-name descname"><span class="pre">Url</span></span><a class="headerlink" href="#ivcap_sdk_service.itypes.Url" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ivcap_sdk_service.itypes.AspectDict">
+<span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.itypes.</span></span><span class="sig-name descname"><span class="pre">AspectDict</span></span><a class="headerlink" href="#ivcap_sdk_service.itypes.AspectDict" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py data">
@@ -189,7 +228,7 @@
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ivcap_sdk_service.itypes.MissingParameterValue.message">
-<span class="sig-name descname"><span class="pre">message</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#ivcap_sdk_service.itypes.MissingParameterValue.message" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">message</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ivcap_sdk_service.itypes.MissingParameterValue.message" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -213,6 +252,18 @@
 <p>Common base class for all non-exit exceptions.</p>
 </dd></dl>
 
+<dl class="py exception">
+<dt class="sig sig-object py" id="ivcap_sdk_service.itypes.MissingFile">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.itypes.</span></span><span class="sig-name descname"><span class="pre">MissingFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fname</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/itypes.html#MissingFile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.itypes.MissingFile" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Common base class for all non-exit exceptions.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.itypes.MissingFile.fname">
+<span class="sig-name descname"><span class="pre">fname</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.itypes.MissingFile.fname" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 </section>
@@ -221,7 +272,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../cio/writable_proxy/index.html" class="btn btn-neutral float-left" title="ivcap_sdk_service.cio.writable_proxy" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../aspect/index.html" class="btn btn-neutral float-left" title="ivcap_sdk_service.aspect" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="../ivcap/index.html" class="btn btn-neutral float-right" title="ivcap_sdk_service.ivcap" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

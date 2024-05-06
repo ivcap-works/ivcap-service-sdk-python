@@ -12,10 +12,9 @@
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/doctools.js"></script>
         <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -91,7 +90,10 @@
 
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
 
-<span class="kn">from</span> <span class="nn">.verifiers</span> <span class="kn">import</span> <span class="n">verify_artifact</span><span class="p">,</span> <span class="n">verify_collection</span><span class="p">,</span> <span class="n">ArtifactAction</span><span class="p">,</span> <span class="n">CollectionAction</span>
+<span class="kn">from</span> <span class="nn">ivcap_sdk_service.itypes</span> <span class="kn">import</span> <span class="n">URN</span>
+
+<span class="kn">from</span> <span class="nn">.verifiers</span> <span class="kn">import</span> <span class="n">QueueAction</span><span class="p">,</span> <span class="n">verify_artifact</span><span class="p">,</span> <span class="n">verify_collection</span><span class="p">,</span> <span class="n">ArtifactAction</span>
+<span class="kn">from</span> <span class="nn">.verifiers</span> <span class="kn">import</span> <span class="n">verify_aspect</span><span class="p">,</span> <span class="n">AspectAction</span><span class="p">,</span> <span class="n">CollectionAction</span><span class="p">,</span> <span class="n">verify_queue</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">read_yaml_no_dates</span>
 
 <div class="viewcode-block" id="Option"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.Option">[docs]</a><span class="nd">@dataclass</span>
@@ -106,12 +108,15 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Enumerates the different types of service `Parameters`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">STRING</span> <span class="o">=</span> <span class="s1">&#39;string&#39;</span>
+    <span class="n">URN</span> <span class="o">=</span> <span class="s1">&#39;urn&#39;</span>
     <span class="n">INT</span> <span class="o">=</span> <span class="s1">&#39;int&#39;</span>
     <span class="n">FLOAT</span> <span class="o">=</span> <span class="s1">&#39;float&#39;</span>
     <span class="n">BOOL</span> <span class="o">=</span> <span class="s1">&#39;bool&#39;</span>
     <span class="n">OPTION</span> <span class="o">=</span> <span class="s1">&#39;option&#39;</span>
     <span class="n">ARTIFACT</span> <span class="o">=</span> <span class="s1">&#39;artifact&#39;</span>
-    <span class="n">COLLECTION</span> <span class="o">=</span> <span class="s1">&#39;collection&#39;</span></div>
+    <span class="n">ASPECT</span> <span class="o">=</span> <span class="s1">&#39;aspect&#39;</span>
+    <span class="n">COLLECTION</span> <span class="o">=</span> <span class="s1">&#39;collection&#39;</span>
+    <span class="n">QUEUE</span> <span class="o">=</span> <span class="s1">&#39;queue&#39;</span></div>
 
 <div class="viewcode-block" id="Parameter"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.Parameter">[docs]</a><span class="nd">@dataclass</span><span class="p">()</span>
 <span class="k">class</span> <span class="nc">Parameter</span><span class="p">(</span><span class="n">JSONWizard</span><span class="p">):</span>
@@ -128,6 +133,7 @@
     <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">help</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">optional</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">unary</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">constant</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 
 <div class="viewcode-block" id="Parameter.__post_init__"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.Parameter.__post_init__">[docs]</a>    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -162,19 +168,36 @@
 <span class="sd">        image (str): Name of docker image [&#39;IVCAP_CONTAINER&#39;, &#39;@CONTAINER@&#39;]</span>
 <span class="sd">        command (str): Path to init executable/script</span>
 <span class="sd">        min_memory (int): Min memory requirement in ???</span>
+<span class="sd">        min_cpu (int): Min cpu requirement in ???</span>
+<span class="sd">        min_ephemeral_storage (int): Min ephemeral storage requirement in ???</span>
+<span class="sd">        gpu_type: only nvidia-tesla-t4 allowed for now, check the avalibility at https://cloud.google.com/compute/docs/gpus/gpu-regions-zones and</span>
+<span class="sd">                  https://cloud.google.com/kubernetes-engine/docs/how-to/autopilot-gpus#use-cases</span>
+<span class="sd">        gpu_number: specify the number of gpu cards, 1,2 or 4 allowed for now.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;basic&quot;</span>
     <span class="n">image</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;IVCAP_CONTAINER&#39;</span><span class="p">,</span> <span class="s1">&#39;@CONTAINER@&#39;</span><span class="p">)</span>
     <span class="n">command</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
     <span class="n">min_memory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">min_cpu</span><span class="p">:</span>    <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">min_ephemeral_storage</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">gpu_type</span><span class="p">:</span>   <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">gpu_number</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span>
 
 <div class="viewcode-block" id="BasicWorkflow.to_dict"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.BasicWorkflow.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">basic</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;command&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">command</span><span class="p">,</span>
             <span class="s1">&#39;image&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">image</span>
         <span class="p">}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpu_type</span><span class="p">:</span>
+            <span class="n">basic</span><span class="p">[</span><span class="s1">&#39;gpu-type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpu_type</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpu_number</span><span class="p">:</span>
+            <span class="n">basic</span><span class="p">[</span><span class="s1">&#39;gpu-number&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gpu_number</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_memory</span><span class="p">:</span>
-            <span class="n">basic</span><span class="p">[</span><span class="s1">&#39;memory&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;request&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_memory</span><span class="p">}</span>
+            <span class="n">basic</span><span class="p">[</span><span class="s1">&#39;memory&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;request&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_memory</span><span class="p">}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_cpu</span><span class="p">:</span>
+            <span class="n">basic</span><span class="p">[</span><span class="s1">&#39;cpu&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;request&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_cpu</span><span class="p">}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_ephemeral_storage</span><span class="p">:</span>
+            <span class="n">basic</span><span class="p">[</span><span class="s1">&#39;ephemeral-storage&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;request&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_ephemeral_storage</span><span class="p">}</span>
         <span class="k">return</span> <span class="p">{</span>
             <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;basic&#39;</span><span class="p">,</span>
             <span class="s1">&#39;basic&#39;</span><span class="p">:</span> <span class="n">basic</span>
@@ -188,12 +211,14 @@
 <span class="sd">        image (str): Name of docker image [&#39;IVCAP_CONTAINER&#39;, &#39;@CONTAINER@&#39;]</span>
 <span class="sd">        script (str): Path to main python script [&#39;/app/service.py&#39;]</span>
 <span class="sd">        min_memory (int): Min memory requirement in ???</span>
+<span class="sd">        min_cpu (int): Min cpu requirement in ???</span>
+<span class="sd">        min_ephemeral_storage (int): Min ephemeral storage requirement in ???</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-   
+
     <span class="n">script</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;/app/service.py&#39;</span>
 
 <div class="viewcode-block" id="PythonWorkflow.def_workflow"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.PythonWorkflow.def_workflow">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">def_workflow</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span> 
+    <span class="k">def</span> <span class="nf">def_workflow</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="PythonWorkflow.to_dict"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.PythonWorkflow.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -239,11 +264,14 @@
         <span class="k">return</span> <span class="n">d</span></div>
 
 <div class="viewcode-block" id="Service.to_yaml"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.Service.to_yaml">[docs]</a>    <span class="k">def</span> <span class="nf">to_yaml</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+        <span class="n">as_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
+        <span class="n">as_yaml</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">as_dict</span><span class="p">,</span> <span class="n">default_flow_style</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">default_style</span><span class="o">=</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">as_yaml</span></div>
 
 <div class="viewcode-block" id="Service.append_arguments"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/service/index.html#ivcap_sdk_service.Service.append_arguments">[docs]</a>    <span class="k">def</span> <span class="nf">append_arguments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ap</span><span class="p">:</span> <span class="n">ArgumentParser</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ArgumentParser</span><span class="p">:</span>
         <span class="n">type2type</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">Type</span><span class="o">.</span><span class="n">STRING</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">Type</span><span class="o">.</span><span class="n">URN</span><span class="p">:</span> <span class="n">URN</span><span class="p">,</span>
             <span class="n">Type</span><span class="o">.</span><span class="n">INT</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
             <span class="n">Type</span><span class="o">.</span><span class="n">FLOAT</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
             <span class="n">Type</span><span class="o">.</span><span class="n">BOOL</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
@@ -258,24 +286,33 @@
             <span class="n">args</span><span class="p">:</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">required</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">Type</span><span class="o">.</span><span class="n">OPTION</span><span class="p">:</span>
                 <span class="n">ca</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="n">o</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">options</span><span class="p">))</span>
-                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;choices&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ca</span>      
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;choices&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ca</span>
             <span class="k">elif</span> <span class="n">p</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">Type</span><span class="o">.</span><span class="n">ARTIFACT</span><span class="p">:</span>
                 <span class="n">args</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">verify_artifact</span>
                 <span class="n">args</span><span class="p">[</span><span class="s1">&#39;metavar&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;URN&quot;</span>
                 <span class="n">args</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ArtifactAction</span>
+                <span class="k">pass</span>
+            <span class="k">elif</span> <span class="n">p</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">Type</span><span class="o">.</span><span class="n">ASPECT</span><span class="p">:</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">verify_aspect</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;metavar&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;URN&quot;</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">AspectAction</span>
                 <span class="k">pass</span>
             <span class="k">elif</span> <span class="n">p</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">Type</span><span class="o">.</span><span class="n">COLLECTION</span><span class="p">:</span>
                 <span class="n">args</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">verify_collection</span>
                 <span class="n">args</span><span class="p">[</span><span class="s1">&#39;metavar&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;URN&quot;</span>
                 <span class="n">args</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">CollectionAction</span>
                 <span class="k">pass</span>
+            <span class="k">elif</span> <span class="n">p</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">Type</span><span class="o">.</span><span class="n">QUEUE</span><span class="p">:</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">verify_queue</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;metavar&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;URN&quot;</span>
+                <span class="n">args</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">QueueAction</span>
             <span class="k">elif</span> <span class="n">p</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">Type</span><span class="o">.</span><span class="n">BOOL</span><span class="p">:</span>
                 <span class="n">args</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]</span> <span class="o">=</span><span class="s1">&#39;store_true&#39;</span>
                 <span class="n">args</span><span class="p">[</span><span class="s1">&#39;required&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">type</span><span class="p">)</span> <span class="o">==</span> <span class="n">Type</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Wrong type declaration for &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; - use enum &#39;Type&#39;&quot;</span><span class="p">)</span>
-                   
+
                 <span class="n">t</span> <span class="o">=</span> <span class="n">type2type</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">type</span><span class="p">)</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">t</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported type &#39;</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">type</span><span class="si">}</span><span class="s2">&#39; for &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
@@ -295,8 +332,6 @@
                 <span class="n">args</span><span class="p">[</span><span class="s1">&#39;required&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
             <span class="n">ap</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;--</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">args</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">ap</span></div></div>
-
-
 </pre></div>
 
            </div>

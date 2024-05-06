@@ -16,8 +16,16 @@ Classes
 
 
 
+Functions
+~~~~~~~~~
 
-.. py:class:: WritableProxy(storage_url: str, mime_type: str, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, name: Optional[str] = None, is_seekable=False, on_close: Optional[Callable[[str, str], str]] = None, encoding=None)
+.. autoapisummary::
+
+   ivcap_sdk_service.cio.writable_proxy.upload_metadata
+
+
+
+.. py:class:: WritableProxy(storage_url: str, mime_type: str, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, name: Optional[str] = None, is_seekable=False, is_binary: Optional[bool] = None, on_close: Optional[Callable[[str, str], str]] = None, encoding=None)
 
 
    Bases: :py:obj:`ivcap_sdk_service.cio.io_adapter.IOWritable`
@@ -37,6 +45,10 @@ Classes
    :type use_temp_file: bool, optional
    :param encoding: _description_. Defaults to None.
    :type encoding: _type_, optional
+
+   .. py:property:: urn
+      :type: str
+
 
    .. py:property:: closed
       :type: bool
@@ -87,12 +99,12 @@ Classes
    .. py:method:: _upload() -> str
 
 
-   .. py:method:: _upload_metadata(metadata: Sequence[ivcap_sdk_service.itypes.MetaDict], artifactID: str, url: str) -> None
-
-
    .. py:method:: __repr__()
 
       Return repr(self).
 
+
+
+.. py:function:: upload_metadata(storage_url: str, entity_urn: str, metadata: ivcap_sdk_service.itypes.MetaDict, *, artifact_id: str = None, url: str = None, name: str = None) -> None
 
 

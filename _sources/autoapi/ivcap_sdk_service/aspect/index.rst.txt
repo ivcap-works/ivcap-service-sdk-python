@@ -1,0 +1,54 @@
+:py:mod:`ivcap_sdk_service.aspect`
+==================================
+
+.. py:module:: ivcap_sdk_service.aspect
+
+
+Module Contents
+---------------
+
+Classes
+~~~~~~~
+
+.. autoapisummary::
+
+   ivcap_sdk_service.aspect.Aspect
+   ivcap_sdk_service.aspect.GenericAspect
+
+
+
+
+.. py:class:: Aspect
+
+
+   .. py:method:: to_dict() -> Dict[str, any]
+
+
+   .. py:method:: dump_json(indent=2, entity: ivcap_sdk_service.itypes.URN = None) -> str
+
+
+   .. py:method:: json_schema(json_schema='https://json-schema.org/draft/2020-12/schema')
+      :classmethod:
+
+
+
+.. py:class:: GenericAspect(schema: ivcap_sdk_service.itypes.URN, **entries)
+
+
+   Bases: :py:obj:`Aspect`
+
+   Used for reading unknown aspects
+
+   .. py:method:: to_dict() -> Dict[str, any]
+
+
+   .. py:method:: __repr__()
+
+      Return repr(self).
+
+
+   .. py:method:: json_schema(json_schema=None)
+      :classmethod:
+
+
+

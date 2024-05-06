@@ -12,10 +12,9 @@
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
         <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/doctools.js"></script>
         <script src="../../_static/sphinx_highlight.js"></script>
     <script src="../../_static/js/theme.js"></script>
@@ -84,19 +83,25 @@
 <span class="kn">from</span> <span class="nn">numbers</span> <span class="kn">import</span> <span class="n">Number</span>
 
 <span class="n">SCHEMA_KEY</span> <span class="o">=</span> <span class="s1">&#39;$schema&#39;</span>
+<span class="n">ENTITY_KEY</span> <span class="o">=</span> <span class="s1">&#39;$entity&#39;</span>
 
 <div class="viewcode-block" id="SupportedMimeTypes"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/itypes/index.html#ivcap_sdk_service.SupportedMimeTypes">[docs]</a><span class="k">class</span> <span class="nc">SupportedMimeTypes</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">TEXT</span> <span class="o">=</span> <span class="s1">&#39;text&#39;</span>
+    <span class="n">CSV</span> <span class="o">=</span> <span class="s1">&#39;text/csv&#39;</span>
     <span class="n">NETCDF</span> <span class="o">=</span> <span class="s1">&#39;application/netcdf&#39;</span>
     <span class="n">PNG</span> <span class="o">=</span> <span class="s1">&#39;image/png&#39;</span>
-    <span class="n">JPEG</span> <span class="o">=</span> <span class="s1">&#39;image/jpeg&#39;</span></div>
+    <span class="n">JPEG</span> <span class="o">=</span> <span class="s1">&#39;image/jpeg&#39;</span>
+    <span class="n">PARQUET</span> <span class="o">=</span> <span class="s2">&quot;application/vnd.apache.parquet&quot;</span></div>
 
 <span class="c1"># type</span>
+<span class="n">URN</span> <span class="o">=</span> <span class="nb">str</span>
 <span class="n">Url</span> <span class="o">=</span> <span class="nb">str</span>
-<span class="n">MetaDict</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Number</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]]</span>
+<span class="n">AspectDict</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Number</span><span class="p">,</span> <span class="nb">bool</span><span class="p">]]</span>
+<span class="n">MetaDict</span> <span class="o">=</span> <span class="n">AspectDict</span>
 <span class="n">FilePath</span> <span class="o">=</span> <span class="nb">str</span>
 <span class="n">ServiceArgs</span> <span class="o">=</span> <span class="n">NamedTuple</span>
 
-<div class="viewcode-block" id="MissingParameterValue"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/itypes/index.html#ivcap_sdk_service.MissingParameterValue">[docs]</a><span class="k">class</span> <span class="nc">MissingParameterValue</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span> 
+<div class="viewcode-block" id="MissingParameterValue"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/itypes/index.html#ivcap_sdk_service.MissingParameterValue">[docs]</a><span class="k">class</span> <span class="nc">MissingParameterValue</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
     <span class="n">message</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
 
@@ -104,14 +109,20 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">message</span> <span class="o">=</span> <span class="n">message</span></div>
 
-<div class="viewcode-block" id="UnsupportedMimeType"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/itypes/index.html#ivcap_sdk_service.UnsupportedMimeType">[docs]</a><span class="k">class</span> <span class="nc">UnsupportedMimeType</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span> 
+<div class="viewcode-block" id="UnsupportedMimeType"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/itypes/index.html#ivcap_sdk_service.UnsupportedMimeType">[docs]</a><span class="k">class</span> <span class="nc">UnsupportedMimeType</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
     <span class="n">mime_type</span><span class="p">:</span> <span class="nb">str</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mime_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mime_type</span> <span class="o">=</span> <span class="n">mime_type</span></div>
 
-<div class="viewcode-block" id="MissingSchemaDeclaration"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/itypes/index.html#ivcap_sdk_service.MissingSchemaDeclaration">[docs]</a><span class="k">class</span> <span class="nc">MissingSchemaDeclaration</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span> 
+<div class="viewcode-block" id="MissingSchemaDeclaration"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/itypes/index.html#ivcap_sdk_service.MissingSchemaDeclaration">[docs]</a><span class="k">class</span> <span class="nc">MissingSchemaDeclaration</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
     <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="MissingFile"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/itypes/index.html#ivcap_sdk_service.MissingFile">[docs]</a><span class="k">class</span> <span class="nc">MissingFile</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fname</span> <span class="o">=</span> <span class="n">fname</span></div>
 </pre></div>
 
            </div>

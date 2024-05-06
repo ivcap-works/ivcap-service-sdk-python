@@ -13,10 +13,9 @@
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
         <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/sphinx_highlight.js"></script>
     <script src="_static/js/theme.js"></script>
@@ -99,7 +98,7 @@ few messages to logging.</p>
         <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;msg&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">Type</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Message to echo&quot;</span><span class="p">),</span>
         <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;times&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">Type</span><span class="o">.</span><span class="n">INT</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Times to repeat&quot;</span><span class="p">),</span>
     <span class="p">],</span>
-    <span class="n">workflow</span> <span class="o">=</span> <span class="n">PythonWorkflow</span><span class="p">(</span><span class="n">min_memory</span><span class="o">=</span><span class="s1">&#39;2Gi&#39;</span><span class="p">)</span>
+    <span class="n">workflow</span> <span class="o">=</span> <span class="n">PythonWorkflow</span><span class="p">(</span><span class="n">min_memory</span><span class="o">=</span><span class="s1">&#39;2Gi&#39;</span><span class="p">,</span> <span class="n">min_cpu</span><span class="o">=</span><span class="s1">&#39;500m&#39;</span><span class="p">,</span> <span class="n">min_ephemeral_storage</span><span class="o">=</span><span class="s1">&#39;4Gi&#39;</span><span class="p">)</span>
 <span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">hello_world</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="p">):</span>
@@ -109,7 +108,7 @@ few messages to logging.</p>
 <span class="n">register_service</span><span class="p">(</span><span class="n">SERVICE</span><span class="p">,</span> <span class="n">hello_world</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>For more useful examples see the <span class="xref myst">examples</span> directory.</p>
+<p>For more useful examples see the <a class="reference internal" href="#./examples"><span class="xref myst">examples</span></a> directory.</p>
 </section>
 <section id="contributing">
 <h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this heading"></a></h2>
@@ -117,7 +116,7 @@ few messages to logging.</p>
 </section>
 <section id="license">
 <h2>License<a class="headerlink" href="#license" title="Permalink to this heading"></a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">ivcap_sdk_service</span></code> was created by Max Ott <a class="reference external" href="mailto:max&#46;ott&#37;&#52;&#48;csiro&#46;au">max<span>&#46;</span>ott<span>&#64;</span>csiro<span>&#46;</span>au</a>, Tim Erwin <a class="reference external" href="mailto:tim&#46;erwin&#37;&#52;&#48;csiro&#46;au">tim<span>&#46;</span>erwin<span>&#64;</span>csiro<span>&#46;</span>au</a>. See <span class="xref myst">LICENSE</span> for licensing terms.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ivcap_sdk_service</span></code> was created by Max Ott <a class="reference external" href="mailto:max&#46;ott&#37;&#52;&#48;csiro&#46;au">max<span>&#46;</span>ott<span>&#64;</span>csiro<span>&#46;</span>au</a>, Tim Erwin <a class="reference external" href="mailto:tim&#46;erwin&#37;&#52;&#48;csiro&#46;au">tim<span>&#46;</span>erwin<span>&#64;</span>csiro<span>&#46;</span>au</a>. See <a class="reference internal" href="#./LICENSE"><span class="xref myst">LICENSE</span></a> for licensing terms.</p>
 </section>
 <section id="credits">
 <h2>Credits<a class="headerlink" href="#credits" title="Permalink to this heading"></a></h2>

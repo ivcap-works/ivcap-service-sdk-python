@@ -13,10 +13,9 @@
     <script src="../../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
         <script src="../../../../_static/jquery.js"></script>
-        <script src="../../../../_static/underscore.js"></script>
         <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
         <script src="../../../../_static/doctools.js"></script>
         <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/js/theme.js"></script>
@@ -110,11 +109,17 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.IO_ReadWritable" title="ivcap_sdk_service.cio.io_adapter.IO_ReadWritable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IO_ReadWritable</span></code></a></p></td>
 <td><p>Helper class that provides a standard way to create an ABC using</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#id1" title="ivcap_sdk_service.cio.io_adapter.Collection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Collection</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.Collection" title="ivcap_sdk_service.cio.io_adapter.Collection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Collection</span></code></a></p></td>
 <td><p>A collection of artifacts</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#id1" title="ivcap_sdk_service.cio.io_adapter.Collection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Collection</span></code></a></p></td>
-<td><p>A collection of artifacts</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.QueueMessage" title="ivcap_sdk_service.cio.io_adapter.QueueMessage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">QueueMessage</span></code></a></p></td>
+<td><p>Defines a message to send or receive from a queue</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.AcknowledgableQueueMessage" title="ivcap_sdk_service.cio.io_adapter.AcknowledgableQueueMessage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AcknowledgableQueueMessage</span></code></a></p></td>
+<td><p>Defines a message to send or receive from a queue</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.Queue" title="ivcap_sdk_service.cio.io_adapter.Queue"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Queue</span></code></a></p></td>
+<td><p>A queue of messages</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.IOAdapter" title="ivcap_sdk_service.cio.io_adapter.IOAdapter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IOAdapter</span></code></a></p></td>
 <td><p>Helper class that provides a standard way to create an ABC using</p></td>
@@ -126,11 +131,31 @@
 <h3>Attributes<a class="headerlink" href="#attributes" title="Permalink to this heading"></a></h3>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.OnCloseF" title="ivcap_sdk_service.cio.io_adapter.OnCloseF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OnCloseF</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.A" title="ivcap_sdk_service.cio.io_adapter.A"><code class="xref py py-obj docutils literal notranslate"><span class="pre">A</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.ASPECT_MSG_SCHEMA" title="ivcap_sdk_service.cio.io_adapter.ASPECT_MSG_SCHEMA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ASPECT_MSG_SCHEMA</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.END_OF_STREAM_SCHEMA" title="ivcap_sdk_service.cio.io_adapter.END_OF_STREAM_SCHEMA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">END_OF_STREAM_SCHEMA</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.DEF_LEASE_TIME_SEC" title="ivcap_sdk_service.cio.io_adapter.DEF_LEASE_TIME_SEC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DEF_LEASE_TIME_SEC</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.DEF_MAX_WAIT_TIME_SEC" title="ivcap_sdk_service.cio.io_adapter.DEF_MAX_WAIT_TIME_SEC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DEF_MAX_WAIT_TIME_SEC</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.OnCloseF" title="ivcap_sdk_service.cio.io_adapter.OnCloseF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OnCloseF</span></code></a></p></td>
 <td><p></p></td>
 </tr>
 </tbody>
 </table>
+<dl class="py data">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.A">
+<span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.cio.io_adapter.</span></span><span class="sig-name descname"><span class="pre">A</span></span><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.A" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter._IOBase">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.cio.io_adapter.</span></span><span class="sig-name descname"><span class="pre">_IOBase</span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#_IOBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter._IOBase" title="Permalink to this definition"></a></dt>
@@ -145,6 +170,11 @@ inheritance.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter._IOBase.name">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter._IOBase.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter._IOBase.urn">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">urn</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter._IOBase.urn" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -198,6 +228,11 @@ inheritance.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.IOReadable.urn">
 <em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">urn</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.IOReadable.urn" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.IOReadable.mime_type">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mime_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.IOReadable.mime_type" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -280,14 +315,180 @@ inheritance.</p>
 
 </dd></dl>
 
+<dl class="py data">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.ASPECT_MSG_SCHEMA">
+<span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.cio.io_adapter.</span></span><span class="sig-name descname"><span class="pre">ASPECT_MSG_SCHEMA</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'urn:ivcap:schema:message:aspect'</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.ASPECT_MSG_SCHEMA" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.END_OF_STREAM_SCHEMA">
+<span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.cio.io_adapter.</span></span><span class="sig-name descname"><span class="pre">END_OF_STREAM_SCHEMA</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'urn:ivcap:schema:message:eos'</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.END_OF_STREAM_SCHEMA" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 <dl class="py class">
-<dt class="sig sig-object py" id="id1">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.cio.io_adapter.</span></span><span class="sig-name descname"><span class="pre">Collection</span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#Collection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id1" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.QueueMessage">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.cio.io_adapter.</span></span><span class="sig-name descname"><span class="pre">QueueMessage</span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#QueueMessage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.QueueMessage" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dataclass_wizard.JSONWizard</span></code></p>
+<p>Defines a message to send or receive from a queue</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.QueueMessage._">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_</span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#QueueMessage._"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.QueueMessage._" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">dataclass_wizard.JSONWizard.Meta</span></code></p>
+<p>Inner meta class that can be extended by sub-classes for additional
+customization with the JSON load / dump process.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.QueueMessage._.skip_defaults">
+<span class="sig-name descname"><span class="pre">skip_defaults</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.QueueMessage._.skip_defaults" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.QueueMessage._.json_key_to_field">
+<span class="sig-name descname"><span class="pre">json_key_to_field</span></span><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.QueueMessage._.json_key_to_field" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.QueueMessage.schema">
+<span class="sig-name descname"><span class="pre">schema</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ivcap_sdk_service.itypes.URN</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.QueueMessage.schema" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.QueueMessage.content">
+<span class="sig-name descname"><span class="pre">content</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">any</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.QueueMessage.content" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.QueueMessage.id">
+<span class="sig-name descname"><span class="pre">id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ivcap_sdk_service.itypes.URN</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.QueueMessage.id" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.QueueMessage.content_type">
+<span class="sig-name descname"><span class="pre">content_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'application/json'</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.QueueMessage.content_type" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.QueueMessage.from_aspect">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_aspect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.QueueMessage" title="ivcap_sdk_service.cio.io_adapter.QueueMessage"><span class="pre">QueueMessage</span></a></span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#QueueMessage.from_aspect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.QueueMessage.from_aspect" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.AcknowledgableQueueMessage">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.cio.io_adapter.</span></span><span class="sig-name descname"><span class="pre">AcknowledgableQueueMessage</span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#AcknowledgableQueueMessage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.AcknowledgableQueueMessage" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.QueueMessage" title="ivcap_sdk_service.cio.io_adapter.QueueMessage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">QueueMessage</span></code></a></p>
+<p>Defines a message to send or receive from a queue</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.AcknowledgableQueueMessage.ack">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ack</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#AcknowledgableQueueMessage.ack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.AcknowledgableQueueMessage.ack" title="Permalink to this definition"></a></dt>
+<dd><p>Acknowledge message as being processed</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.AcknowledgableQueueMessage.release">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">release</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#AcknowledgableQueueMessage.release"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.AcknowledgableQueueMessage.release" title="Permalink to this definition"></a></dt>
+<dd><p>Release a message as not being processed and should be put back into the queue</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.DEF_LEASE_TIME_SEC">
+<span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.cio.io_adapter.</span></span><span class="sig-name descname"><span class="pre">DEF_LEASE_TIME_SEC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">60</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.DEF_LEASE_TIME_SEC" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.DEF_MAX_WAIT_TIME_SEC">
+<span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.cio.io_adapter.</span></span><span class="sig-name descname"><span class="pre">DEF_MAX_WAIT_TIME_SEC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3600</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.DEF_MAX_WAIT_TIME_SEC" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.QueueTimeoutException">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.cio.io_adapter.</span></span><span class="sig-name descname"><span class="pre">QueueTimeoutException</span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#QueueTimeoutException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.QueueTimeoutException" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Common base class for all non-exit exceptions.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.UnexpectedMessgeException">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.cio.io_adapter.</span></span><span class="sig-name descname"><span class="pre">UnexpectedMessgeException</span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#UnexpectedMessgeException"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.UnexpectedMessgeException" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Common base class for all non-exit exceptions.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.Queue">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.cio.io_adapter.</span></span><span class="sig-name descname"><span class="pre">Queue</span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#Queue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.Queue" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">abc.ABC</span></code></p>
-<p>A collection of artifacts</p>
+<p>A queue of messages</p>
 <dl class="py property">
-<dt class="sig sig-object py" id="id2">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#id2" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.Queue.name">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.Queue.name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.Queue.urn">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">urn</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.Queue.urn" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.Queue.lease">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lease</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.Queue.lease" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.Queue.timeout">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">timeout</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.Queue.timeout" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.Queue.push">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">push</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.QueueMessage" title="ivcap_sdk_service.cio.io_adapter.QueueMessage"><span class="pre">QueueMessage</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ivcap_sdk_service.itypes.URN</span></span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#Queue.push"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.Queue.push" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.Queue.push_eos">
+<span class="sig-name descname"><span class="pre">push_eos</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ivcap_sdk_service.itypes.URN</span></span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#Queue.push_eos"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.Queue.push_eos" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.Queue.pull">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pull</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.AcknowledgableQueueMessage" title="ivcap_sdk_service.cio.io_adapter.AcknowledgableQueueMessage"><span class="pre">AcknowledgableQueueMessage</span></a></span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#Queue.pull"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.Queue.pull" title="Permalink to this definition"></a></dt>
+<dd><p>May throw QueueTimeoutException</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.Queue.pull_aspect">
+<span class="sig-name descname"><span class="pre">pull_aspect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../index.html#ivcap_sdk_service.Type" title="ivcap_sdk_service.Type"><span class="pre">Type</span></a><span class="p"><span class="pre">[</span></span><span class="pre">A</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">A</span></span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#Queue.pull_aspect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.Queue.pull_aspect" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.Queue.map_aspect">
+<span class="sig-name descname"><span class="pre">map_aspect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_queue</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.Queue" title="ivcap_sdk_service.cio.io_adapter.Queue"><span class="pre">Queue</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_cls</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../index.html#ivcap_sdk_service.Type" title="ivcap_sdk_service.Type"><span class="pre">Type</span></a><span class="p"><span class="pre">[</span></span><span class="pre">A</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mapper</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">A</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../aspect/index.html#ivcap_sdk_service.aspect.Aspect" title="ivcap_sdk_service.aspect.Aspect"><span class="pre">ivcap_sdk_service.aspect.Aspect</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#Queue.map_aspect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.Queue.map_aspect" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.Queue.ack_aspect">
+<span class="sig-name descname"><span class="pre">ack_aspect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aspect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../aspect/index.html#ivcap_sdk_service.aspect.Aspect" title="ivcap_sdk_service.aspect.Aspect"><span class="pre">ivcap_sdk_service.aspect.Aspect</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#Queue.ack_aspect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.Queue.ack_aspect" title="Permalink to this definition"></a></dt>
+<dd><p>Acknowledge the message behind the aspect</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.Queue.release_aspect">
+<span class="sig-name descname"><span class="pre">release_aspect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aspect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../../aspect/index.html#ivcap_sdk_service.aspect.Aspect" title="ivcap_sdk_service.aspect.Aspect"><span class="pre">ivcap_sdk_service.aspect.Aspect</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#Queue.release_aspect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.Queue.release_aspect" title="Permalink to this definition"></a></dt>
+<dd><p>Release the message behind the aspect</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.Queue.withLease">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">withLease</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lease</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.Queue" title="ivcap_sdk_service.cio.io_adapter.Queue"><span class="pre">Queue</span></a></span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#Queue.withLease"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.Queue.withLease" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.Queue.withTimeout">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">withTimeout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.Queue" title="ivcap_sdk_service.cio.io_adapter.Queue"><span class="pre">Queue</span></a></span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#Queue.withTimeout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.Queue.withTimeout" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -344,33 +545,7 @@ inheritance.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.IOAdapter.write_artifact">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write_artifact</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mime_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collection_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">ivcap_sdk_service.itypes.MetaDict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">ivcap_sdk_service.itypes.MetaDict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seekable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_close</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">OnCloseF</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.IOWritable" title="ivcap_sdk_service.cio.io_adapter.IOWritable"><span class="pre">IOWritable</span></a></span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#IOAdapter.write_artifact"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.IOAdapter.write_artifact" title="Permalink to this definition"></a></dt>
-<dd><p>Returns a IOWritable to create a new artifact. It needs to be closed
-in order to be persisted. If <cite>on_close</cite> is provided it is called with the
-artifactID.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>mime_type</strong> (<em>str</em>) – _description_</p></li>
-<li><p><strong>name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – Optional name. Defaults to None.</p></li>
-<li><p><strong>collection_name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – Optional collection name. Defaults to None.</p></li>
-<li><p><strong>metadata</strong> (<em>Optional</em><em>[</em><em>MetaDict</em><em> | </em><em>List</em><em>[</em><em>MetaDict</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Key/value pairs (or list of key/value pairs) to add as metadata. Defaults to {}.</p></li>
-<li><p><strong>seekable</strong> (<em>bool</em><em>, </em><em>optional</em>) – If true, writable should be seekable (needed for NetCDF). Defaults to False.</p></li>
-<li><p><strong>on_close</strong> (<em>Optional</em><em>[</em><em>OnCloseF</em><em>]</em><em>, </em><em>optional</em>) – Called with assigned artifact ID. Defaults to None.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A file-like object to write deliver artifact content - needs to be closed</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.IOWritable" title="ivcap_sdk_service.cio.io_adapter.IOWritable">IOWritable</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="id3">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write_artifact</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mime_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">ivcap_sdk_service.itypes.MetaDict</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">ivcap_sdk_service.itypes.MetaDict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seekable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_close</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">OnCloseF</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.IOWritable" title="ivcap_sdk_service.cio.io_adapter.IOWritable"><span class="pre">IOWritable</span></a></span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#IOAdapter.write_artifact"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id3" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">write_artifact</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mime_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ivcap_sdk_service.itypes.MetaDict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">ivcap_sdk_service.itypes.MetaDict</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seekable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_binary</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_close</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">OnCloseF</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.IOWritable" title="ivcap_sdk_service.cio.io_adapter.IOWritable"><span class="pre">IOWritable</span></a></span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#IOAdapter.write_artifact"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.IOAdapter.write_artifact" title="Permalink to this definition"></a></dt>
 <dd><p>Returns a IOWritable to create a new artifact. It needs to be closed
 in order to be persisted. If <cite>on_close</cite> is provided it is called with the
 artifactID.</p>
@@ -416,7 +591,7 @@ artifactID.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.IOAdapter.get_collection">
-<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_collection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collection_urn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#id1" title="ivcap_sdk_service.cio.io_adapter.Collection"><span class="pre">Collection</span></a></span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#IOAdapter.get_collection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.IOAdapter.get_collection" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_collection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">collection_urn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.Collection" title="ivcap_sdk_service.cio.io_adapter.Collection"><span class="pre">Collection</span></a></span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#IOAdapter.get_collection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.IOAdapter.get_collection" title="Permalink to this definition"></a></dt>
 <dd><p>Return a collection representing a set of artifacts</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -427,7 +602,67 @@ artifactID.</p>
 the current context</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#id1" title="ivcap_sdk_service.cio.io_adapter.Collection">Collection</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.Collection" title="ivcap_sdk_service.cio.io_adapter.Collection">Collection</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.IOAdapter.read_aspect">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_aspect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aspect_urn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ivcap_sdk_service.itypes.URN</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_caching</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#IOAdapter.read_aspect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.IOAdapter.read_aspect" title="Permalink to this definition"></a></dt>
+<dd><p>Return an aspect as a dict</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>aspect_urn</strong> (<em>URN</em>) – URN of aspect to read</p></li>
+<li><p><strong>no_caching</strong> (<em>bool</em><em>, </em><em>optional</em>) – If true, content is not cached nor read from cache. Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The content of the aspect as a dict</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.IOAdapter.find_aspect">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">find_aspect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ivcap_sdk_service.itypes.URN</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">entity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ivcap_sdk_service.itypes.URN</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">json_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema2type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="../../index.html#ivcap_sdk_service.Type" title="ivcap_sdk_service.Type"><span class="pre">Type</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../aspect/index.html#ivcap_sdk_service.aspect.Aspect" title="ivcap_sdk_service.aspect.Aspect"><span class="pre">ivcap_sdk_service.aspect.Aspect</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../../aspect/index.html#ivcap_sdk_service.aspect.Aspect" title="ivcap_sdk_service.aspect.Aspect"><span class="pre">ivcap_sdk_service.aspect.Aspect</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#IOAdapter.find_aspect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.IOAdapter.find_aspect" title="Permalink to this definition"></a></dt>
+<dd><p>Return a list of aspects</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>schema</strong> (<em>URN</em><em>, </em><em>optional</em>) – Optional schema to filter on</p></li>
+<li><p><strong>schema</strong> – Optional entiy to filter on</p></li>
+<li><p><strong>json_path</strong> (<em>str</em><em>, </em><em>optional</em>) – Optional json_path expr to filter on</p></li>
+<li><p><strong>schema2type</strong> – (Dict[str, Type[Aspect]], optional): Mapping from schema URN to aspect class</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of aspects fulfilling filter</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list[<a class="reference internal" href="../../aspect/index.html#ivcap_sdk_service.aspect.Aspect" title="ivcap_sdk_service.aspect.Aspect">Aspect</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.io_adapter.IOAdapter.get_queue">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_queue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queue_urn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.Queue" title="ivcap_sdk_service.cio.io_adapter.Queue"><span class="pre">Queue</span></a></span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/io_adapter.html#IOAdapter.get_queue"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.io_adapter.IOAdapter.get_queue" title="Permalink to this definition"></a></dt>
+<dd><p>Return a queue representing a set of messages</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>queue_urn</strong> (<em>URN</em>) – Queue identifies</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of a queue object appropriate for
+the current context</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#ivcap_sdk_service.cio.io_adapter.Queue" title="ivcap_sdk_service.cio.io_adapter.Queue">Queue</a></p>
 </dd>
 </dl>
 </dd></dl>
