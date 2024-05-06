@@ -51,8 +51,9 @@ add-license:
 	licenseheaders -t .license.tmpl -y 2023 -d src
 	licenseheaders -t .license.tmpl -y 2023 -d examples
 
+# run `make VERSION=0... version  -- NO leading 'v'
 version:
-	@poetry version $(v)
+	@poetry version $(VERSION)
 	@git add pyproject.toml
 	@git commit -m "v$$(poetry version -s)"
 	@git tag v$$(poetry version -s)
@@ -66,6 +67,6 @@ docs:
 clean:
 	rm -rf *.egg-info
 	rm -rf dist
-	find ${ROOT_DIR} -name __pycache__ | xargs rm -r 
+	find ${ROOT_DIR} -name __pycache__ | xargs rm -r
 
 .PHONY: docs
