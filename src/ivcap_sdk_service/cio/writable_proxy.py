@@ -39,13 +39,15 @@ class WritableProxy(IOWritable):
         metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None,
         name: Optional[str] = None,
         is_seekable=False,
+        is_binary: Optional[bool]=None,
         on_close: Optional[Callable[[str, str], str]]=None,
         encoding=None,
     ):
         self._storage_url = storage_url
         if isinstance(mime_type, SupportedMimeTypes):
             mime_type = mime_type.value
-        is_binary = not mime_type.startswith('text')
+        if is_binary == None:
+            is_binary = not mime_type.startswith('text')
 
         self._mime_type = mime_type
         self._name = name if name else "???"
@@ -149,10 +151,11 @@ class WritableProxy(IOWritable):
         if self._name:
             headers["X-Name"] = self._name
 
-        if len(metadata) == 1 and len(metadata[0].keys()) <= 3:
+        if len(metadata) == 1 and len(metadata[0].keys()) <= 5:
             # Immediately upload simple metadata
             metadataUploaded = True
-            headers['Upload-Metadata'] = ','. join(map(lambda e: f"{e[0]} {encode64(str(e[1]))}", metadata[0].items()))
+            headers['X-Metadata'] = ','. join(map(lambda e: f"{e[0]} {encode64(str(e[1]))}", metadata[0].items()))
+
         try:
             logger.debug("Post artifact data='%s', headers:'%s'", fd, headers)
             r = requests.post(self._storage_url, data=fd, headers=headers)
@@ -211,6 +214,7 @@ def upload_metadata(
     *,
     artifact_id: str = None,
     url: str = None,
+    name: str = None,
 ) -> None:
     headers = {
         "X-Meta-Data-For-Entity": entity_urn,
@@ -221,6 +225,8 @@ def upload_metadata(
         headers["X-Meta-Data-For-Artifact"] = artifact_id
     if url:
         headers["X-Meta-Data-For-Url"] = url
+    if name:
+        headers["X-Name"] = name
 
     try:
         logger.debug("Post artifact metadata data='%s', headers:'%s'", metadata, headers)

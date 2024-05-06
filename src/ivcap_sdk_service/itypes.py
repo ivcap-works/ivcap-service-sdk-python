@@ -8,19 +8,25 @@ from typing import Dict, NamedTuple, Optional, Union
 from numbers import Number
 
 SCHEMA_KEY = '$schema'
+ENTITY_KEY = '$entity'
 
 class SupportedMimeTypes(Enum):
+    TEXT = 'text'
+    CSV = 'text/csv'
     NETCDF = 'application/netcdf'
     PNG = 'image/png'
     JPEG = 'image/jpeg'
+    PARQUET = "application/vnd.apache.parquet"
 
 # type
+URN = str
 Url = str
-MetaDict = Dict[str, Union[str, Number, bool]]
+AspectDict = Dict[str, Union[str, Number, bool]]
+MetaDict = AspectDict
 FilePath = str
 ServiceArgs = NamedTuple
 
-class MissingParameterValue(Exception): 
+class MissingParameterValue(Exception):
     name: str
     message: Optional[str]
 
@@ -28,11 +34,17 @@ class MissingParameterValue(Exception):
         self.name = name
         self.message = message
 
-class UnsupportedMimeType(Exception): 
+class UnsupportedMimeType(Exception):
     mime_type: str
 
     def __init__(self, mime_type: str):
         self.mime_type = mime_type
 
-class MissingSchemaDeclaration(Exception): 
+class MissingSchemaDeclaration(Exception):
     pass
+
+class MissingFile(Exception):
+    fname: str
+
+    def __init__(self, fname: str):
+        self.fname = fname
