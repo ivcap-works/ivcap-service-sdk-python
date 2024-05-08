@@ -14,7 +14,7 @@ import json
 import os
 from pathlib import Path, PurePath
 import pathlib
-from queue import Empty, SimpleQueue
+from queue import Empty, SimpleQueue, Queue as StdQueue
 import re
 import shutil
 from threading import Lock
@@ -37,14 +37,33 @@ from .utils import get_cache_name
 from ..utils import json_dump
 from ..itypes import URN, AspectDict, MetaDict, Url, SupportedMimeTypes
 from ..logger import sys_logger as logger
-from .io_adapter import A, ASPECT_MSG_SCHEMA, DEF_LEASE_TIME_SEC, DEF_MAX_WAIT_TIME_SEC, END_OF_STREAM_SCHEMA, AcknowledgableQueueMessage, Collection, IOAdapter, IOReadable, IOWritable, OnCloseF, Queue, QueueMessage, QueueTimeoutException, UnexpectedMessgeException
+from .io_adapter import (
+    A,
+    ASPECT_MSG_SCHEMA,
+    DEF_LEASE_TIME_SEC,
+    DEF_MAX_WAIT_TIME_SEC,
+    END_OF_STREAM_SCHEMA,
+    AcknowledgableQueueMessage,
+    Collection,
+    IOAdapter,
+    IOReadable,
+    IOWritable,
+    OnCloseF,
+    Queue,
+    QueueMessage,
+    QueueTimeoutException,
+    UnexpectedMessgeException,
+    QueueService,
+)
 from ..aspect import Aspect, GenericAspect
+
 
 class LocalIOAdapter(IOAdapter):
     """
     An adapter for a standard file system backend.
     """
-    def __init__(self, in_dir: str, out_dir: str, cache_dir: str=None) -> None:
+
+    def __init__(self, in_dir: str, out_dir: str, cache_dir: str = None) -> None:
         """
         Initialise FileAdapter data paths
 
@@ -67,7 +86,9 @@ class LocalIOAdapter(IOAdapter):
         self.out_dir = os.path.abspath(out_dir)
         self.cache_dir = os.path.abspath(cache_dir) if cache_dir else None
 
-    def read_artifact(self, artifact_id: str, binary_content=True, no_caching=False, seekable=False) -> IOReadable:
+    def read_artifact(
+        self, artifact_id: str, binary_content=True, no_caching=False, seekable=False
+    ) -> IOReadable:
         """Return a readable file-like object providing the content of an artifact
 
         Args:
@@ -82,17 +103,23 @@ class LocalIOAdapter(IOAdapter):
         if artifact_id.startswith("urn:"):
             artifact_id = artifact_id[4:]
         u = urlparse(artifact_id)
-        if u.scheme == '' or u.scheme == 'file':
+        if u.scheme == "" or u.scheme == "file":
             return self.read_local(u.path, binary_content=binary_content)
         else:
-            return self.read_external(artifact_id, binary_content=binary_content, no_caching=no_caching, seekable=seekable)
+            return self.read_external(
+                artifact_id,
+                binary_content=binary_content,
+                no_caching=no_caching,
+                seekable=seekable,
+            )
 
-    def read_external(self,
+    def read_external(
+        self,
         url: Url,
         binary_content=True,
         no_caching=False,
         seekable=False,
-        local_file_name=None
+        local_file_name=None,
     ) -> IOReadable:
         """Return a readable file-like object providing the content of an external data item.
 
@@ -107,14 +134,22 @@ class LocalIOAdapter(IOAdapter):
         """
         cache = None
         if self.cache_dir and not no_caching:
-            cname = local_file_name if local_file_name else join(self.cache_dir, get_cache_name(url))
+            cname = (
+                local_file_name
+                if local_file_name
+                else join(self.cache_dir, get_cache_name(url))
+            )
             if isfile(cname) and access(cname, R_OK):
                 return ReadableFile(f"{url} (cached)", cname, is_binary=binary_content)
             cache = WritableFile(cname, is_binary=binary_content)
 
         ior = ReadableProxy(url, url, is_binary=binary_content, cache=cache)
         if cache:
-            logger.debug("LocalIOAdapter#read_external: Cache external content '%s' into '%s'", url, cache.name)
+            logger.debug(
+                "LocalIOAdapter#read_external: Cache external content '%s' into '%s'",
+                url,
+                cache.name,
+            )
         return ior
 
     def artifact_readable(self, artifact_id: str) -> bool:
@@ -127,10 +162,12 @@ class LocalIOAdapter(IOAdapter):
             bool: True if artifact can be read
         """
         u = urlparse(artifact_id)
-        if u.scheme == '' or u.scheme == 'file':
+        if u.scheme == "" or u.scheme == "file":
             return self.readable_local(u.path)
         else:
-            return True # assume that all external urls are at least conceptually readable
+            return (
+                True  # assume that all external urls are at least conceptually readable
+            )
 
     def write_artifact(
         self,
@@ -139,8 +176,8 @@ class LocalIOAdapter(IOAdapter):
         name: Optional[str] = None,
         metadata: Optional[MetaDict] = {},
         seekable=False,
-        is_binary: Optional[bool]=None,
-        on_close: Optional[OnCloseF] = None
+        is_binary: Optional[bool] = None,
+        on_close: Optional[OnCloseF] = None,
     ) -> IOWritable:
         """Returns a IOWritable to create a new artifact. It needs to be closed
         in order to be persisted. If `on_close` is provided it is called with the
@@ -166,7 +203,7 @@ class LocalIOAdapter(IOAdapter):
         if isinstance(mime_type, SupportedMimeTypes):
             mime_type = mime_type.value
         if is_binary == None:
-            is_binary = not mime_type.startswith('text')
+            is_binary = not mime_type.startswith("text")
 
         def _on_close(urn, _2):
             logger.info("Written artifact '%s' to '%s'", name, fname)
@@ -191,7 +228,9 @@ class LocalIOAdapter(IOAdapter):
         file_name = self._to_path(self.in_dir, name, collection_name)
         return isfile(file_name) and access(file_name, R_OK)
 
-    def read_local(self, name: str, collection_name: str = None, binary_content=True) -> IOReadable:
+    def read_local(
+        self, name: str, collection_name: str = None, binary_content=True
+    ) -> IOReadable:
         """Return a readable file-like object providing the content of an external data item.
 
         Args:
@@ -206,19 +245,20 @@ class LocalIOAdapter(IOAdapter):
         name = os.path.basename(path)
         return ReadableFile(name, path, is_binary=binary_content)
 
-    def _to_path(self,
-                 prefix: str,
-                 name: str,
-                 collection_name: str = None,
-                 ext = None,
-                 ensure_uniqueness: bool = False,
+    def _to_path(
+        self,
+        prefix: str,
+        name: str,
+        collection_name: str = None,
+        ext=None,
+        ensure_uniqueness: bool = False,
     ) -> str:
-        if name.startswith('/'):
+        if name.startswith("/"):
             path = name
-        elif name.startswith('file:'):
-            path = name[len('file://'):]
-        elif name.startswith('urn:file:'):
-            path = name[len('urn:file://'):]
+        elif name.startswith("file:"):
+            path = name[len("file://") :]
+        elif name.startswith("urn:file:"):
+            path = name[len("urn:file://") :]
         else:
             if collection_name:
                 path = os.path.join(prefix, collection_name, name)
@@ -229,19 +269,19 @@ class LocalIOAdapter(IOAdapter):
 
         if ensure_uniqueness and os.path.exists(path):
             p = pathlib.Path(path)
-            r = "{:05d}".format(random.randint(0,99999))
+            r = "{:05d}".format(random.randint(0, 99999))
             n = f"{p.stem}-{r}{p.suffix}"
             path = self._to_path(self.out_dir, n)
         return path
 
     def write_metadata(
         self,
-        entity_id: str, # URN
-        schema: str, # URN
+        entity_id: str,  # URN
+        schema: str,  # URN
         metadata: MetaDict,
         name: Optional[str] = None,
     ) -> str:
-        if entity_id == 'urn:ivcap:order:00000000-0000-0000-0000-000000000000':
+        if entity_id == "urn:ivcap:order:00000000-0000-0000-0000-000000000000":
             # debug mode
             if name:
                 fn = f"{name}.{time.time()}.json"
@@ -278,15 +318,16 @@ class LocalIOAdapter(IOAdapter):
         else:
             raise ValueError(f"Cannot find local file for aspect '{fname}")
 
-    def find_aspect(self,
-                    schema: URN = None,
-                    entity: URN = None,
-                    json_path: str = None,
-                    schema2type: Dict[str, Type[A]] = None
+    def find_aspect(
+        self,
+        schema: URN = None,
+        entity: URN = None,
+        json_path: str = None,
+        schema2type: Dict[str, Type[A]] = None,
     ) -> List[Aspect]:
         expr = self._create_jsonpath(json_path) if json_path else None
         results = []
-        for fn in Path(self.out_dir).glob('*.json'):
+        for fn in Path(self.out_dir).glob("*.json"):
             with open(fn) as f:
                 aj = json.load(f)
                 if not aj:
@@ -298,7 +339,7 @@ class LocalIOAdapter(IOAdapter):
                     continue
 
                 if schema and aschema != schema:
-                        continue
+                    continue
                 if entity:
                     aentity = aj.get("$entity")
                     if not aentity:
@@ -308,7 +349,9 @@ class LocalIOAdapter(IOAdapter):
                         continue
                 if expr:
                     m = expr.find([aj])
-                    logger.debug(f"checking json path in '{fn}' - matched: {len(m) == 1}")
+                    logger.debug(
+                        f"checking json path in '{fn}' - matched: {len(m) == 1}"
+                    )
                     if len(m) == 0:
                         continue
                 klass = schema2type.get(aschema) if schema2type else None
@@ -326,10 +369,10 @@ class LocalIOAdapter(IOAdapter):
         if not path:
             return None
 
-        if path.startswith('$'):
+        if path.startswith("$"):
             # hope the caller knows what they are doing :)
             p = path
-        elif (path.startswith('@') or path.startswith('(')):
+        elif path.startswith("@") or path.startswith("("):
             p = f"$[?{path}]"
         else:
             raise Exception("json_path should start with either '@' or '('")
@@ -338,13 +381,16 @@ class LocalIOAdapter(IOAdapter):
 
     def get_collection(self, collection_urn: str) -> Collection:
         u = urlparse(collection_urn)
-        if u.scheme == '' or u.scheme == 'file':
+        if u.scheme == "" or u.scheme == "file":
             if os.path.isfile(u.path) or os.path.isdir(u.path):
                 return LocalCollection(u.path, self)
             else:
                 raise ValueError(f"Cannot find local file or directory '{u.path}")
         else:
             raise ValueError(f"Remote collection is not supported, yet")
+
+    def get_queue_service(self, **kwargs) -> QueueService:
+        return LocalQueueService(**kwargs)
 
     def get_queue(self, queue_urn: str) -> Queue:
         if queue_urn.startswith("urn:file:"):
@@ -354,6 +400,7 @@ class LocalIOAdapter(IOAdapter):
 
     def __repr__(self):
         return f"<LocalIOAdapter in_dir={self.in_dir} out_dir={self.out_dir}>"
+
 
 class LocalCollection(Collection):
     def __init__(self, path: str, adapter: IOAdapter) -> None:
@@ -378,6 +425,7 @@ class LocalCollection(Collection):
     def __repr__(self):
         return f"<LocalCollection path={self._path}>"
 
+
 class SingleFileIter:
     def __init__(self, path: str, adapter: IOAdapter) -> None:
         self._path = path
@@ -394,9 +442,10 @@ class SingleFileIter:
     def __repr__(self):
         return f"<LocalCollectionIter path={self._path}>"
 
+
 class DirectoryIter:
     def __init__(self, path: str, adapter: IOAdapter) -> None:
-        self._iter = Path(path).glob('*')
+        self._iter = Path(path).glob("*")
         self._adapter = adapter
         self._already_served = False
 
@@ -404,19 +453,22 @@ class DirectoryIter:
         f = str(next(self._iter))
         return self._adapter.read_local(f)
 
+
 ### QUEUE
 
+
 class MsgState(str, Enum):
-    Added = 'A'
-    Consumed = 'C'
-    Pending = 'P'
-    Timedout = 'T'
-    Released = 'R'
+    Added = "A"
+    Consumed = "C"
+    Pending = "P"
+    Timedout = "T"
+    Released = "R"
+
 
 class LocalQueueMessage(AcknowledgableQueueMessage):
     _pendingPath: str = None
     _origPath: str = None
-    _queue: 'LocalQueue' = None
+    _queue: "LocalQueue" = None
 
     def ack(self) -> None:
         if self._pendingPath:
@@ -438,16 +490,19 @@ class LocalQueueMessage(AcknowledgableQueueMessage):
                 # with open(self._queue._log_file, "a") as f:
                 #     f.write(f"{os.path.basename(self._origPath)},{MsgState.Released},{int(time.time())}\n")
 
+
 EOS_LABEL = 99999999999
 
 T = TypeVar("T")
 
+
 class BaseQueue(Queue):
-    def __init__(self,
-                 urn: str,
-                 adapter: LocalIOAdapter,
-                 lease:float = DEF_LEASE_TIME_SEC,
-                 timeout:float = DEF_MAX_WAIT_TIME_SEC
+    def __init__(
+        self,
+        urn: str,
+        adapter: LocalIOAdapter,
+        lease: float = DEF_LEASE_TIME_SEC,
+        timeout: float = DEF_MAX_WAIT_TIME_SEC,
     ) -> None:
         self._urn = urn
         self._name = urn[len("urn:ivcap:queue#")]
@@ -468,7 +523,7 @@ class BaseQueue(Queue):
     def lease(self) -> float:
         return self._lease
 
-    def withLease(self, lease: float) -> 'Queue':
+    def withLease(self, lease: float) -> "Queue":
         q = self.__class__(self._urn, self._adapter, lease, self._timeout)
         q._is_closed = self._is_closed
         return q
@@ -477,7 +532,7 @@ class BaseQueue(Queue):
     def timeout(self) -> float:
         return self._timeout
 
-    def withTimeout(self, timeout: float) -> 'Queue':
+    def withTimeout(self, timeout: float) -> "Queue":
         q = self.__class__(self._urn, self._adapter, self._lease, timeout)
         q._is_closed = self._is_closed
         return q
@@ -496,8 +551,9 @@ class BaseQueue(Queue):
             else:
                 outm = mapper(m)
                 if outm:
-                    if type(outm) in [list,tuple]:
-                        for m2 in outm: out_queue.push(m2)
+                    if type(outm) in [list, tuple]:
+                        for m2 in outm:
+                            out_queue.push(m2)
                     else:
                         out_queue.push(outm)
                     m.ack()
@@ -509,17 +565,19 @@ class BaseQueue(Queue):
     def __iter__(self):
         return QueueIter(self)
 
+
 class LocalQueue(BaseQueue):
     """A queue of messages"""
 
-    def __init__(self,
-                 urn: str,
-                 adapter: LocalIOAdapter,
-                 lease:float = DEF_LEASE_TIME_SEC,
-                 timeout:float = DEF_MAX_WAIT_TIME_SEC
+    def __init__(
+        self,
+        urn: str,
+        adapter: LocalIOAdapter,
+        lease: float = DEF_LEASE_TIME_SEC,
+        timeout: float = DEF_MAX_WAIT_TIME_SEC,
     ) -> None:
         from ..config import Resource
-        from ..ivcap import get_config # break import loop
+        from ..ivcap import get_config  # break import loop
 
         super().__init__(urn, adapter, lease, timeout)
         self._path = resource_urn_path(urn, Resource.QUEUE, adapter.in_dir)
@@ -535,7 +593,9 @@ class LocalQueue(BaseQueue):
                     f.write("0")
 
         self._name = Path(self._path).stem
-        self._id_prefix = f"{get_config().SCHEMA_PREFIX}{Resource.MESSAGE.value}#{self._name}-"
+        self._id_prefix = (
+            f"{get_config().SCHEMA_PREFIX}{Resource.MESSAGE.value}#{self._name}-"
+        )
         self._idx_file = os.path.join(self._path, "_idx")
         self._msg_glob = os.path.join(self._path, "*.json")
         self._pending_glob = os.path.join(self._pending_path, "*.json")
@@ -583,12 +643,14 @@ class LocalQueue(BaseQueue):
 
         q = self._get_queue()
         abs_timeout = int(time.time()) + self._timeout
-        block = False # let's be optimisitc and assume there is a message waiting
+        block = False  # let's be optimisitc and assume there is a message waiting
         _timeout = 0
         while True:
             try:
                 if _timeout:
-                    logger.debug(f"Queue#{self._name}: waiting for new messages - {_timeout}")
+                    logger.debug(
+                        f"Queue#{self._name}: waiting for new messages - {_timeout}"
+                    )
                 p = q.get(block, _timeout)
                 m = self._pull(p)
                 if m:
@@ -604,7 +666,7 @@ class LocalQueue(BaseQueue):
                 _timeout = self._calc_queue_timeout(rem)
 
     def _pull(self, mpath) -> AcknowledgableQueueMessage:
-       with FileLock(self._lock_file):
+        with FileLock(self._lock_file):
             logger.debug(f"Queue#{self._name} checking for '{mpath}'")
             if not os.path.exists(mpath):
                 return None
@@ -653,7 +715,7 @@ class LocalQueue(BaseQueue):
         return int(s)
 
     def _calc_queue_timeout(self, max_timeout) -> float:
-        p = re.compile('(\d+)--(\d+)')
+        p = re.compile("(\d+)--(\d+)")
         now = int(time.time())
         timeout = max_timeout
         found_eos = False
@@ -668,7 +730,7 @@ class LocalQueue(BaseQueue):
                 continue
             rem = mtout - now
             found_eos = mtout == EOS_LABEL
-            is_single_eos = (i == 0 and found_eos)
+            is_single_eos = i == 0 and found_eos
             if rem <= 0 or is_single_eos:
                 # timed out - put back in service
                 msg = f"{m[2]}.json"
@@ -697,12 +759,14 @@ class LocalQueue(BaseQueue):
                 # track new incoming messages
                 msg_glob = self._msg_glob
                 qname = self._name
+
                 class Handler(FileSystemEventHandler):
                     def on_closed(self, event):
                         mpath = event.src_path
                         if fnmatch.fnmatch(mpath, msg_glob):
                             logger.debug(f"Queue#{qname} adding msg '{mpath}'")
                             queue.put(mpath)
+
                 self._queue = queue
                 self._observer = Observer()
                 self._observer.schedule(Handler(), self._path)
@@ -716,17 +780,19 @@ class LocalQueue(BaseQueue):
     def __repr__(self):
         return f"<LocalQueue path={self._path}>"
 
+
 class TestQueue(BaseQueue):
-    def __init__(self,
-                 urn: str,
-                 adapter: LocalIOAdapter,
-                 lease:float = DEF_LEASE_TIME_SEC,
-                 timeout:float = DEF_MAX_WAIT_TIME_SEC
+    def __init__(
+        self,
+        urn: str,
+        adapter: LocalIOAdapter,
+        lease: float = DEF_LEASE_TIME_SEC,
+        timeout: float = DEF_MAX_WAIT_TIME_SEC,
     ) -> None:
         super().__init__(urn, adapter, lease, timeout)
 
         self._queue = []
-        mpath = urn[len("urn:file://"):]
+        mpath = urn[len("urn:file://") :]
         if os.path.isdir(mpath):
             for f in glob.glob(os.path.join(mpath, "*.json")):
                 self.__fill_q(f)
@@ -752,6 +818,7 @@ class TestQueue(BaseQueue):
     def __repr__(self):
         return f"<TestQueue urn={self._urn}>"
 
+
 class QueueIter:
     def __init__(self, queue: Queue) -> None:
         self._queue = queue
@@ -770,15 +837,14 @@ class QueueIter:
         return m
 
 
-
 def resource_urn_path(urn: str, resource: str, in_dir: str) -> str:
     """Returns the 'path' of a resource urn (eveything after ':' or '#')"""
 
     u = urlparse(urn)
-    if u.scheme == '' or u.scheme == 'file':
+    if u.scheme == "" or u.scheme == "file":
         path = u.path
-    elif u.scheme == 'urn':
-        from ..ivcap import get_config # break import loop
+    elif u.scheme == "urn":
+        from ..ivcap import get_config  # break import loop
 
         if u.fragment != "":
             dname = u.fragment
@@ -786,7 +852,9 @@ def resource_urn_path(urn: str, resource: str, in_dir: str) -> str:
             prefix = f"{get_config().SCHEMA_PREFIX}{resource.value}."
             plen = len(prefix)
             if len(urn) < plen:
-                raise ValueError(f"URN'{urn}'is not a valid one for resource '{resource.value}'")
+                raise ValueError(
+                    f"URN'{urn}'is not a valid one for resource '{resource.value}'"
+                )
             dname = urn[plen:]
         path = os.path.join(in_dir, dname)
         if not os.path.isdir(path):
@@ -799,3 +867,112 @@ def resource_urn_path(urn: str, resource: str, in_dir: str) -> str:
         return path
     else:
         raise ValueError(f"Cannot find local file or directory '{path}")
+
+
+class LocalQueueService(QueueService):
+    """
+    Concrete implementation of QueueService for local queues.
+    """
+
+    def __init__(self):
+        self.queues = {}
+
+    def list(
+        self,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+    ) -> List[Dict]:
+        """
+        List all queues.
+        """
+        # Implementing limit and offset for demonstration purposes
+        # In a real scenario, these might not be directly applicable to local queues
+        # and would need to be implemented differently
+        #
+        # The queues are returned as a list of dictionaries with the following keys
+        # - name: the name of the queue
+        # - description: the description of the queue
+        # - policy: the policy of the queue
+
+        return (
+            [
+                {"name": name, "description": None, "policy": None}
+                for name in list(self.queues.keys())[offset:limit]
+            ]
+            if limit
+            else [
+                {"name": name, "description": None, "policy": None}
+                for name in list(self.queues.keys())
+            ]
+        )
+
+    def create(
+        self, name: str, description: Optional[str] = None, policy: Optional[str] = Dict
+    ) -> None:
+        """
+        Create a new queue with the given name.
+        """
+        for queue_name in self.queues:
+            if queue_name == name:
+                raise ValueError(f"Queue '{name}' already exists.")
+
+        self.queues[name] = StdQueue()
+
+        return {
+            "id": f"urn:ivcap:queue:{name}",
+            "name": name,
+            "description": description,
+            "created-at": "2024-04-18T23:04:17Z",
+            "account": "urn:ivcap:account:a4c8f763-29e6-4d20-b739-9a8d5c2e14f2",
+        }
+
+    def delete(self, queue_id: str) -> None:
+        """
+        Delete the queue with the given name.
+        """
+        if queue_id not in self.queues:
+            raise ValueError(f"Queue '{queue_id}' does not exist.")
+        del self.queues[queue_id]
+
+    def enqueue(self, queue_id: str, message: Dict) -> None:
+        """
+        Enqueue a message into the queue with the given name.
+        """
+        if queue_id not in self.queues:
+            raise ValueError(f"Queue '{queue_id}' does not exist.")
+        self.queues[queue_id].put(message)
+
+    def dequeue(
+        self, queue_id: str, message_fetch_count: Optional[int] = 1
+    ) -> List[Dict]:
+        """
+        Dequeue messages from the queue with the given name.
+        """
+        if queue_id not in self.queues:
+            raise ValueError(f"Queue '{queue_id}' does not exist.")
+        messages = []
+        for _ in range(message_fetch_count):
+            try:
+                message = self.queues[queue_id].get_nowait()
+                messages.append(message)
+            except Empty:
+                # Queue is empty, exit the loop gracefully
+                break
+            except (ValueError, TypeError) as e:
+                # Catch other relevant exceptions for the queue implementation
+                logger.error(
+                    f"Error while dequeuing message from queue '{queue_id}': {e}"
+                )
+                break
+        return messages
+
+    def read(self, queue_id: str) -> Dict:
+        """
+        Read the queue with the given name.
+        """
+        if queue_id not in self.queues:
+            raise ValueError(f"Queue '{queue_id}' does not exist.")
+        try:
+            return self.queues[queue_id].queue[0]
+        except IndexError:
+            raise ValueError(f"Queue '{queue_id}' is empty.")
