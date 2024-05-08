@@ -20,7 +20,6 @@ Classes
    ivcap_sdk_service.cio.io_adapter.QueueMessage
    ivcap_sdk_service.cio.io_adapter.AcknowledgableQueueMessage
    ivcap_sdk_service.cio.io_adapter.Queue
-   ivcap_sdk_service.cio.io_adapter.QueueService
    ivcap_sdk_service.cio.io_adapter.IOAdapter
 
 
@@ -373,50 +372,6 @@ Attributes
 
    
 
-.. py:class:: QueueService
-
-
-   Bases: :py:obj:`abc.ABC`
-
-   Abstract class for queue service with explicitly defined parameters.
-
-   .. py:method:: list(limit: Optional[int] = None, offset: Optional[int] = None, page: Optional[str] = None, filter: Optional[str] = None, order_by: Optional[str] = None, order_desc: Optional[bool] = None, at_time: Optional[str] = None) -> List[str]
-      :abstractmethod:
-
-      List all queues with optional query parameters.
-
-
-   .. py:method:: create(name: str, description: Optional[str] = None, policy: Optional[str] = Dict) -> Dict
-      :abstractmethod:
-
-      Create a new queue with the given parameters.
-
-
-   .. py:method:: delete(queue_id: str) -> None
-      :abstractmethod:
-
-      Delete the queue with the given name.
-
-
-   .. py:method:: enqueue(queue_id: str, message: Dict) -> None
-      :abstractmethod:
-
-      Enqueue a message into the queue with the given parameters.
-
-
-   .. py:method:: dequeue(queue_id: str, message_fetch_count: Optional[int] = 1) -> List[Dict]
-      :abstractmethod:
-
-      Dequeue messages from the queue with the given parameters.
-
-
-   .. py:method:: read(queue_id: str) -> Dict
-      :abstractmethod:
-
-      Read the queue with the given parameters.
-
-
-
 .. py:class:: IOAdapter
 
 
@@ -548,12 +503,6 @@ Attributes
       :returns: An instance of a queue object appropriate for
                 the current context
       :rtype: Queue
-
-
-   .. py:method:: get_queue_service(**kwargs) -> QueueService
-      :abstractmethod:
-
-      Create a queue.
 
 
 

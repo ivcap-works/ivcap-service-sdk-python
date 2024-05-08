@@ -88,7 +88,7 @@
 <span class="kn">import</span> <span class="nn">shutil</span>
 <span class="kn">import</span> <span class="nn">os</span>
 
-<span class="kn">from</span> <span class="nn">.cio.io_adapter</span> <span class="kn">import</span> <span class="n">IOAdapter</span><span class="p">,</span> <span class="n">IOReadable</span><span class="p">,</span> <span class="n">IOWritable</span><span class="p">,</span> <span class="n">OnCloseF</span><span class="p">,</span> <span class="n">QueueService</span>
+<span class="kn">from</span> <span class="nn">.cio.io_adapter</span> <span class="kn">import</span> <span class="n">IOAdapter</span><span class="p">,</span> <span class="n">IOReadable</span><span class="p">,</span> <span class="n">IOWritable</span><span class="p">,</span> <span class="n">OnCloseF</span>
 
 <span class="kn">from</span> <span class="nn">.logger</span> <span class="kn">import</span> <span class="n">sys_logger</span> <span class="k">as</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">.config</span> <span class="kn">import</span> <span class="n">Config</span>
@@ -384,14 +384,6 @@
 <span class="sd">        IOReadable: A readable on the referenced content</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">IO_ADAPTER</span><span class="o">.</span><span class="n">read_artifact</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">binary_content</span><span class="p">,</span> <span class="n">no_caching</span><span class="p">,</span> <span class="n">seekable</span><span class="p">)</span></div>
-
-<div class="viewcode-block" id="get_queue_service"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/ivcap/index.html#ivcap_sdk_service.get_queue_service">[docs]</a><span class="k">def</span> <span class="nf">get_queue_service</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">QueueService</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a queue service adapter</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        QueueService: The queue service adapter</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">IO_ADAPTER</span><span class="o">.</span><span class="n">get_queue_service</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="get_order_id"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/ivcap/index.html#ivcap_sdk_service.get_order_id">[docs]</a><span class="k">def</span> <span class="nf">get_order_id</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the ID of the currently processed order&quot;&quot;&quot;</span>
