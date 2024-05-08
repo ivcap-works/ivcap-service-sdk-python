@@ -163,4 +163,10 @@ Classes
       :rtype: Queue
 
 
+   .. py:method:: get_queue_service(**kwargs) -> QueueService
+      :abstractmethod:
+
+      Create a queue.
+
+
 

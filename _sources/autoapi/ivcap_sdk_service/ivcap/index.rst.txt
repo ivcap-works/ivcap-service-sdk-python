@@ -25,6 +25,7 @@ Functions
    ivcap_sdk_service.ivcap.publish_metadata
    ivcap_sdk_service.ivcap.publish_result
    ivcap_sdk_service.ivcap.fetch_data
+   ivcap_sdk_service.ivcap.get_queue_service
    ivcap_sdk_service.ivcap.get_order_id
    ivcap_sdk_service.ivcap.get_node_id
    ivcap_sdk_service.ivcap.notify
@@ -214,6 +215,14 @@ Attributes
 
    :returns: A readable on the referenced content
    :rtype: IOReadable
+
+
+.. py:function:: get_queue_service() -> ivcap_sdk_service.cio.io_adapter.QueueService
+
+   Get a queue service adapter
+
+   :returns: The queue service adapter
+   :rtype: QueueService
 
 
 .. py:function:: get_order_id()
