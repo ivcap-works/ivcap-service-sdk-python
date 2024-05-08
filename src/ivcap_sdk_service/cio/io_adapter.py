@@ -284,60 +284,6 @@ class Queue(ABC):
 
 OnCloseF = Callable[[Url], None]
 
-class QueueService(ABC):
-    """
-    Abstract class for queue service with explicitly defined parameters.
-    """
-
-    @abstractmethod
-    def list(
-        self,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
-        page: Optional[str] = None,
-        filter: Optional[str] = None,
-        order_by: Optional[str] = None,
-        order_desc: Optional[bool] = None,
-        at_time: Optional[str] = None,
-    ) -> List[str]:
-        """
-        List all queues with optional query parameters.
-        """
-
-    @abstractmethod
-    def create(
-        self, name: str, description: Optional[str] = None, policy: Optional[str] = Dict
-    ) -> Dict:
-        """
-        Create a new queue with the given parameters.
-        """
-
-    @abstractmethod
-    def delete(self, queue_id: str) -> None:
-        """
-        Delete the queue with the given name.
-        """
-
-    @abstractmethod
-    def enqueue(self, queue_id: str, message: Dict) -> None:
-        """
-        Enqueue a message into the queue with the given parameters.
-        """
-
-    @abstractmethod
-    def dequeue(
-        self, queue_id: str, message_fetch_count: Optional[int] = 1
-    ) -> List[Dict]:
-        """
-        Dequeue messages from the queue with the given parameters.
-        """
-
-    @abstractmethod
-    def read(self, queue_id: str) -> Dict:
-        """
-        Read the queue with the given parameters.
-        """
-
 class IOAdapter(ABC):
 
     # @classmethod
@@ -517,9 +463,3 @@ class IOAdapter(ABC):
             the current context
         """
         pass
-
-    @abstractmethod
-    def get_queue_service(self, **kwargs) -> QueueService:
-        """
-        Create a queue.
-        """

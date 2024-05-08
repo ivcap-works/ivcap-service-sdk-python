@@ -37,7 +37,7 @@ from .utils import get_cache_name
 from ..utils import json_dump
 from ..itypes import URN, AspectDict, MetaDict, Url, SupportedMimeTypes
 from ..logger import sys_logger as logger
-from .io_adapter import A, ASPECT_MSG_SCHEMA, DEF_LEASE_TIME_SEC, DEF_MAX_WAIT_TIME_SEC, END_OF_STREAM_SCHEMA, AcknowledgableQueueMessage, Collection, IOAdapter, IOReadable, IOWritable, OnCloseF, Queue, QueueMessage, QueueTimeoutException, UnexpectedMessgeException, QueueService
+from .io_adapter import A, ASPECT_MSG_SCHEMA, DEF_LEASE_TIME_SEC, DEF_MAX_WAIT_TIME_SEC, END_OF_STREAM_SCHEMA, AcknowledgableQueueMessage, Collection, IOAdapter, IOReadable, IOWritable, OnCloseF, Queue, QueueMessage, QueueTimeoutException, UnexpectedMessgeException
 from ..aspect import Aspect, GenericAspect
 
 class LocalIOAdapter(IOAdapter):
@@ -351,9 +351,6 @@ class LocalIOAdapter(IOAdapter):
             # for testing and debugging, we support a queue with a single file
             return TestQueue(queue_urn, self)
         return LocalQueue(queue_urn, self)
-
-    def get_queue_service(self, **kwargs) -> QueueService:
-        return LocalQueueService(**kwargs)
 
     def __repr__(self):
         return f"<LocalIOAdapter in_dir={self.in_dir} out_dir={self.out_dir}>"
@@ -802,111 +799,3 @@ def resource_urn_path(urn: str, resource: str, in_dir: str) -> str:
         return path
     else:
         raise ValueError(f"Cannot find local file or directory '{path}")
-
-class LocalQueueService(QueueService):
-    """
-    Concrete implementation of QueueService for local queues.
-    """
-
-    def __init__(self):
-        self.queues = {}
-
-    def list(
-        self,
-        limit: Optional[int] = None,
-        offset: Optional[int] = None,
-    ) -> List[Dict]:
-        """
-        List all queues.
-        """
-        # Implementing limit and offset for demonstration purposes
-        # In a real scenario, these might not be directly applicable to local queues
-        # and would need to be implemented differently
-        #
-        # The queues are returned as a list of dictionaries with the following keys
-        # - name: the name of the queue
-        # - description: the description of the queue
-        # - policy: the policy of the queue
-
-        return (
-            [
-                {"name": name, "description": None, "policy": None}
-                for name in list(self.queues.keys())[offset:limit]
-            ]
-            if limit
-            else [
-                {"name": name, "description": None, "policy": None}
-                for name in list(self.queues.keys())
-            ]
-        )
-
-    def create(
-        self, name: str, description: Optional[str] = None, policy: Optional[str] = Dict
-    ) -> None:
-        """
-        Create a new queue with the given name.
-        """
-        for queue_name in self.queues:
-            if queue_name == name:
-                raise ValueError(f"Queue '{name}' already exists.")
-
-        self.queues[name] = Queue()
-
-        return {
-            "id": f"urn:ivcap:queue:{name}",
-            "name": name,
-            "description": description,
-            "created-at": "2024-04-18T23:04:17Z",
-            "account": "urn:ivcap:account:a4c8f763-29e6-4d20-b739-9a8d5c2e14f2",
-        }
-
-    def delete(self, queue_id: str) -> None:
-        """
-        Delete the queue with the given name.
-        """
-        if queue_id not in self.queues:
-            raise ValueError(f"Queue '{queue_id}' does not exist.")
-        del self.queues[queue_id]
-
-    def enqueue(self, queue_id: str, message: Dict) -> None:
-        """
-        Enqueue a message into the queue with the given name.
-        """
-        if queue_id not in self.queues:
-            raise ValueError(f"Queue '{queue_id}' does not exist.")
-        self.queues[queue_id].put(message)
-
-    def dequeue(
-        self, queue_id: str, message_fetch_count: Optional[int] = 1
-    ) -> List[Dict]:
-        """
-        Dequeue messages from the queue with the given name.
-        """
-        if queue_id not in self.queues:
-            raise ValueError(f"Queue '{queue_id}' does not exist.")
-        messages = []
-        for _ in range(message_fetch_count):
-            try:
-                message = self.queues[queue_id].get_nowait()
-                messages.append(message)
-            except Empty:
-                # Queue is empty, exit the loop gracefully
-                break
-            except (ValueError, TypeError) as e:
-                # Catch other relevant exceptions for the queue implementation
-                logger.error(
-                    f"Error while dequeuing message from queue '{queue_id}': {e}"
-                )
-                break
-        return messages
-
-    def read(self, queue_id: str) -> Dict:
-        """
-        Read the queue with the given name.
-        """
-        if queue_id not in self.queues:
-            raise ValueError(f"Queue '{queue_id}' does not exist.")
-        try:
-            return self.queues[queue_id].queue[0]
-        except IndexError:
-            raise ValueError(f"Queue '{queue_id}' is empty.")
