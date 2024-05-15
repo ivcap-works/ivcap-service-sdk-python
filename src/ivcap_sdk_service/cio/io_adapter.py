@@ -326,7 +326,7 @@ class QueueService(ABC):
 
     @abstractmethod
     def dequeue(
-        self, queue_id: str, message_fetch_count: Optional[int] = 1
+        self, queue_id: str, limit: Optional[int] = 1
     ) -> List[Dict]:
         """
         Dequeue messages from the queue with the given parameters.

@@ -353,18 +353,6 @@ class IvcapQueueService(QueueService):
         """
         return f"{self.base_url}/1/queues/{endpoint}"
 
-    def _construct_enqueue_message(self, message):
-        message_json = json.dumps(message)
-        encoded_message = base64.b64encode(message_json.encode("utf-8"))
-        encoded_message_string = encoded_message.decode("utf-8")
-        data = {
-            "content": encoded_message_string,
-            "content-type": "application/json",
-            "schema": "urn:ivcap:schema:queue:message.1",
-        }
-
-        return data
-
     def list(
         self,
         limit: int = 10,
@@ -617,10 +605,26 @@ class IvcapQueueService(QueueService):
 
         # Send the request
         try:
-            url = self._construct_url(f"{queue_id}/message")
-            data = self._construct_enqueue_message(message)
+            url = self._construct_url(f"{queue_id}/messages")
 
-            response = requests.post(url, json=data, timeout=self.timeout)
+            headers = {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            }
+
+            params = {
+                "schema": "urn:ivcap:schema:queue:message.1",
+            }
+
+            json_data = json.dumps(message)
+
+            response = requests.put(
+                url,
+                params=params,
+                headers=headers,
+                json=json_data,
+                timeout=self.timeout,
+            )
             response.raise_for_status()
 
             if not response.content:
@@ -633,7 +637,7 @@ class IvcapQueueService(QueueService):
             return {}
 
     def dequeue(
-        self, queue_id: str, message_fetch_count: Optional[int] = 1
+        self, queue_id: str, limit: Optional[int] = 1
     ) -> List[Dict]:
         """
         Dequeue messages from the queue with the given ID.
@@ -644,7 +648,7 @@ class IvcapQueueService(QueueService):
         ----------
         queue_id : str
             The ID of the queue to dequeue messages from.
-        message_fetch_count : int, optional
+        limit : int, optional
             The number of messages to fetch from the queue. Default is 1.
 
         Returns
@@ -662,7 +666,7 @@ class IvcapQueueService(QueueService):
         Example
         -------
         >>> service = IvcapQueueService(base_url="http://queue.local")
-        >>> messages = service.dequeue(queue_id="1", message_fetch_count=3)
+        >>> messages = service.dequeue(queue_id="1", limit=3)
         >>> print(messages)
         [{'id': '1', 'content': 'Hello, world!', 'content-type': 'application/json', ...}, ...]
         """
@@ -670,20 +674,20 @@ class IvcapQueueService(QueueService):
             raise ValueError("The 'queue_id' parameter is required")
 
         # Construct the query parameters
-        params = {"messageFetchCount": f"{message_fetch_count}"}
+        params = {"messageFetchCount": f"{limit}"}
 
         # Send the request
         try:
             logger.debug(f"Dequeue messages from queue with ID: {queue_id}")
-            url = self._construct_url(f"{queue_id}/message")
+            url = self._construct_url(f"{queue_id}/messages")
             response = requests.get(url, params=params, timeout=self.timeout)
             response.raise_for_status()
 
             if not response.content:
                 logger.error("Failed to enqueue message: empty response received.")
-                return {}
+                return []
 
             return response.json()
         except requests.exceptions.RequestException as e:
             logger.error(f"Failed to dequeue messages: {e}")
-            return {}
+            return []

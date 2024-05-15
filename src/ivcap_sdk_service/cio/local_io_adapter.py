@@ -943,7 +943,7 @@ class LocalQueueService(QueueService):
         self.queues[queue_id].put(message)
 
     def dequeue(
-        self, queue_id: str, message_fetch_count: Optional[int] = 1
+        self, queue_id: str, limit: Optional[int] = 1
     ) -> List[Dict]:
         """
         Dequeue messages from the queue with the given name.
@@ -951,7 +951,7 @@ class LocalQueueService(QueueService):
         if queue_id not in self.queues:
             raise ValueError(f"Queue '{queue_id}' does not exist.")
         messages = []
-        for _ in range(message_fetch_count):
+        for _ in range(limit):
             try:
                 message = self.queues[queue_id].get_nowait()
                 messages.append(message)
