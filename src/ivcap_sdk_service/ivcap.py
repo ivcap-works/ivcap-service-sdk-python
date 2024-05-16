@@ -13,7 +13,7 @@ from typing_extensions import deprecated
 import shutil
 import os
 
-from .cio.io_adapter import IOAdapter, IOReadable, IOWritable, OnCloseF
+from .cio.io_adapter import IOAdapter, IOReadable, IOWritable, OnCloseF, QueueService
 
 from .logger import sys_logger as logger
 from .config import Config
@@ -309,6 +309,14 @@ def fetch_data(url: Url, binary_content=True, no_caching=False, seekable=False) 
         IOReadable: A readable on the referenced content
     """
     return get_config().IO_ADAPTER.read_artifact(url, binary_content, no_caching, seekable)
+
+def get_queue_service() -> QueueService:
+    """Get a queue service adapter
+
+    Returns:
+        QueueService: The queue service adapter
+    """
+    return get_config().IO_ADAPTER.get_queue_service()
 
 def get_order_id():
     """Returns the ID of the currently processed order"""
