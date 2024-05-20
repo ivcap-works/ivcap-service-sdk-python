@@ -618,7 +618,7 @@ class IvcapQueueService(QueueService):
 
             json_data = json.dumps(message)
 
-            response = requests.put(
+            response = requests.post(
                 url,
                 params=params,
                 headers=headers,
