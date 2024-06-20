@@ -433,6 +433,7 @@ class IOAdapter(ABC):
             name (Optional[str], optional): Optional name. Defaults to None.
             metadata (Optional[MetaDict | List[MetaDict]], optional): Key/value pairs (or list of key/value pairs) to add as metadata. Defaults to {}.
             seekable (bool, optional): If true, writable should be seekable (needed for NetCDF). Defaults to False.
+            is_binary (bool, optional): If true, artifact content is binary, if false, a string. Defaults to True.
             on_close (Optional[OnCloseF], optional): Called with assigned artifact ID. Defaults to None.
 
         Returns:

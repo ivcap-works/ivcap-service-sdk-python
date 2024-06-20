@@ -28,9 +28,9 @@ SaverF = Callable[[
     str, # name
     Any, # data
     IOAdapter, # io_adapater
-    Optional[str], # collection_name
     Optional[MetaDict], # metadata = {}
     bool, # seekable = False
+    bool, # is_binary = False
     Optional[OnCloseF] # on_close
 ], None]
 
@@ -62,6 +62,7 @@ def publish_artifact(
         mime_type (Union[str, SupportedMimeTypes]): The mime type of the data. Anything not starting with 'text' is assumed to be a binary content
         metadata (Optional[Union[MetaDict, Sequence[MetaDict]]], optional): Key/value pairs (or list of k/v pairs) to add as metadata. Defaults to None.
         seekable (bool, optional): If true, writable should be seekable (needed for NetCDF). Defaults to False.
+        is_binary (bool, optional): If true, data is of binary type, if false, of string. Defaults to True.
         on_close (Optional[Callable[[Url]]], optional): Called with assigned artifact ID. Defaults to None.
 
     Raises:
@@ -88,7 +89,8 @@ def publish_artifact(
         if not mime_type:
             raise MissingParameterValue('mime_type')
         fhdl: IOWritable = get_config().IO_ADAPTER.write_artifact(mime_type,
-                name=name, metadata=metadata, seekable=seekable, on_close=_on_close)
+                name=name, metadata=metadata, seekable=seekable, is_binary=is_binary,
+                on_close=_on_close)
         l(fhdl)
         fhdl.close()
     else:
@@ -104,9 +106,15 @@ def publish_artifact(
             sf(name, data, get_config().IO_ADAPTER,
                 metadata=metadata,
                 seekable=seekable,
+                is_binary=is_binary,
                 on_close=_on_close)
         else:
-            raise UnsupportedMimeType(mime_type)
+            if is_binary is None: is_binary = not isinstance(data, str)
+            fhdl: IOWritable = get_config().IO_ADAPTER.write_artifact(mime_type,
+                name=name, metadata=metadata, seekable=seekable, is_binary=is_binary,
+                on_close=_on_close)
+            fhdl.write(data)
+            fhdl.close()
     return url_
 
 def publish_file_as_artifact(

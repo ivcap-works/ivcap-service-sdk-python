@@ -15,7 +15,7 @@ from collections import namedtuple
 # import traceback
 
 from .ivcap import init, get_config
-from .logger import logger, sys_logger 
+from .logger import logger, sys_logger
 from .service import Service
 from .config import Command, INSIDE_ARGO, INSIDE_CONTAINER
 
@@ -27,7 +27,6 @@ def run(args: Dict, handler: Callable[[Dict], int]) -> int:
 def _print_banner(service: Service):
     from .__init__ import __version__
     sdk_v = os.getenv('IVCAP_SDK_VERSION', __version__)
-    #sdk_c = os.getenv('IVCAP_SDK_COMMIT', '#?')
     svc_v = os.getenv('IVCAP_SERVICE_VERSION', '?')
     svc_c = os.getenv('IVCAP_SERVICE_COMMIT', '?')
     svc_d = os.getenv('IVCAP_SERVICE_BUILD', '?')
@@ -41,7 +40,7 @@ def register_service(service: Service, handler: Callable[[Dict], int]):
 
     init(None, service.append_arguments)
     cmd = get_config().SERVICE_COMMAND
-    
+
 
     if cmd == Command.SERVICE_RUN:
         if not INSIDE_ARGO:
@@ -97,4 +96,3 @@ def run_service(service: Service, args: Sequence[str], handler: Callable[[Dict],
     ST = namedtuple('ServiceArgs', args.keys())
     at = ST(**args)
     return run(at, handler)
-    

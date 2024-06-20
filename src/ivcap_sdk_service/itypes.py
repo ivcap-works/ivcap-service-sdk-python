@@ -13,6 +13,7 @@ ENTITY_KEY = '$entity'
 class SupportedMimeTypes(Enum):
     TEXT = 'text'
     CSV = 'text/csv'
+    JSON = 'application/json'
     NETCDF = 'application/netcdf'
     PNG = 'image/png'
     JPEG = 'image/jpeg'
