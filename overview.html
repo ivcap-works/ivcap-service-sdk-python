@@ -100,21 +100,20 @@
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this heading"></a></h2>
 <p>Below is the obligatory <em>hello world</em> service which simply writes a
 few messages to logging.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span>
-<span class="kn">from</span> <span class="nn">ivcap_sdk_service</span> <span class="kn">import</span> <span class="n">Service</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">,</span> <span class="n">PythonWorkflow</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">register_service</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ivcap_sdk_service</span> <span class="kn">import</span> <span class="n">Service</span><span class="p">,</span> <span class="n">ServiceArgs</span><span class="p">,</span> <span class="n">Parameter</span><span class="p">,</span> <span class="n">PythonWorkflow</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">register_service</span>
 <span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="n">SERVICE</span> <span class="o">=</span> <span class="n">Service</span><span class="p">(</span>
-    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;HelloWorld&quot;</span><span class="p">,</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;Hello World&quot;</span><span class="p">,</span>
     <span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;Simple service which does a few simple things&quot;</span><span class="p">,</span>
     <span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span>
         <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;msg&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">Type</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Message to echo&quot;</span><span class="p">),</span>
         <span class="n">Parameter</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;times&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">Type</span><span class="o">.</span><span class="n">INT</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Times to repeat&quot;</span><span class="p">),</span>
     <span class="p">],</span>
-    <span class="n">workflow</span> <span class="o">=</span> <span class="n">PythonWorkflow</span><span class="p">(</span><span class="n">min_memory</span><span class="o">=</span><span class="s1">&#39;2Gi&#39;</span><span class="p">,</span> <span class="n">min_cpu</span><span class="o">=</span><span class="s1">&#39;500m&#39;</span><span class="p">,</span> <span class="n">min_ephemeral_storage</span><span class="o">=</span><span class="s1">&#39;4Gi&#39;</span><span class="p">)</span>
+    <span class="n">workflow</span> <span class="o">=</span> <span class="n">PythonWorkflow</span><span class="p">(</span><span class="n">min_memory</span><span class="o">=</span><span class="s1">&#39;2Gi&#39;</span><span class="p">,</span> <span class="n">min_cpu</span><span class="o">=</span><span class="s1">&#39;500m&#39;</span><span class="p">,</span> <span class="n">min_ephemeral_storage</span><span class="o">=</span><span class="s1">&#39;4Gi&#39;</span><span class="p">),</span>
 <span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">hello_world</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">hello_world</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">ServiceArgs</span><span class="p">,</span> <span class="n">logger</span><span class="p">:</span> <span class="n">logging</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">times</span><span class="p">):</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">) Hello </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">msg</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -129,7 +128,7 @@ few messages to logging.</p>
 </section>
 <section id="license">
 <h2>License<a class="headerlink" href="#license" title="Permalink to this heading"></a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">ivcap_sdk_service</span></code> was initially created by Max Ott <a class="reference external" href="mailto:max&#46;ott&#37;&#52;&#48;csiro&#46;au">max<span>&#46;</span>ott<span>&#64;</span>csiro<span>&#46;</span>au</a>, Tim Erwin <a class="reference external" href="mailto:tim&#46;erwin&#37;&#52;&#48;csiro&#46;au">tim<span>&#46;</span>erwin<span>&#64;</span>csiro<span>&#46;</span>au</a> with additional contributions from Ben CLews <a class="reference external" href="mailto:ben&#46;clews&#37;&#52;&#48;csiro&#46;au">ben<span>&#46;</span>clews<span>&#64;</span>csiro<span>&#46;</span>au</a>” and
+<p><code class="docutils literal notranslate"><span class="pre">ivcap_sdk_service</span></code> was initially created by Max Ott <a class="reference external" href="mailto:max&#46;ott&#37;&#52;&#48;csiro&#46;au">max<span>&#46;</span>ott<span>&#64;</span>csiro<span>&#46;</span>au</a>, Tim Erwin <a class="reference external" href="mailto:tim&#46;erwin&#37;&#52;&#48;csiro&#46;au">tim<span>&#46;</span>erwin<span>&#64;</span>csiro<span>&#46;</span>au</a> with additional contributions from Ben Clews <a class="reference external" href="mailto:ben&#46;clews&#37;&#52;&#48;csiro&#46;au">ben<span>&#46;</span>clews<span>&#64;</span>csiro<span>&#46;</span>au</a>” and
 “John Zhang <a class="reference external" href="mailto:j&#46;zhang&#37;&#52;&#48;csiro&#46;au">j<span>&#46;</span>zhang<span>&#64;</span>csiro<span>&#46;</span>au</a>”. See <a class="reference internal" href="#./LICENSE"><span class="xref myst">LICENSE</span></a> for licensing terms.</p>
 </section>
 <section id="credits">
@@ -167,7 +166,7 @@ few messages to logging.</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2022, CSIRO.</p>
+    <p>&#169; Copyright 2022-2024, CSIRO.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

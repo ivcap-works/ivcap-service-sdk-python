@@ -61,6 +61,11 @@ Attributes
 
       
 
+   .. py:attribute:: JSON
+      :value: 'application/json'
+
+      
+
    .. py:attribute:: NETCDF
       :value: 'application/netcdf'
 

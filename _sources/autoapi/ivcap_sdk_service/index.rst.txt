@@ -36,6 +36,7 @@ Classes
 
 .. autoapisummary::
 
+   ivcap_sdk_service.QueueService
    ivcap_sdk_service.Service
    ivcap_sdk_service.Parameter
    ivcap_sdk_service.Option
@@ -73,6 +74,7 @@ Functions
    ivcap_sdk_service.register_saver
    ivcap_sdk_service.get_order_id
    ivcap_sdk_service.get_node_id
+   ivcap_sdk_service.get_queue_service
    ivcap_sdk_service.register_service
 
 
@@ -116,6 +118,8 @@ Attributes
    :type metadata: Optional[Union[MetaDict, Sequence[MetaDict]]], optional
    :param seekable: If true, writable should be seekable (needed for NetCDF). Defaults to False.
    :type seekable: bool, optional
+   :param is_binary: If true, data is of binary type, if false, of string. Defaults to True.
+   :type is_binary: bool, optional
    :param on_close: Called with assigned artifact ID. Defaults to None.
    :type on_close: Optional[Callable[[Url]]], optional
 
@@ -168,12 +172,29 @@ Attributes
    :type schema: Optional[URN], optional
    :param name: Human friendly name for this record
    :type name: Optional[str], optional
+   :param ignore_order_warning: Optional[bool]: Ignore warning if aspect does not contain a "order" reference
 
    :returns: Metadata record URN
    :rtype: str
 
 
 .. py:function:: find_aspect(*, schema: ivcap_sdk_service.itypes.URN = None, entity: ivcap_sdk_service.itypes.URN = None, json_path: str = None, schema2type: Dict[str, Type[ivcap_sdk_service.aspect.Aspect]] = None, aspect_type: Type[ivcap_sdk_service.aspect.Aspect] = None) -> List[ivcap_sdk_service.aspect.Aspect]
+
+   Return a list of Aspects based on the selection criteria given
+
+   :param schema: If set, only return aspects with this schema
+   :type schema: URN, optional
+   :param entity: If set, only return aspects for this entity
+   :type entity: URN, optional
+   :param json_path: Only return part of the aspect's content defined by this json path.
+   :type json_path: str, optional
+   :param schema2type: Mapping of aspect schema to local datatype
+   :type schema2type: Dict[str, Type[Aspect]], optional
+   :param aspect_type: Sets the expected datatype for the returned aspects.
+   :type aspect_type: Type[Aspect], optional
+
+   :returns: A list of aspects as python dataclasses
+   :rtype: List[Aspect]
 
 
 .. py:function:: publish_file_as_artifact(name: str, path: str, mime_type: Union[str, ivcap_sdk_service.itypes.SupportedMimeTypes], *, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, is_binary: Optional[bool] = None, on_close: Optional[ivcap_sdk_service.cio.io_adapter.OnCloseF] = None) -> str
@@ -190,6 +211,8 @@ Attributes
    :type metadata: Optional[Union[MetaDict, Sequence[MetaDict]]], optional
    :param seekable: If true, writable should be seekable (needed for NetCDF). Defaults to False.
    :type seekable: bool, optional
+   :param is_binary: If true, data is of binary type, if false, of string. Defaults to True.
+   :type is_binary: bool, optional
    :param on_close: Called with assigned artifact ID. Defaults to None.
    :type on_close: Optional[Callable[[Url]]], optional
 
@@ -238,6 +261,8 @@ Attributes
 
 .. py:function:: get_config() -> ivcap_sdk_service.config.Config
 
+   Return the Config instance holding informations such as order ID
+
 
 .. py:function:: register_saver(mime_type: str, obj_type: Any, saverF: SaverF)
 
@@ -259,6 +284,58 @@ Attributes
 .. py:function:: get_node_id()
 
    Returns the ID of this computational entity
+
+
+.. py:class:: QueueService
+
+
+   Bases: :py:obj:`abc.ABC`
+
+   Abstract class for queue service with explicitly defined parameters.
+
+   .. py:method:: list(limit: Optional[int] = None, offset: Optional[int] = None, page: Optional[str] = None, filter: Optional[str] = None, order_by: Optional[str] = None, order_desc: Optional[bool] = None, at_time: Optional[str] = None) -> List[str]
+      :abstractmethod:
+
+      List all queues with optional query parameters.
+
+
+   .. py:method:: create(name: str, description: Optional[str] = None, policy: Optional[str] = Dict) -> Dict
+      :abstractmethod:
+
+      Create a new queue with the given parameters.
+
+
+   .. py:method:: delete(queue_id: str) -> None
+      :abstractmethod:
+
+      Delete the queue with the given name.
+
+
+   .. py:method:: enqueue(queue_id: str, message: Dict) -> Dict
+      :abstractmethod:
+
+      Enqueue a message into the queue with the given parameters.
+
+
+   .. py:method:: dequeue(queue_id: str, limit: Optional[int] = 1) -> List[Dict]
+      :abstractmethod:
+
+      Dequeue messages from the queue with the given parameters.
+
+
+   .. py:method:: read(queue_id: str) -> Dict
+      :abstractmethod:
+
+      Read the queue with the given parameters.
+
+
+
+.. py:function:: get_queue_service() -> ivcap_sdk_service.cio.io_adapter.QueueService
+
+   Get a queue service adapter
+
+   :returns: The queue service adapter
+   :rtype: QueueService
 
 
 .. py:function:: register_service(service: ivcap_sdk_service.service.Service, handler: Callable[[Dict], int])
@@ -726,6 +803,8 @@ Attributes
       :type metadata: Optional[MetaDict | List[MetaDict]], optional
       :param seekable: If true, writable should be seekable (needed for NetCDF). Defaults to False.
       :type seekable: bool, optional
+      :param is_binary: If true, artifact content is binary, if false, a string. Defaults to True.
+      :type is_binary: bool, optional
       :param on_close: Called with assigned artifact ID. Defaults to None.
       :type on_close: Optional[OnCloseF], optional
 
@@ -804,6 +883,12 @@ Attributes
       :returns: An instance of a queue object appropriate for
                 the current context
       :rtype: Queue
+
+
+   .. py:method:: get_queue_service(**kwargs) -> QueueService
+      :abstractmethod:
+
+      Create a queue.
 
 
 
@@ -1055,6 +1140,11 @@ Attributes
 
    .. py:attribute:: CSV
       :value: 'text/csv'
+
+      
+
+   .. py:attribute:: JSON
+      :value: 'application/json'
 
       
 

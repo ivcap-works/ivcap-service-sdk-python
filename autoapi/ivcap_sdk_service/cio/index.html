@@ -171,6 +171,7 @@ artifactID.</p>
 <li><p><strong>name</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – Optional name. Defaults to None.</p></li>
 <li><p><strong>metadata</strong> (<em>Optional</em><em>[</em><em>MetaDict</em><em> | </em><em>List</em><em>[</em><em>MetaDict</em><em>]</em><em>]</em><em>, </em><em>optional</em>) – Key/value pairs (or list of key/value pairs) to add as metadata. Defaults to {}.</p></li>
 <li><p><strong>seekable</strong> (<em>bool</em><em>, </em><em>optional</em>) – If true, writable should be seekable (needed for NetCDF). Defaults to False.</p></li>
+<li><p><strong>is_binary</strong> (<em>bool</em><em>, </em><em>optional</em>) – If true, artifact content is binary, if false, a string. Defaults to True.</p></li>
 <li><p><strong>on_close</strong> (<em>Optional</em><em>[</em><em>OnCloseF</em><em>]</em><em>, </em><em>optional</em>) – Called with assigned artifact ID. Defaults to None.</p></li>
 </ul>
 </dd>
@@ -282,6 +283,12 @@ the current context</p>
 </dl>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.IOAdapter.get_queue_service">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_queue_service</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="io_adapter/index.html#ivcap_sdk_service.cio.io_adapter.QueueService" title="ivcap_sdk_service.cio.io_adapter.QueueService"><span class="pre">QueueService</span></a></span></span><a class="reference internal" href="../../../_modules/ivcap_sdk_service/cio/io_adapter.html#IOAdapter.get_queue_service"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.IOAdapter.get_queue_service" title="Permalink to this definition"></a></dt>
+<dd><p>Create a queue.</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
@@ -299,7 +306,7 @@ the current context</p>
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2022, CSIRO.</p>
+    <p>&#169; Copyright 2022-2024, CSIRO.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

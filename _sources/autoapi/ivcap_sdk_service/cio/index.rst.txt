@@ -83,6 +83,8 @@ Classes
       :type metadata: Optional[MetaDict | List[MetaDict]], optional
       :param seekable: If true, writable should be seekable (needed for NetCDF). Defaults to False.
       :type seekable: bool, optional
+      :param is_binary: If true, artifact content is binary, if false, a string. Defaults to True.
+      :type is_binary: bool, optional
       :param on_close: Called with assigned artifact ID. Defaults to None.
       :type on_close: Optional[OnCloseF], optional
 
@@ -161,6 +163,12 @@ Classes
       :returns: An instance of a queue object appropriate for
                 the current context
       :rtype: Queue
+
+
+   .. py:method:: get_queue_service(**kwargs) -> QueueService
+      :abstractmethod:
+
+      Create a queue.
 
 
 

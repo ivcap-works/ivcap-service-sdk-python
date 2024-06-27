@@ -88,7 +88,7 @@
 <span class="kn">import</span> <span class="nn">shutil</span>
 <span class="kn">import</span> <span class="nn">os</span>
 
-<span class="kn">from</span> <span class="nn">.cio.io_adapter</span> <span class="kn">import</span> <span class="n">IOAdapter</span><span class="p">,</span> <span class="n">IOReadable</span><span class="p">,</span> <span class="n">IOWritable</span><span class="p">,</span> <span class="n">OnCloseF</span>
+<span class="kn">from</span> <span class="nn">.cio.io_adapter</span> <span class="kn">import</span> <span class="n">IOAdapter</span><span class="p">,</span> <span class="n">IOReadable</span><span class="p">,</span> <span class="n">IOWritable</span><span class="p">,</span> <span class="n">OnCloseF</span><span class="p">,</span> <span class="n">QueueService</span>
 
 <span class="kn">from</span> <span class="nn">.logger</span> <span class="kn">import</span> <span class="n">sys_logger</span> <span class="k">as</span> <span class="n">logger</span>
 <span class="kn">from</span> <span class="nn">.config</span> <span class="kn">import</span> <span class="n">Config</span>
@@ -103,9 +103,9 @@
     <span class="nb">str</span><span class="p">,</span> <span class="c1"># name</span>
     <span class="n">Any</span><span class="p">,</span> <span class="c1"># data</span>
     <span class="n">IOAdapter</span><span class="p">,</span> <span class="c1"># io_adapater</span>
-    <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="c1"># collection_name</span>
     <span class="n">Optional</span><span class="p">[</span><span class="n">MetaDict</span><span class="p">],</span> <span class="c1"># metadata = {}</span>
     <span class="nb">bool</span><span class="p">,</span> <span class="c1"># seekable = False</span>
+    <span class="nb">bool</span><span class="p">,</span> <span class="c1"># is_binary = False</span>
     <span class="n">Optional</span><span class="p">[</span><span class="n">OnCloseF</span><span class="p">]</span> <span class="c1"># on_close</span>
 <span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
 
@@ -137,6 +137,7 @@
 <span class="sd">        mime_type (Union[str, SupportedMimeTypes]): The mime type of the data. Anything not starting with &#39;text&#39; is assumed to be a binary content</span>
 <span class="sd">        metadata (Optional[Union[MetaDict, Sequence[MetaDict]]], optional): Key/value pairs (or list of k/v pairs) to add as metadata. Defaults to None.</span>
 <span class="sd">        seekable (bool, optional): If true, writable should be seekable (needed for NetCDF). Defaults to False.</span>
+<span class="sd">        is_binary (bool, optional): If true, data is of binary type, if false, of string. Defaults to True.</span>
 <span class="sd">        on_close (Optional[Callable[[Url]]], optional): Called with assigned artifact ID. Defaults to None.</span>
 
 <span class="sd">    Raises:</span>
@@ -163,7 +164,8 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="n">mime_type</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">MissingParameterValue</span><span class="p">(</span><span class="s1">&#39;mime_type&#39;</span><span class="p">)</span>
         <span class="n">fhdl</span><span class="p">:</span> <span class="n">IOWritable</span> <span class="o">=</span> <span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">IO_ADAPTER</span><span class="o">.</span><span class="n">write_artifact</span><span class="p">(</span><span class="n">mime_type</span><span class="p">,</span>
-                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span> <span class="n">seekable</span><span class="o">=</span><span class="n">seekable</span><span class="p">,</span> <span class="n">on_close</span><span class="o">=</span><span class="n">_on_close</span><span class="p">)</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span> <span class="n">seekable</span><span class="o">=</span><span class="n">seekable</span><span class="p">,</span> <span class="n">is_binary</span><span class="o">=</span><span class="n">is_binary</span><span class="p">,</span>
+                <span class="n">on_close</span><span class="o">=</span><span class="n">_on_close</span><span class="p">)</span>
         <span class="n">l</span><span class="p">(</span><span class="n">fhdl</span><span class="p">)</span>
         <span class="n">fhdl</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
@@ -179,9 +181,15 @@
             <span class="n">sf</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">IO_ADAPTER</span><span class="p">,</span>
                 <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span>
                 <span class="n">seekable</span><span class="o">=</span><span class="n">seekable</span><span class="p">,</span>
+                <span class="n">is_binary</span><span class="o">=</span><span class="n">is_binary</span><span class="p">,</span>
                 <span class="n">on_close</span><span class="o">=</span><span class="n">_on_close</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="n">UnsupportedMimeType</span><span class="p">(</span><span class="n">mime_type</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">is_binary</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">is_binary</span> <span class="o">=</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span>
+            <span class="n">fhdl</span><span class="p">:</span> <span class="n">IOWritable</span> <span class="o">=</span> <span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">IO_ADAPTER</span><span class="o">.</span><span class="n">write_artifact</span><span class="p">(</span><span class="n">mime_type</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">metadata</span><span class="o">=</span><span class="n">metadata</span><span class="p">,</span> <span class="n">seekable</span><span class="o">=</span><span class="n">seekable</span><span class="p">,</span> <span class="n">is_binary</span><span class="o">=</span><span class="n">is_binary</span><span class="p">,</span>
+                <span class="n">on_close</span><span class="o">=</span><span class="n">_on_close</span><span class="p">)</span>
+            <span class="n">fhdl</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">fhdl</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">url_</span></div>
 
 <div class="viewcode-block" id="publish_file_as_artifact"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/ivcap/index.html#ivcap_sdk_service.publish_file_as_artifact">[docs]</a><span class="k">def</span> <span class="nf">publish_file_as_artifact</span><span class="p">(</span>
@@ -202,6 +210,7 @@
 <span class="sd">        mime_type (Union[str, SupportedMimeTypes]): The mime type of the data. Anything not starting with &#39;text&#39; is assumed to be a binary content</span>
 <span class="sd">        metadata (Optional[Union[MetaDict, Sequence[MetaDict]]], optional): Key/value pairs (or list of k/v pairs) to add as metadata. Defaults to None.</span>
 <span class="sd">        seekable (bool, optional): If true, writable should be seekable (needed for NetCDF). Defaults to False.</span>
+<span class="sd">        is_binary (bool, optional): If true, data is of binary type, if false, of string. Defaults to True.</span>
 <span class="sd">        on_close (Optional[Callable[[Url]]], optional): Called with assigned artifact ID. Defaults to None.</span>
 
 <span class="sd">    Raises:</span>
@@ -278,6 +287,7 @@
 <span class="sd">        metadata (MetaDict): Metadata (aspect) to be attached to &#39;entity_id&#39;</span>
 <span class="sd">        schema (Optional[URN], optional): Schema defining &#39;metadata&#39;</span>
 <span class="sd">        name (Optional[str], optional): Human friendly name for this record</span>
+<span class="sd">        ignore_order_warning: Optional[bool]: Ignore warning if aspect does not contain a &quot;order&quot; reference</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        str: Metadata record URN</span>
@@ -306,6 +316,18 @@
                 <span class="n">schema2type</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Type</span><span class="p">[</span><span class="n">Aspect</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                 <span class="n">aspect_type</span><span class="p">:</span> <span class="n">Type</span><span class="p">[</span><span class="n">Aspect</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Aspect</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a list of Aspects based on the selection criteria given</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        schema (URN, optional): If set, only return aspects with this schema</span>
+<span class="sd">        entity (URN, optional): If set, only return aspects for this entity</span>
+<span class="sd">        json_path (str, optional): Only return part of the aspect&#39;s content defined by this json path.</span>
+<span class="sd">        schema2type (Dict[str, Type[Aspect]], optional): Mapping of aspect schema to local datatype</span>
+<span class="sd">        aspect_type (Type[Aspect], optional): Sets the expected datatype for the returned aspects.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        List[Aspect]: A list of aspects as python dataclasses</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">aspect_type</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">schema</span><span class="p">:</span> <span class="n">schema</span> <span class="o">=</span> <span class="n">aspect_type</span><span class="o">.</span><span class="n">SCHEMA</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">schema2type</span><span class="p">:</span>
@@ -385,6 +407,14 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">IO_ADAPTER</span><span class="o">.</span><span class="n">read_artifact</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">binary_content</span><span class="p">,</span> <span class="n">no_caching</span><span class="p">,</span> <span class="n">seekable</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="get_queue_service"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/ivcap/index.html#ivcap_sdk_service.get_queue_service">[docs]</a><span class="k">def</span> <span class="nf">get_queue_service</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">QueueService</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get a queue service adapter</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        QueueService: The queue service adapter</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">IO_ADAPTER</span><span class="o">.</span><span class="n">get_queue_service</span><span class="p">()</span></div>
+
 <div class="viewcode-block" id="get_order_id"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/ivcap/index.html#ivcap_sdk_service.get_order_id">[docs]</a><span class="k">def</span> <span class="nf">get_order_id</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns the ID of the currently processed order&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">get_config</span><span class="p">()</span><span class="o">.</span><span class="n">ORDER_ID</span></div>
@@ -424,6 +454,7 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Notify </span><span class="si">{</span><span class="n">json_dump</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="get_config"><a class="viewcode-back" href="../../autoapi/ivcap_sdk_service/ivcap/index.html#ivcap_sdk_service.get_config">[docs]</a><span class="k">def</span> <span class="nf">get_config</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Config</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return the Config instance holding informations such as order ID&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_CONFIG</span></div>
 
 
@@ -444,7 +475,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2022, CSIRO.</p>
+    <p>&#169; Copyright 2022-2024, CSIRO.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

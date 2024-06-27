@@ -25,6 +25,7 @@ Functions
    ivcap_sdk_service.ivcap.publish_metadata
    ivcap_sdk_service.ivcap.publish_result
    ivcap_sdk_service.ivcap.fetch_data
+   ivcap_sdk_service.ivcap.get_queue_service
    ivcap_sdk_service.ivcap.get_order_id
    ivcap_sdk_service.ivcap.get_node_id
    ivcap_sdk_service.ivcap.notify
@@ -83,6 +84,8 @@ Attributes
    :type metadata: Optional[Union[MetaDict, Sequence[MetaDict]]], optional
    :param seekable: If true, writable should be seekable (needed for NetCDF). Defaults to False.
    :type seekable: bool, optional
+   :param is_binary: If true, data is of binary type, if false, of string. Defaults to True.
+   :type is_binary: bool, optional
    :param on_close: Called with assigned artifact ID. Defaults to None.
    :type on_close: Optional[Callable[[Url]]], optional
 
@@ -105,6 +108,8 @@ Attributes
    :type metadata: Optional[Union[MetaDict, Sequence[MetaDict]]], optional
    :param seekable: If true, writable should be seekable (needed for NetCDF). Defaults to False.
    :type seekable: bool, optional
+   :param is_binary: If true, data is of binary type, if false, of string. Defaults to True.
+   :type is_binary: bool, optional
    :param on_close: Called with assigned artifact ID. Defaults to None.
    :type on_close: Optional[Callable[[Url]]], optional
 
@@ -152,12 +157,29 @@ Attributes
    :type schema: Optional[URN], optional
    :param name: Human friendly name for this record
    :type name: Optional[str], optional
+   :param ignore_order_warning: Optional[bool]: Ignore warning if aspect does not contain a "order" reference
 
    :returns: Metadata record URN
    :rtype: str
 
 
 .. py:function:: find_aspect(*, schema: ivcap_sdk_service.itypes.URN = None, entity: ivcap_sdk_service.itypes.URN = None, json_path: str = None, schema2type: Dict[str, Type[ivcap_sdk_service.aspect.Aspect]] = None, aspect_type: Type[ivcap_sdk_service.aspect.Aspect] = None) -> List[ivcap_sdk_service.aspect.Aspect]
+
+   Return a list of Aspects based on the selection criteria given
+
+   :param schema: If set, only return aspects with this schema
+   :type schema: URN, optional
+   :param entity: If set, only return aspects for this entity
+   :type entity: URN, optional
+   :param json_path: Only return part of the aspect's content defined by this json path.
+   :type json_path: str, optional
+   :param schema2type: Mapping of aspect schema to local datatype
+   :type schema2type: Dict[str, Type[Aspect]], optional
+   :param aspect_type: Sets the expected datatype for the returned aspects.
+   :type aspect_type: Type[Aspect], optional
+
+   :returns: A list of aspects as python dataclasses
+   :rtype: List[Aspect]
 
 
 .. py:function:: _validate_is_urn(val, name)
@@ -216,6 +238,14 @@ Attributes
    :rtype: IOReadable
 
 
+.. py:function:: get_queue_service() -> ivcap_sdk_service.cio.io_adapter.QueueService
+
+   Get a queue service adapter
+
+   :returns: The queue service adapter
+   :rtype: QueueService
+
+
 .. py:function:: get_order_id()
 
    Returns the ID of the currently processed order
@@ -240,6 +270,8 @@ Attributes
 
 
 .. py:function:: get_config() -> ivcap_sdk_service.config.Config
+
+   Return the Config instance holding informations such as order ID
 
 
 .. py:function:: init(argv: Dict[str, str] = None, modify_ap: Callable[[argparse.ArgumentParser], argparse.ArgumentParser] = None)
