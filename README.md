@@ -14,21 +14,20 @@ Below is the obligatory _hello world_ service which simply writes a
 few messages to logging.
 
 ```python
-from typing import Dict
-from ivcap_sdk_service import Service, Parameter, PythonWorkflow, Type, register_service
+from ivcap_sdk_service import Service, ServiceArgs, Parameter, PythonWorkflow, Type, register_service
 import logging
 
 SERVICE = Service(
-    name = "HelloWorld",
+    name = "Hello World",
     description = "Simple service which does a few simple things",
     parameters = [
         Parameter(name="msg", type=Type.STRING, description="Message to echo"),
         Parameter(name="times", type=Type.INT, default=2, description="Times to repeat"),
     ],
-    workflow = PythonWorkflow(min_memory='2Gi', min_cpu='500m', min_ephemeral_storage='4Gi')
+    workflow = PythonWorkflow(min_memory='2Gi', min_cpu='500m', min_ephemeral_storage='4Gi'),
 )
 
-def hello_world(args: Dict, logger: logging):
+def hello_world(args: ServiceArgs, logger: logging):
     for i in range(args.times):
         logger.info(f"({i + 1}) Hello {args.msg}")
 
@@ -43,7 +42,7 @@ Interested in contributing? Check out the contributing guidelines. Please note t
 
 ## License
 
-`ivcap_sdk_service` was initially created by Max Ott <max.ott@csiro.au>, Tim Erwin <tim.erwin@csiro.au> with additional contributions from Ben CLews <ben.clews@csiro.au>" and
+`ivcap_sdk_service` was initially created by Max Ott <max.ott@csiro.au>, Tim Erwin <tim.erwin@csiro.au> with additional contributions from Ben Clews <ben.clews@csiro.au>" and
 "John Zhang <j.zhang@csiro.au>". See [LICENSE](./LICENSE) for licensing terms.
 
 ## Credits

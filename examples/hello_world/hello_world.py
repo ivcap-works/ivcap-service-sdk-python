@@ -3,8 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
-from typing import Dict
-from ivcap_sdk_service import Service, Parameter, PythonWorkflow, Type, register_service
+from ivcap_sdk_service import Service, ServiceArgs, Parameter, Type, register_service
 import logging
 
 SERVICE = Service(
@@ -14,10 +13,9 @@ SERVICE = Service(
         Parameter(name="msg", type=Type.STRING, description="Message to echo"),
         Parameter(name="times", type=Type.INT, default=2, description="Times to repeat"),
     ],
-    workflow = PythonWorkflow(min_memory='2Gi', min_cpu='500m', min_ephemeral_storage='4Gi')
 )
 
-def hello_world(args: Dict, logger: logging):
+def hello_world(args: ServiceArgs, logger: logging):
     for i in range(args.times):
         logger.info(f"({i + 1}) Hello {args.msg}")
 
