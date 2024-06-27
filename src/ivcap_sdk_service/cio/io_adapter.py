@@ -284,6 +284,60 @@ class Queue(ABC):
 
 OnCloseF = Callable[[Url], None]
 
+class QueueService(ABC):
+    """
+    Abstract class for queue service with explicitly defined parameters.
+    """
+
+    @abstractmethod
+    def list(
+        self,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        page: Optional[str] = None,
+        filter: Optional[str] = None,
+        order_by: Optional[str] = None,
+        order_desc: Optional[bool] = None,
+        at_time: Optional[str] = None,
+    ) -> List[str]:
+        """
+        List all queues with optional query parameters.
+        """
+
+    @abstractmethod
+    def create(
+        self, name: str, description: Optional[str] = None, policy: Optional[str] = Dict
+    ) -> Dict:
+        """
+        Create a new queue with the given parameters.
+        """
+
+    @abstractmethod
+    def delete(self, queue_id: str) -> None:
+        """
+        Delete the queue with the given name.
+        """
+
+    @abstractmethod
+    def enqueue(self, queue_id: str, message: Dict) -> Dict:
+        """
+        Enqueue a message into the queue with the given parameters.
+        """
+
+    @abstractmethod
+    def dequeue(
+        self, queue_id: str, limit: Optional[int] = 1
+    ) -> List[Dict]:
+        """
+        Dequeue messages from the queue with the given parameters.
+        """
+
+    @abstractmethod
+    def read(self, queue_id: str) -> Dict:
+        """
+        Read the queue with the given parameters.
+        """
+
 class IOAdapter(ABC):
 
     # @classmethod
@@ -379,6 +433,7 @@ class IOAdapter(ABC):
             name (Optional[str], optional): Optional name. Defaults to None.
             metadata (Optional[MetaDict | List[MetaDict]], optional): Key/value pairs (or list of key/value pairs) to add as metadata. Defaults to {}.
             seekable (bool, optional): If true, writable should be seekable (needed for NetCDF). Defaults to False.
+            is_binary (bool, optional): If true, artifact content is binary, if false, a string. Defaults to True.
             on_close (Optional[OnCloseF], optional): Called with assigned artifact ID. Defaults to None.
 
         Returns:
@@ -463,3 +518,9 @@ class IOAdapter(ABC):
             the current context
         """
         pass
+
+    @abstractmethod
+    def get_queue_service(self, **kwargs) -> QueueService:
+        """
+        Create a queue.
+        """

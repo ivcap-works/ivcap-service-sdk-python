@@ -13,7 +13,7 @@ from typing_extensions import deprecated
 import shutil
 import os
 
-from .cio.io_adapter import IOAdapter, IOReadable, IOWritable, OnCloseF
+from .cio.io_adapter import IOAdapter, IOReadable, IOWritable, OnCloseF, QueueService
 
 from .logger import sys_logger as logger
 from .config import Config
@@ -28,9 +28,9 @@ SaverF = Callable[[
     str, # name
     Any, # data
     IOAdapter, # io_adapater
-    Optional[str], # collection_name
     Optional[MetaDict], # metadata = {}
     bool, # seekable = False
+    bool, # is_binary = False
     Optional[OnCloseF] # on_close
 ], None]
 
@@ -62,6 +62,7 @@ def publish_artifact(
         mime_type (Union[str, SupportedMimeTypes]): The mime type of the data. Anything not starting with 'text' is assumed to be a binary content
         metadata (Optional[Union[MetaDict, Sequence[MetaDict]]], optional): Key/value pairs (or list of k/v pairs) to add as metadata. Defaults to None.
         seekable (bool, optional): If true, writable should be seekable (needed for NetCDF). Defaults to False.
+        is_binary (bool, optional): If true, data is of binary type, if false, of string. Defaults to True.
         on_close (Optional[Callable[[Url]]], optional): Called with assigned artifact ID. Defaults to None.
 
     Raises:
@@ -88,7 +89,8 @@ def publish_artifact(
         if not mime_type:
             raise MissingParameterValue('mime_type')
         fhdl: IOWritable = get_config().IO_ADAPTER.write_artifact(mime_type,
-                name=name, metadata=metadata, seekable=seekable, on_close=_on_close)
+                name=name, metadata=metadata, seekable=seekable, is_binary=is_binary,
+                on_close=_on_close)
         l(fhdl)
         fhdl.close()
     else:
@@ -104,9 +106,15 @@ def publish_artifact(
             sf(name, data, get_config().IO_ADAPTER,
                 metadata=metadata,
                 seekable=seekable,
+                is_binary=is_binary,
                 on_close=_on_close)
         else:
-            raise UnsupportedMimeType(mime_type)
+            if is_binary is None: is_binary = not isinstance(data, str)
+            fhdl: IOWritable = get_config().IO_ADAPTER.write_artifact(mime_type,
+                name=name, metadata=metadata, seekable=seekable, is_binary=is_binary,
+                on_close=_on_close)
+            fhdl.write(data)
+            fhdl.close()
     return url_
 
 def publish_file_as_artifact(
@@ -127,6 +135,7 @@ def publish_file_as_artifact(
         mime_type (Union[str, SupportedMimeTypes]): The mime type of the data. Anything not starting with 'text' is assumed to be a binary content
         metadata (Optional[Union[MetaDict, Sequence[MetaDict]]], optional): Key/value pairs (or list of k/v pairs) to add as metadata. Defaults to None.
         seekable (bool, optional): If true, writable should be seekable (needed for NetCDF). Defaults to False.
+        is_binary (bool, optional): If true, data is of binary type, if false, of string. Defaults to True.
         on_close (Optional[Callable[[Url]]], optional): Called with assigned artifact ID. Defaults to None.
 
     Raises:
@@ -203,6 +212,7 @@ def publish_aspect(
         metadata (MetaDict): Metadata (aspect) to be attached to 'entity_id'
         schema (Optional[URN], optional): Schema defining 'metadata'
         name (Optional[str], optional): Human friendly name for this record
+        ignore_order_warning: Optional[bool]: Ignore warning if aspect does not contain a "order" reference
 
     Returns:
         str: Metadata record URN
@@ -231,6 +241,18 @@ def find_aspect(*,
                 schema2type: Dict[str, Type[Aspect]] = None,
                 aspect_type: Type[Aspect] = None
 ) -> List[Aspect]:
+    """Return a list of Aspects based on the selection criteria given
+
+    Args:
+        schema (URN, optional): If set, only return aspects with this schema
+        entity (URN, optional): If set, only return aspects for this entity
+        json_path (str, optional): Only return part of the aspect's content defined by this json path.
+        schema2type (Dict[str, Type[Aspect]], optional): Mapping of aspect schema to local datatype
+        aspect_type (Type[Aspect], optional): Sets the expected datatype for the returned aspects.
+
+    Returns:
+        List[Aspect]: A list of aspects as python dataclasses
+    """
     if aspect_type:
         if not schema: schema = aspect_type.SCHEMA
         if not schema2type:
@@ -310,6 +332,14 @@ def fetch_data(url: Url, binary_content=True, no_caching=False, seekable=False) 
     """
     return get_config().IO_ADAPTER.read_artifact(url, binary_content, no_caching, seekable)
 
+def get_queue_service() -> QueueService:
+    """Get a queue service adapter
+
+    Returns:
+        QueueService: The queue service adapter
+    """
+    return get_config().IO_ADAPTER.get_queue_service()
+
 def get_order_id():
     """Returns the ID of the currently processed order"""
     return get_config().ORDER_ID
@@ -349,6 +379,7 @@ def notify(msg, schema=None):
         logger.debug(f"Notify {json_dump(msg)}")
 
 def get_config() -> Config:
+    """Return the Config instance holding informations such as order ID"""
     return _CONFIG
 
 

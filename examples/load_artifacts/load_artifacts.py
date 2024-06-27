@@ -3,10 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
-from typing import Dict
 from PIL import Image
 
-from ivcap_sdk_service import Service, Parameter, Type, register_service
+from ivcap_sdk_service import Service, ServiceArgs, Parameter, Type, register_service
 import logging
 
 SERVICE = Service(
@@ -18,7 +17,7 @@ SERVICE = Service(
    ]
 )
 
-def load_artifact(args: Dict, logger: logging):
+def load_artifact(args: ServiceArgs, logger: logging):
     logger.info(f"Called with {args}")
     img = Image.open(args.load)
     [width, height] = img.size

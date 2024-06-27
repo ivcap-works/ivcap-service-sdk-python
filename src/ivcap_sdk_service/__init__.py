@@ -23,6 +23,7 @@ from .ivcap import create_aspect, publish_aspect, find_aspect, publish_file_as_a
 from .ivcap import create_metadata, publish_metadata
 from .ivcap import SCHEMA_KEY, publish_result
 from .ivcap import get_config, register_saver, get_order_id, get_node_id
+from .ivcap import QueueService, get_queue_service
 from .run import register_service
 from .service import Service, Parameter, Option, Type
 from .service import Workflow, BasicWorkflow, PythonWorkflow
