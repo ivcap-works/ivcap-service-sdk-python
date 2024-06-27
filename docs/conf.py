@@ -7,7 +7,7 @@
 # -- Project information -----------------------------------------------------
 
 project = u"ivcap_sd_service"
-copyright = u"2022, CSIRO"
+copyright = u"2022-2024, CSIRO"
 author = u"Max Ott <max.ott@csiro.au>, Tim Erwin <tim.erwin@csiro.au>"
 
 # -- General configuration ---------------------------------------------------
@@ -23,7 +23,7 @@ extensions = [
 ]
 autoapi_dirs = ["../src"]
 autoapi_ignore = [
-    "**/utils.py", 
+    "**/utils.py",
     "**/verifiers.py",
     "**/config.py",
     "**/*_io_adapter.py",

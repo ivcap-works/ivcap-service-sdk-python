@@ -135,6 +135,7 @@ def publish_file_as_artifact(
         mime_type (Union[str, SupportedMimeTypes]): The mime type of the data. Anything not starting with 'text' is assumed to be a binary content
         metadata (Optional[Union[MetaDict, Sequence[MetaDict]]], optional): Key/value pairs (or list of k/v pairs) to add as metadata. Defaults to None.
         seekable (bool, optional): If true, writable should be seekable (needed for NetCDF). Defaults to False.
+        is_binary (bool, optional): If true, data is of binary type, if false, of string. Defaults to True.
         on_close (Optional[Callable[[Url]]], optional): Called with assigned artifact ID. Defaults to None.
 
     Raises:
@@ -211,6 +212,7 @@ def publish_aspect(
         metadata (MetaDict): Metadata (aspect) to be attached to 'entity_id'
         schema (Optional[URN], optional): Schema defining 'metadata'
         name (Optional[str], optional): Human friendly name for this record
+        ignore_order_warning: Optional[bool]: Ignore warning if aspect does not contain a "order" reference
 
     Returns:
         str: Metadata record URN
@@ -239,6 +241,18 @@ def find_aspect(*,
                 schema2type: Dict[str, Type[Aspect]] = None,
                 aspect_type: Type[Aspect] = None
 ) -> List[Aspect]:
+    """Return a list of Aspects based on the selection criteria given
+
+    Args:
+        schema (URN, optional): If set, only return aspects with this schema
+        entity (URN, optional): If set, only return aspects for this entity
+        json_path (str, optional): Only return part of the aspect's content defined by this json path.
+        schema2type (Dict[str, Type[Aspect]], optional): Mapping of aspect schema to local datatype
+        aspect_type (Type[Aspect], optional): Sets the expected datatype for the returned aspects.
+
+    Returns:
+        List[Aspect]: A list of aspects as python dataclasses
+    """
     if aspect_type:
         if not schema: schema = aspect_type.SCHEMA
         if not schema2type:
@@ -365,6 +379,7 @@ def notify(msg, schema=None):
         logger.debug(f"Notify {json_dump(msg)}")
 
 def get_config() -> Config:
+    """Return the Config instance holding informations such as order ID"""
     return _CONFIG
 
 

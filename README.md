@@ -43,7 +43,7 @@ Interested in contributing? Check out the contributing guidelines. Please note t
 
 ## License
 
-`ivcap_sdk_service` was initially created by Max Ott <max.ott@csiro.au>, Tim Erwin <tim.erwin@csiro.au> with additional contributions from Ben CLews <ben.clews@csiro.au>" and
+`ivcap_sdk_service` was initially created by Max Ott <max.ott@csiro.au>, Tim Erwin <tim.erwin@csiro.au> with additional contributions from Ben Clews <ben.clews@csiro.au>" and
 "John Zhang <j.zhang@csiro.au>". See [LICENSE](./LICENSE) for licensing terms.
 
 ## Credits
