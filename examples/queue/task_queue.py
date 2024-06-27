@@ -6,9 +6,9 @@
 import logging
 import threading
 import time
-from typing import Dict
 from ivcap_sdk_service import (
     Service,
+    ServiceArgs,
     Parameter,
     PythonWorkflow,
     Type,
@@ -85,7 +85,7 @@ def worker(
             tasks_processed[thread_id] = processed_tasks
 
 
-def coordinate(args: Dict, logger: logging):
+def coordinate(args: ServiceArgs, logger: logging):
     """
     Main function to create tasks and add them to the queue.
     """
