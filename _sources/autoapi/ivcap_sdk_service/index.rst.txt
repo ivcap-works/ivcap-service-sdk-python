@@ -60,7 +60,6 @@ Functions
 
 .. autoapisummary::
 
-   ivcap_sdk_service.deliver_data
    ivcap_sdk_service.publish_artifact
    ivcap_sdk_service.fetch_data
    ivcap_sdk_service.create_aspect
@@ -68,7 +67,6 @@ Functions
    ivcap_sdk_service.find_aspect
    ivcap_sdk_service.publish_file_as_artifact
    ivcap_sdk_service.create_metadata
-   ivcap_sdk_service.publish_metadata
    ivcap_sdk_service.publish_result
    ivcap_sdk_service.get_config
    ivcap_sdk_service.register_saver
@@ -99,9 +97,6 @@ Attributes
 .. py:data:: __version__
 
    
-
-.. py:function:: deliver_data(name: str, data_or_lambda: Union[Any, Callable[[ivcap_sdk_service.cio.io_adapter.IOWritable], None]], mime_type: Union[str, ivcap_sdk_service.itypes.SupportedMimeTypes], metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, on_close: Optional[ivcap_sdk_service.cio.io_adapter.OnCloseF] = None) -> str
-
 
 .. py:function:: publish_artifact(name: str, data_or_lambda: Union[Any, Callable[[ivcap_sdk_service.cio.io_adapter.IOWritable], None]], mime_type: Union[str, ivcap_sdk_service.itypes.SupportedMimeTypes], *, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, is_binary: Optional[bool] = None, on_close: Optional[ivcap_sdk_service.cio.io_adapter.OnCloseF] = None) -> str
 
@@ -230,9 +225,6 @@ Attributes
 
    :returns: A copy of 'args' plus a 'SCHEMA_KEY' entry
    :rtype: Dict
-
-
-.. py:function:: publish_metadata(entity_id: str, metadata: ivcap_sdk_service.itypes.MetaDict, schema: Optional[str] = None, name: Optional[str] = None) -> str
 
 
 .. py:data:: SCHEMA_KEY

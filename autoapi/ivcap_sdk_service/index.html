@@ -193,32 +193,26 @@
 <h3>Functions<a class="headerlink" href="#functions" title="Permalink to this heading"></a></h3>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.deliver_data" title="ivcap_sdk_service.deliver_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">deliver_data</span></code></a>(→ str)</p></td>
-<td><p></p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.publish_artifact" title="ivcap_sdk_service.publish_artifact"><code class="xref py py-obj docutils literal notranslate"><span class="pre">publish_artifact</span></code></a>(→ str)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.publish_artifact" title="ivcap_sdk_service.publish_artifact"><code class="xref py py-obj docutils literal notranslate"><span class="pre">publish_artifact</span></code></a>(→ str)</p></td>
 <td><p>Deliver a result of this service</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.fetch_data" title="ivcap_sdk_service.fetch_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fetch_data</span></code></a>(→ ivcap_sdk_service.cio.io_adapter.IOReadable)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.fetch_data" title="ivcap_sdk_service.fetch_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fetch_data</span></code></a>(→ ivcap_sdk_service.cio.io_adapter.IOReadable)</p></td>
 <td><p>Return an 'IOReadable' on the content referenced by 'url'.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.create_aspect" title="ivcap_sdk_service.create_aspect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_aspect</span></code></a>(→ AspectDict)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.create_aspect" title="ivcap_sdk_service.create_aspect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_aspect</span></code></a>(→ AspectDict)</p></td>
 <td><p>Return a dict which has a 'proper' schema declaration added.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.publish_aspect" title="ivcap_sdk_service.publish_aspect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">publish_aspect</span></code></a>(→ ivcap_sdk_service.itypes.URN)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.publish_aspect" title="ivcap_sdk_service.publish_aspect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">publish_aspect</span></code></a>(→ ivcap_sdk_service.itypes.URN)</p></td>
 <td><p>Add an aspect to 'entity_id' with 'schema'.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.find_aspect" title="ivcap_sdk_service.find_aspect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_aspect</span></code></a>(→ List[ivcap_sdk_service.aspect.Aspect])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.find_aspect" title="ivcap_sdk_service.find_aspect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_aspect</span></code></a>(→ List[ivcap_sdk_service.aspect.Aspect])</p></td>
 <td><p>Return a list of Aspects based on the selection criteria given</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.publish_file_as_artifact" title="ivcap_sdk_service.publish_file_as_artifact"><code class="xref py py-obj docutils literal notranslate"><span class="pre">publish_file_as_artifact</span></code></a>(→ str)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.publish_file_as_artifact" title="ivcap_sdk_service.publish_file_as_artifact"><code class="xref py py-obj docutils literal notranslate"><span class="pre">publish_file_as_artifact</span></code></a>(→ str)</p></td>
 <td><p>Publish a local file as artifact</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.create_metadata" title="ivcap_sdk_service.create_metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_metadata</span></code></a>(→ ivcap_sdk_service.itypes.MetaDict)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.create_metadata" title="ivcap_sdk_service.create_metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_metadata</span></code></a>(→ ivcap_sdk_service.itypes.MetaDict)</p></td>
 <td><p>Return a dict which has a 'proper' schema declaration added.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.publish_metadata" title="ivcap_sdk_service.publish_metadata"><code class="xref py py-obj docutils literal notranslate"><span class="pre">publish_metadata</span></code></a>(→ str)</p></td>
-<td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#ivcap_sdk_service.publish_result" title="ivcap_sdk_service.publish_result"><code class="xref py py-obj docutils literal notranslate"><span class="pre">publish_result</span></code></a>(→ str)</p></td>
 <td><p>Add an aspect with 'schema' to the order record for this</p></td>
@@ -283,11 +277,6 @@
 <dl class="py data">
 <dt class="sig sig-object py" id="ivcap_sdk_service.__version__">
 <span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.</span></span><span class="sig-name descname"><span class="pre">__version__</span></span><a class="headerlink" href="#ivcap_sdk_service.__version__" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ivcap_sdk_service.deliver_data">
-<span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.</span></span><span class="sig-name descname"><span class="pre">deliver_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_or_lambda</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="cio/io_adapter/index.html#ivcap_sdk_service.cio.io_adapter.IOWritable" title="ivcap_sdk_service.cio.io_adapter.IOWritable"><span class="pre">ivcap_sdk_service.cio.io_adapter.IOWritable</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mime_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="itypes/index.html#ivcap_sdk_service.itypes.SupportedMimeTypes" title="ivcap_sdk_service.itypes.SupportedMimeTypes"><span class="pre">ivcap_sdk_service.itypes.SupportedMimeTypes</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ivcap_sdk_service.itypes.MetaDict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">ivcap_sdk_service.itypes.MetaDict</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seekable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_close</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ivcap_sdk_service.cio.io_adapter.OnCloseF</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/ivcap_sdk_service/ivcap.html#deliver_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.deliver_data" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -445,11 +434,6 @@ If ‘schema’ is ommited, ‘metadata’ is expected to contain a SCHEMA_KEY e
 </dd>
 </dl>
 </dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="ivcap_sdk_service.publish_metadata">
-<span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.</span></span><span class="sig-name descname"><span class="pre">publish_metadata</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">entity_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metadata</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ivcap_sdk_service.itypes.MetaDict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schema</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/ivcap_sdk_service/ivcap.html#publish_metadata"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.publish_metadata" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="ivcap_sdk_service.SCHEMA_KEY">
