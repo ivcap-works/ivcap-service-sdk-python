@@ -4,41 +4,55 @@
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable-small";
-    poetry2nix = {
-      url = "github:nix-community/poetry2nix";
+    pyproject-nix = {
+      url = "github:nix-community/pyproject.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, poetry2nix }:
+  outputs = { self, nixpkgs, flake-utils, pyproject-nix }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        # see https://github.com/nix-community/poetry2nix/tree/master#api for more functions and examples.
         pkgs = nixpkgs.legacyPackages.${system};
-        python = pkgs.python39;
 
-        inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) mkPoetryApplication;
-        inherit (poetry2nix.lib.mkPoetry2Nix { inherit pkgs; }) defaultPoetryOverrides;
+        # Loads pyproject.toml into a high-level project representation
+        project = pyproject-nix.lib.project.loadPoetryPyproject {
+          projectRoot = ./.;
+        };
+
+        python = pkgs.python3;
+
+        ivcap-service-sdk-python =
+          let
+            attrs = project.renderers.buildPythonPackage { inherit python; };
+          in
+            # Pass attributes to buildPythonPackage.
+            # Here is a good spot to add on any missing or custom attributes.
+            python.pkgs.buildPythonPackage (attrs // {
+            });
 
       in
-      {
-        packages = {
-          ivcap-service-sdk-python = mkPoetryApplication {
-            projectDir = ./.;
-          };
-          default = self.packages.${system}.ivcap-service-sdk-python;
-        };
+        {
+          # Create a development shell containing dependencies from `pyproject.toml`
+          devShells.default =
+            let
+              arg = project.renderers.withPackages {
+                inherit python;
 
-        # Shell for app dependencies.
-        #
-        #     nix develop
-        #
-        # Use this shell for developing your app.
-        # and for changes to pyproject.toml and poetry.lock.
-        devShells.default = pkgs.mkShell {
-          packages = [ pkgs.poetry ];
-          inputsFrom = [ self.packages.${system}.ivcap-service-sdk-python ];
-        };
+                # Include optional dependencies in the dev shell
+                extras = [ ];
+                extraPackages = ps: with ps; [ ];
+              };
 
-      });
+              # Returns a wrapped environment (virtualenv like) with all our packages
+              pythonEnv = python.withPackages arg;
+              
+            in
+              pkgs.mkShell {
+                packages = [ pythonEnv ivcap-service-sdk-python ];
+              };
+
+          packages.default = ivcap-service-sdk-python;
+        }
+    );
 }
