@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ivcap_sdk_service.run &mdash; ivcap_sd_service  documentation</title>
+  <title>ivcap_sdk_service.run &mdash; ivcap_service_sdk  documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
@@ -31,7 +31,7 @@
           
           
           <a href="../../index.html" class="icon icon-home">
-            ivcap_sd_service
+            ivcap_service_sdk
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -54,7 +54,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">ivcap_sd_service</a>
+          <a href="../../index.html">ivcap_service_sdk</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -130,8 +130,6 @@
             <span class="n">sys_logger</span><span class="o">.</span><span class="n">fatal</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;arg error &#39;</span><span class="si">{</span><span class="n">perr</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
             <span class="n">sys_logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-            <span class="c1"># sys_logger.error(f&quot;Unexpected {err}, {type(err)}&quot;)</span>
-            <span class="c1"># sys_logger.debug(traceback.format_exc())</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">cmd</span> <span class="o">==</span> <span class="n">Command</span><span class="o">.</span><span class="n">SERVICE_FILE</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">service</span><span class="o">.</span><span class="n">to_yaml</span><span class="p">())</span>
