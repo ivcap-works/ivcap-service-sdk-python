@@ -55,8 +55,6 @@ def register_service(service: Service, handler: Callable[[Dict], int]):
             sys_logger.fatal(f"arg error '{perr}'")
         except Exception as err:
             sys_logger.exception(err)
-            # sys_logger.error(f"Unexpected {err}, {type(err)}")
-            # sys_logger.debug(traceback.format_exc())
             sys.exit(-1)
     elif cmd == Command.SERVICE_FILE:
         print(service.to_yaml())
