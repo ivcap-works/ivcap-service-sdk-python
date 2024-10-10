@@ -34,7 +34,11 @@ def hello_world(args: ServiceArgs, logger: logging):
 register_service(SERVICE, hello_world)
 ```
 
-For more useful examples see the [examples](./examples) directory or for a git repo which could work as a starting point, check out [ivcap-python-service-example](https://github.com/ivcap-works/ivcap-python-service-example) and [ivcap-python-service-example-collection](https://github.com/ivcap-works/ivcap-python-service-example-collection).
+For more useful examples see the [examples](https://github.com/ivcap-works/ivcap-service-sdk-python/tree/main/examples) directory or for a git repo which could work as a starting point, check out [ivcap-python-service-example](https://github.com/ivcap-works/ivcap-python-service-example) and [ivcap-python-service-example-collection](https://github.com/ivcap-works/ivcap-python-service-example-collection).
+
+## API Documentation
+
+The auto-generated API docs can be found [here](https://ivcap-works.github.io/ivcap-service-sdk-python/autoapi/index.html).
 
 ## Contributing
 
@@ -43,7 +47,7 @@ Interested in contributing? Check out the contributing guidelines. Please note t
 ## License
 
 `ivcap_sdk_service` was initially created by Max Ott <max.ott@csiro.au>, Tim Erwin <tim.erwin@csiro.au> with additional contributions from Ben Clews <ben.clews@csiro.au>" and
-"John Zhang <j.zhang@csiro.au>". See [LICENSE](./LICENSE) for licensing terms.
+"John Zhang <j.zhang@csiro.au>". See [LICENSE](https://github.com/ivcap-works/ivcap-service-sdk-python/tree/main/LICENSE) for licensing terms.
 
 ## Credits
 

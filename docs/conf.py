@@ -6,7 +6,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = u"ivcap_sd_service"
+project = u"ivcap_service_sdk"
 copyright = u"2022-2024, CSIRO"
 author = u"Max Ott <max.ott@csiro.au>, Tim Erwin <tim.erwin@csiro.au>"
 
@@ -28,7 +28,9 @@ autoapi_ignore = [
     "**/config.py",
     "**/*_io_adapter.py",
     "**/cache.py",
+    'private_module', 'private_function'
 ]
+autoapi_template_dir = "_templates/autoapi"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
