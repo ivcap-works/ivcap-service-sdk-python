@@ -49,7 +49,17 @@
               
             in
               pkgs.mkShell {
-                packages = [ pythonEnv ivcap-service-sdk-python ];
+                packages = [
+                    # Our python environment, including dependencies from pyproject.yaml
+                    pythonEnv
+
+                    # Include our own package in the environment
+                    ivcap-service-sdk-python
+
+                    # Add poetry to the dev shell even though we don't use it, so we can
+                    # run e.g. `poetry lock` when we update dependencies.
+                    pkgs.poetry
+                ];
               };
 
           packages.default = ivcap-service-sdk-python;
