@@ -1,38 +1,61 @@
-:py:mod:`ivcap_sdk_service`
-===========================
+ivcap_sdk_service
+=================
 
 .. py:module:: ivcap_sdk_service
 
 
 Subpackages
 -----------
-.. toctree::
-   :titlesonly:
-   :maxdepth: 3
 
-   cio/index.rst
+.. toctree::
+   :maxdepth: 1
+
+   /autoapi/ivcap_sdk_service/cio/index
 
 
 Submodules
 ----------
+
 .. toctree::
-   :titlesonly:
    :maxdepth: 1
 
-   aspect/index.rst
-   itypes/index.rst
-   ivcap/index.rst
-   logger/index.rst
-   run/index.rst
-   savers/index.rst
-   service/index.rst
+   /autoapi/ivcap_sdk_service/aspect/index
+   /autoapi/ivcap_sdk_service/itypes/index
+   /autoapi/ivcap_sdk_service/ivcap/index
+   /autoapi/ivcap_sdk_service/logger/index
+   /autoapi/ivcap_sdk_service/run/index
+   /autoapi/ivcap_sdk_service/savers/index
+   /autoapi/ivcap_sdk_service/service/index
 
 
-Package Contents
-----------------
+Attributes
+----------
+
+.. autoapisummary::
+
+   ivcap_sdk_service.__version__
+   ivcap_sdk_service.SCHEMA_KEY
+   ivcap_sdk_service.ASPECT_MSG_SCHEMA
+   ivcap_sdk_service.END_OF_STREAM_SCHEMA
+   ivcap_sdk_service.OnCloseF
+   ivcap_sdk_service.ServiceArgs
+   ivcap_sdk_service.MetaDict
+   ivcap_sdk_service.URN
+   ivcap_sdk_service.Url
+   ivcap_sdk_service.AspectDict
+
+
+Exceptions
+----------
+
+.. autoapisummary::
+
+   ivcap_sdk_service.MissingParameterValue
+   ivcap_sdk_service.UnsupportedMimeType
+
 
 Classes
-~~~~~~~
+-------
 
 .. autoapisummary::
 
@@ -54,9 +77,8 @@ Classes
    ivcap_sdk_service.SupportedMimeTypes
 
 
-
 Functions
-~~~~~~~~~
+---------
 
 .. autoapisummary::
 
@@ -76,27 +98,10 @@ Functions
    ivcap_sdk_service.register_service
 
 
-
-Attributes
-~~~~~~~~~~
-
-.. autoapisummary::
-
-   ivcap_sdk_service.__version__
-   ivcap_sdk_service.SCHEMA_KEY
-   ivcap_sdk_service.ASPECT_MSG_SCHEMA
-   ivcap_sdk_service.END_OF_STREAM_SCHEMA
-   ivcap_sdk_service.OnCloseF
-   ivcap_sdk_service.ServiceArgs
-   ivcap_sdk_service.MetaDict
-   ivcap_sdk_service.URN
-   ivcap_sdk_service.Url
-   ivcap_sdk_service.AspectDict
-
+Package Contents
+----------------
 
 .. py:data:: __version__
-
-   
 
 .. py:function:: publish_artifact(name: str, data_or_lambda: Union[Any, Callable[[ivcap_sdk_service.cio.io_adapter.IOWritable], None]], mime_type: Union[str, ivcap_sdk_service.itypes.SupportedMimeTypes], *, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, is_binary: Optional[bool] = None, on_close: Optional[ivcap_sdk_service.cio.io_adapter.OnCloseF] = None) -> str
 
@@ -230,7 +235,6 @@ Attributes
 .. py:data:: SCHEMA_KEY
    :value: '$schema'
 
-   
 
 .. py:function:: publish_result(metadata: ivcap_sdk_service.itypes.MetaDict, schema: Optional[str] = None, name: Optional[str] = None) -> str
 
@@ -280,43 +284,55 @@ Attributes
 
 .. py:class:: QueueService
 
-
    Bases: :py:obj:`abc.ABC`
 
+
    Abstract class for queue service with explicitly defined parameters.
+
 
    .. py:method:: list(limit: Optional[int] = None, offset: Optional[int] = None, page: Optional[str] = None, filter: Optional[str] = None, order_by: Optional[str] = None, order_desc: Optional[bool] = None, at_time: Optional[str] = None) -> List[str]
       :abstractmethod:
 
+
       List all queues with optional query parameters.
+
 
 
    .. py:method:: create(name: str, description: Optional[str] = None, policy: Optional[str] = Dict) -> Dict
       :abstractmethod:
 
+
       Create a new queue with the given parameters.
+
 
 
    .. py:method:: delete(queue_id: str) -> None
       :abstractmethod:
 
+
       Delete the queue with the given name.
+
 
 
    .. py:method:: enqueue(queue_id: str, message: Dict) -> Dict
       :abstractmethod:
 
+
       Enqueue a message into the queue with the given parameters.
+
 
 
    .. py:method:: dequeue(queue_id: str, limit: Optional[int] = 1) -> List[Dict]
       :abstractmethod:
 
+
       Dequeue messages from the queue with the given parameters.
+
 
 
    .. py:method:: read(queue_id: str) -> Dict
       :abstractmethod:
+
 
       Read the queue with the given parameters.
 
@@ -332,11 +348,10 @@ Attributes
 
 .. py:function:: register_service(service: ivcap_sdk_service.service.Service, handler: Callable[[Dict], int])
 
-
 .. py:class:: Service
 
-
    Bases: :py:obj:`dataclass_wizard.JSONWizard`
+
 
    Defines an IVCAP service with all it's necessary components
 
@@ -355,43 +370,40 @@ Attributes
    :param workflow: Workflow to use when executing the service [PythonWorkflow]
    :type workflow: Workflow
 
-   .. py:attribute:: name
-      :type: str
 
-      
+   .. py:attribute:: name
+      :type:  str
+
 
    .. py:attribute:: id
-      :type: str
+      :type:  str
 
-      
 
    .. py:attribute:: providerID
-      :type: str
+      :type:  str
 
-      
 
    .. py:attribute:: accountID
-      :type: str
+      :type:  str
 
-      
 
    .. py:attribute:: parameters
-      :type: List[Parameter]
+      :type:  List[Parameter]
 
-      
 
    .. py:attribute:: description
-      :type: str
+      :type:  str
+      :value: None
 
-      
+
 
    .. py:attribute:: workflow
-      :type: Workflow
+      :type:  Workflow
 
-      
 
    .. py:method:: from_file(serviceFile: str) -> None
       :classmethod:
+
 
 
    .. py:method:: to_dict()
@@ -400,87 +412,92 @@ Attributes
       JSON serializable.
 
 
+
    .. py:method:: to_yaml() -> str
 
 
    .. py:method:: append_arguments(ap: argparse.ArgumentParser) -> argparse.ArgumentParser
 
 
-
 .. py:class:: Parameter
 
-
    Bases: :py:obj:`dataclass_wizard.JSONWizard`
+
 
    Defines a `Service` parameter
 
 
+
    .. py:class:: _
 
-
       Bases: :py:obj:`dataclass_wizard.JSONWizard.Meta`
+
 
       Inner meta class that can be extended by sub-classes for additional
       customization with the JSON load / dump process.
 
+
       .. py:attribute:: skip_defaults
          :value: True
 
-         
+
 
 
    .. py:attribute:: name
-      :type: str
+      :type:  str
 
-      
 
    .. py:attribute:: type
-      :type: Type
+      :type:  Type
 
-      
 
    .. py:attribute:: options
-      :type: List[Option]
+      :type:  List[Option]
+      :value: None
 
-      
+
 
    .. py:attribute:: description
-      :type: str
+      :type:  str
+      :value: None
 
-      
+
 
    .. py:attribute:: default
-      :type: Any
+      :type:  Any
+      :value: None
 
-      
+
 
    .. py:attribute:: unit
-      :type: str
+      :type:  str
+      :value: None
 
-      
+
 
    .. py:attribute:: help
-      :type: str
+      :type:  str
+      :value: None
 
-      
+
 
    .. py:attribute:: optional
-      :type: bool
+      :type:  bool
       :value: False
 
-      
+
 
    .. py:attribute:: unary
-      :type: bool
+      :type:  bool
       :value: False
 
-      
+
 
    .. py:attribute:: constant
-      :type: bool
+      :type:  bool
       :value: False
 
-      
+
 
    .. py:method:: __post_init__()
 
@@ -491,122 +508,122 @@ Attributes
       JSON serializable.
 
 
-   .. py:method:: _to_str(v)
 
+   .. py:method:: _to_str(v)
 
 
 .. py:class:: Option
 
-
    Defines one option of a `Parameter` of type `OPTION`
 
 
-   .. py:attribute:: value
-      :type: str
 
-      
+   .. py:attribute:: value
+      :type:  str
+
 
    .. py:attribute:: name
-      :type: str
+      :type:  str
+      :value: None
 
-      
+
 
    .. py:attribute:: description
-      :type: str
+      :type:  str
+      :value: None
 
-      
 
 
 .. py:class:: Type
 
-
    Bases: :py:obj:`enum.Enum`
 
+
    Enumerates the different types of service `Parameters`
+
 
 
    .. py:attribute:: STRING
       :value: 'string'
 
-      
+
 
    .. py:attribute:: URN
       :value: 'urn'
 
-      
+
 
    .. py:attribute:: INT
       :value: 'int'
 
-      
+
 
    .. py:attribute:: FLOAT
       :value: 'float'
 
-      
+
 
    .. py:attribute:: BOOL
       :value: 'bool'
 
-      
+
 
    .. py:attribute:: OPTION
       :value: 'option'
 
-      
+
 
    .. py:attribute:: ARTIFACT
       :value: 'artifact'
 
-      
+
 
    .. py:attribute:: ASPECT
       :value: 'aspect'
 
-      
+
 
    .. py:attribute:: COLLECTION
       :value: 'collection'
 
-      
+
 
    .. py:attribute:: QUEUE
       :value: 'queue'
 
-      
 
 
 .. py:class:: Workflow
 
-
    Bases: :py:obj:`dataclass_wizard.JSONWizard`
+
 
    Defines the workflow associated with a `Service`
 
+
    .. py:class:: _
 
-
       Bases: :py:obj:`dataclass_wizard.JSONWizard.Meta`
+
 
       Inner meta class that can be extended by sub-classes for additional
       customization with the JSON load / dump process.
 
+
       .. py:attribute:: skip_defaults
          :value: False
 
-         
+
 
 
    .. py:attribute:: type
-      :type: str
-
-      
+      :type:  str
 
 
 .. py:class:: BasicWorkflow
 
-
    Bases: :py:obj:`Workflow`
+
 
    Defines an IVCAP 'Service' workflow consisting of a single container
 
@@ -624,47 +641,50 @@ Attributes
                     https://cloud.google.com/kubernetes-engine/docs/how-to/autopilot-gpus#use-cases
    :param gpu_number: specify the number of gpu cards, 1,2 or 4 allowed for now.
 
+
    .. py:attribute:: type
-      :type: str
+      :type:  str
       :value: 'basic'
 
-      
+
 
    .. py:attribute:: image
-      :type: str
+      :type:  str
 
-      
 
    .. py:attribute:: command
-      :type: List[str]
+      :type:  List[str]
 
-      
 
    .. py:attribute:: min_memory
-      :type: str
+      :type:  str
+      :value: None
 
-      
+
 
    .. py:attribute:: min_cpu
-      :type: str
+      :type:  str
+      :value: None
 
-      
+
 
    .. py:attribute:: min_ephemeral_storage
-      :type: str
+      :type:  str
+      :value: None
 
-      
+
 
    .. py:attribute:: gpu_type
-      :type: str
+      :type:  str
+      :value: None
 
-      
+
 
    .. py:attribute:: gpu_number
-      :type: int
+      :type:  int
       :value: 0
 
-      
+
 
    .. py:method:: to_dict()
 
@@ -675,8 +695,8 @@ Attributes
 
 .. py:class:: PythonWorkflow
 
-
    Bases: :py:obj:`BasicWorkflow`
+
 
    Defines an IVCAP 'Service' workflow consisting of a single python script
 
@@ -691,14 +711,16 @@ Attributes
    :param min_ephemeral_storage: Min ephemeral storage requirement in ???
    :type min_ephemeral_storage: int
 
+
    .. py:attribute:: script
-      :type: str
+      :type:  str
       :value: '/app/service.py'
 
-      
+
 
    .. py:method:: def_workflow()
       :classmethod:
+
 
 
    .. py:method:: to_dict()
@@ -709,7 +731,6 @@ Attributes
 
 
 .. py:class:: Aspect
-
 
    .. py:method:: to_dict() -> Dict[str, any]
 
@@ -724,17 +745,22 @@ Attributes
 
 .. py:class:: GenericAspect(schema: ivcap_sdk_service.itypes.URN, **entries)
 
-
    Bases: :py:obj:`Aspect`
 
+
    Used for reading unknown aspects
+
+
+   .. py:attribute:: SCHEMA
+
+
+   .. py:attribute:: ENTITY
+
 
    .. py:method:: to_dict() -> Dict[str, any]
 
 
    .. py:method:: __repr__()
-
-      Return repr(self).
 
 
    .. py:method:: json_schema(json_schema=None)
@@ -744,14 +770,16 @@ Attributes
 
 .. py:class:: IOAdapter
 
-
    Bases: :py:obj:`abc.ABC`
+
 
    Helper class that provides a standard way to create an ABC using
    inheritance.
 
+
    .. py:method:: read_artifact(artifact_id: str, binary_content=True, no_caching=False, seekable=False) -> IOReadable
       :abstractmethod:
+
 
       Return a readable file-like object providing the content of an artifact
 
@@ -768,8 +796,10 @@ Attributes
       :rtype: IOReadable
 
 
+
    .. py:method:: artifact_readable(artifact_id: str) -> bool
       :abstractmethod:
+
 
       Return true if artifact exists and is readable
 
@@ -780,8 +810,10 @@ Attributes
       :rtype: bool
 
 
+
    .. py:method:: write_artifact(mime_type: str, *, name: Optional[str] = None, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, is_binary: Optional[bool] = None, on_close: Optional[OnCloseF] = None) -> IOWritable
       :abstractmethod:
+
 
       Returns a IOWritable to create a new artifact. It needs to be closed
       in order to be persisted. If `on_close` is provided it is called with the
@@ -804,8 +836,10 @@ Attributes
       :rtype: IOWritable
 
 
+
    .. py:method:: write_metadata(entity_id: str, schema: str, metadata: ivcap_sdk_service.itypes.MetaDict) -> str
       :abstractmethod:
+
 
       Add a 'metadata' aspect to 'entity_id' with 'schema'.
 
@@ -820,8 +854,10 @@ Attributes
       :rtype: str
 
 
+
    .. py:method:: get_collection(collection_urn: str) -> Collection
       :abstractmethod:
+
 
       Return a collection representing a set of artifacts
 
@@ -833,8 +869,10 @@ Attributes
       :rtype: Collection
 
 
+
    .. py:method:: read_aspect(aspect_urn: ivcap_sdk_service.itypes.URN, no_caching=False) -> dict
       :abstractmethod:
+
 
       Return an aspect as a dict
 
@@ -847,8 +885,10 @@ Attributes
       :rtype: dict
 
 
+
    .. py:method:: find_aspect(schema: ivcap_sdk_service.itypes.URN = None, entity: ivcap_sdk_service.itypes.URN = None, json_path: str = None, schema2type: Dict[str, Type[ivcap_sdk_service.aspect.Aspect]] = None) -> List[ivcap_sdk_service.aspect.Aspect]
       :abstractmethod:
+
 
       Return a list of aspects
 
@@ -864,8 +904,10 @@ Attributes
       :rtype: list[Aspect]
 
 
+
    .. py:method:: get_queue(queue_urn: str) -> Queue
       :abstractmethod:
+
 
       Return a queue representing a set of messages
 
@@ -877,8 +919,10 @@ Attributes
       :rtype: Queue
 
 
+
    .. py:method:: get_queue_service(**kwargs) -> QueueService
       :abstractmethod:
+
 
       Create a queue.
 
@@ -886,27 +930,33 @@ Attributes
 
 .. py:class:: IOWritable
 
-
    Bases: :py:obj:`_IOBase`
+
 
    Helper class that provides a standard way to create an ABC using
    inheritance.
 
+
    .. py:property:: urn
       :type: str
+
       :abstractmethod:
+
 
 
    .. py:method:: write(s: AnyStr) -> int
       :abstractmethod:
 
 
+
    .. py:method:: writelines(lines: List[AnyStr]) -> None
       :abstractmethod:
 
 
+
    .. py:method:: truncate(size: int = None) -> int
       :abstractmethod:
+
 
 
    .. py:method:: flush() -> None
@@ -916,33 +966,35 @@ Attributes
 
 .. py:class:: IOReadable
 
-
    Bases: :py:obj:`_IOBase`
+
 
    Helper class that provides a standard way to create an ABC using
    inheritance.
 
+
    .. py:property:: urn
       :type: str
+
       :abstractmethod:
+
 
 
    .. py:property:: mime_type
       :type: str
+
       :abstractmethod:
 
-
-   .. py:property:: as_local_file
-      :type: str
-      :abstractmethod:
 
 
    .. py:method:: read(n: int = -1) -> AnyStr
       :abstractmethod:
 
 
+
    .. py:method:: readline(limit: int = -1) -> AnyStr
       :abstractmethod:
+
 
 
    .. py:method:: readlines(hint: int = -1) -> List[AnyStr]
@@ -950,102 +1002,101 @@ Attributes
 
 
 
+   .. py:property:: as_local_file
+      :type: str
+
+      :abstractmethod:
+
+
+
 .. py:class:: QueueMessage
 
-
    Bases: :py:obj:`dataclass_wizard.JSONWizard`
+
 
    Defines a message to send or receive from a queue
 
 
-   .. py:class:: _
-
-
-      Bases: :py:obj:`dataclass_wizard.JSONWizard.Meta`
-
-      Inner meta class that can be extended by sub-classes for additional
-      customization with the JSON load / dump process.
-
-      .. py:attribute:: skip_defaults
-         :value: False
-
-         
-
-      .. py:attribute:: json_key_to_field
-
-         
-
-
-   .. py:attribute:: schema
-      :type: ivcap_sdk_service.itypes.URN
-
-      
-
-   .. py:attribute:: content
-      :type: any
-
-      
-
-   .. py:attribute:: id
-      :type: ivcap_sdk_service.itypes.URN
-
-      
-
-   .. py:attribute:: content_type
-      :type: str
-      :value: 'application/json'
-
-      
 
    .. py:method:: from_aspect(a) -> QueueMessage
       :classmethod:
 
 
 
+   .. py:class:: _
+
+      Bases: :py:obj:`dataclass_wizard.JSONWizard.Meta`
+
+
+      Inner meta class that can be extended by sub-classes for additional
+      customization with the JSON load / dump process.
+
+
+      .. py:attribute:: skip_defaults
+         :value: False
+
+
+
+      .. py:attribute:: json_key_to_field
+
+
+
+   .. py:attribute:: schema
+      :type:  ivcap_sdk_service.itypes.URN
+
+
+   .. py:attribute:: content
+      :type:  any
+
+
+   .. py:attribute:: id
+      :type:  ivcap_sdk_service.itypes.URN
+      :value: None
+
+
+
+   .. py:attribute:: content_type
+      :type:  str
+      :value: 'application/json'
+
+
+
 .. py:data:: ASPECT_MSG_SCHEMA
    :value: 'urn:ivcap:schema:message:aspect'
 
-   
 
 .. py:data:: END_OF_STREAM_SCHEMA
    :value: 'urn:ivcap:schema:message:eos'
 
-   
 
 .. py:data:: OnCloseF
 
-   
-
 .. py:class:: Queue
 
-
    Bases: :py:obj:`abc.ABC`
+
 
    A queue of messages
 
 
+
    .. py:property:: name
       :type: str
+
       :abstractmethod:
+
 
 
    .. py:property:: urn
       :type: str
+
       :abstractmethod:
 
-
-   .. py:property:: lease
-      :type: float
-      :abstractmethod:
-
-
-   .. py:property:: timeout
-      :type: float
-      :abstractmethod:
 
 
    .. py:method:: push(m: QueueMessage) -> ivcap_sdk_service.itypes.URN
       :abstractmethod:
+
 
 
    .. py:method:: push_eos() -> ivcap_sdk_service.itypes.URN
@@ -1054,13 +1105,16 @@ Attributes
    .. py:method:: pull() -> AcknowledgableQueueMessage
       :abstractmethod:
 
+
       May throw QueueTimeoutException
+
 
 
 
    .. py:method:: pull_aspect(msg_cls: Type[A]) -> A
 
       
+
 
 
    .. py:method:: map_aspect(out_queue: Queue, in_cls: Type[A], mapper: Callable[[A], ivcap_sdk_service.aspect.Aspect])
@@ -1071,13 +1125,30 @@ Attributes
       Acknowledge the message behind the aspect
 
 
+
    .. py:method:: release_aspect(aspect: ivcap_sdk_service.aspect.Aspect) -> None
 
       Release the message behind the aspect
 
 
+
+   .. py:property:: lease
+      :type: float
+
+      :abstractmethod:
+
+
+
    .. py:method:: withLease(lease: float) -> Queue
       :abstractmethod:
+
+
+
+   .. py:property:: timeout
+      :type: float
+
+      :abstractmethod:
+
 
 
    .. py:method:: withTimeout(timeout: float) -> Queue
@@ -1087,97 +1158,84 @@ Attributes
 
 .. py:exception:: MissingParameterValue(name: str, message: str = None)
 
-
    Bases: :py:obj:`Exception`
+
 
    Common base class for all non-exit exceptions.
 
-   .. py:attribute:: name
-      :type: str
 
-      
+   .. py:attribute:: name
+      :type:  str
+
 
    .. py:attribute:: message
-      :type: Optional[str]
-
-      
+      :type:  Optional[str]
 
 
 .. py:exception:: UnsupportedMimeType(mime_type: str)
 
-
    Bases: :py:obj:`Exception`
+
 
    Common base class for all non-exit exceptions.
 
-   .. py:attribute:: mime_type
-      :type: str
 
-      
+   .. py:attribute:: mime_type
+      :type:  str
 
 
 .. py:class:: SupportedMimeTypes
 
-
    Bases: :py:obj:`enum.Enum`
+
 
    Generic enumeration.
 
    Derive from this class to define new enumerations.
 
+
    .. py:attribute:: TEXT
       :value: 'text'
 
-      
+
 
    .. py:attribute:: CSV
       :value: 'text/csv'
 
-      
+
 
    .. py:attribute:: JSON
       :value: 'application/json'
 
-      
+
 
    .. py:attribute:: NETCDF
       :value: 'application/netcdf'
 
-      
+
 
    .. py:attribute:: PNG
       :value: 'image/png'
 
-      
+
 
    .. py:attribute:: JPEG
       :value: 'image/jpeg'
 
-      
+
 
    .. py:attribute:: PARQUET
       :value: 'application/vnd.apache.parquet'
 
-      
 
 
 .. py:data:: ServiceArgs
 
-   
-
 .. py:data:: MetaDict
-
-   
 
 .. py:data:: URN
 
-   
-
 .. py:data:: Url
 
-   
-
 .. py:data:: AspectDict
-
-   
 

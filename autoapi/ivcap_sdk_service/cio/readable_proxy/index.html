@@ -20,9 +20,7 @@
         <script src="../../../../_static/sphinx_highlight.js"></script>
     <script src="../../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../../genindex.html" />
-    <link rel="search" title="Search" href="../../../../search.html" />
-    <link rel="next" title="ivcap_sdk_service.cio.writable_file" href="../writable_file/index.html" />
-    <link rel="prev" title="ivcap_sdk_service.cio.readable_file" href="../readable_file/index.html" /> 
+    <link rel="search" title="Search" href="../../../../search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -44,22 +42,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+              <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../../overview.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../contributing.html">Contributing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../conduct.html">Code of Conduct</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="../../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ivcap_sdk_service</span></code></a><ul class="current">
-<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#subpackages">Subpackages</a><ul class="current">
-<li class="toctree-l4 current"><a class="reference internal" href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ivcap_sdk_service.cio</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="../../index.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../index.html#package-contents">Package Contents</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">API Reference</a></li>
 </ul>
 
         </div>
@@ -76,10 +63,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
-          <li class="breadcrumb-item"><a href="../../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ivcap_sdk_service</span></code></a></li>
-          <li class="breadcrumb-item"><a href="../index.html"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ivcap_sdk_service.cio</span></code></a></li>
-      <li class="breadcrumb-item active"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ivcap_sdk_service.cio.readable_proxy</span></code></li>
+      <li class="breadcrumb-item active">ivcap_sdk_service.cio.readable_proxy</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../../../../_sources/autoapi/ivcap_sdk_service/cio/readable_proxy/index.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -90,11 +74,9 @@
            <div itemprop="articleBody">
              
   <section id="module-ivcap_sdk_service.cio.readable_proxy">
-<span id="ivcap-sdk-service-cio-readable-proxy"></span><h1><a class="reference internal" href="#module-ivcap_sdk_service.cio.readable_proxy" title="ivcap_sdk_service.cio.readable_proxy"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ivcap_sdk_service.cio.readable_proxy</span></code></a><a class="headerlink" href="#module-ivcap_sdk_service.cio.readable_proxy" title="Permalink to this heading"></a></h1>
-<section id="module-contents">
-<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<span id="ivcap-sdk-service-cio-readable-proxy"></span><h1>ivcap_sdk_service.cio.readable_proxy<a class="headerlink" href="#module-ivcap_sdk_service.cio.readable_proxy" title="Permalink to this heading"></a></h1>
 <section id="classes">
-<h3>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h3>
+<h2>Classes<a class="headerlink" href="#classes" title="Permalink to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#ivcap_sdk_service.cio.readable_proxy.ReadableProxy" title="ivcap_sdk_service.cio.readable_proxy.ReadableProxy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReadableProxy</span></code></a></p></td>
@@ -102,12 +84,80 @@
 </tr>
 </tbody>
 </table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ivcap_sdk_service.cio.readable_proxy.ReadableProxy">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ivcap_sdk_service.cio.readable_proxy.</span></span><span class="sig-name descname"><span class="pre">ReadableProxy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_close</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">IO</span><span class="p"><span class="pre">[</span></span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_binary</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../io_adapter/index.html#ivcap_sdk_service.cio.io_adapter.IOWritable" title="ivcap_sdk_service.cio.io_adapter.IOWritable"><span class="pre">ivcap_sdk_service.cio.io_adapter.IOWritable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/readable_proxy.html#ReadableProxy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.readable_proxy.ReadableProxy" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="../io_adapter/index.html#ivcap_sdk_service.cio.io_adapter.IOReadable" title="ivcap_sdk_service.cio.io_adapter.IOReadable"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ivcap_sdk_service.cio.io_adapter.IOReadable</span></code></a></p>
 <p>Helper class that provides a standard way to create an ABC using
 inheritance.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.readable_proxy.ReadableProxy._name">
+<span class="sig-name descname"><span class="pre">_name</span></span><a class="headerlink" href="#ivcap_sdk_service.cio.readable_proxy.ReadableProxy._name" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.readable_proxy.ReadableProxy._urn">
+<span class="sig-name descname"><span class="pre">_urn</span></span><a class="headerlink" href="#ivcap_sdk_service.cio.readable_proxy.ReadableProxy._urn" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.readable_proxy.ReadableProxy._is_binary">
+<span class="sig-name descname"><span class="pre">_is_binary</span></span><a class="headerlink" href="#ivcap_sdk_service.cio.readable_proxy.ReadableProxy._is_binary" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.readable_proxy.ReadableProxy._mode">
+<span class="sig-name descname"><span class="pre">_mode</span></span><a class="headerlink" href="#ivcap_sdk_service.cio.readable_proxy.ReadableProxy._mode" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.readable_proxy.ReadableProxy._download_url">
+<span class="sig-name descname"><span class="pre">_download_url</span></span><a class="headerlink" href="#ivcap_sdk_service.cio.readable_proxy.ReadableProxy._download_url" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.readable_proxy.ReadableProxy._encoding">
+<span class="sig-name descname"><span class="pre">_encoding</span></span><a class="headerlink" href="#ivcap_sdk_service.cio.readable_proxy.ReadableProxy._encoding" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.readable_proxy.ReadableProxy._on_close">
+<span class="sig-name descname"><span class="pre">_on_close</span></span><a class="headerlink" href="#ivcap_sdk_service.cio.readable_proxy.ReadableProxy._on_close" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.readable_proxy.ReadableProxy._cache">
+<span class="sig-name descname"><span class="pre">_cache</span></span><a class="headerlink" href="#ivcap_sdk_service.cio.readable_proxy.ReadableProxy._cache" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.readable_proxy.ReadableProxy._offset">
+<span class="sig-name descname"><span class="pre">_offset</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.readable_proxy.ReadableProxy._offset" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.readable_proxy.ReadableProxy._file_obj">
+<span class="sig-name descname"><span class="pre">_file_obj</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.readable_proxy.ReadableProxy._file_obj" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.readable_proxy.ReadableProxy._closed">
+<span class="sig-name descname"><span class="pre">_closed</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.readable_proxy.ReadableProxy._closed" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.readable_proxy.ReadableProxy._content_type">
+<span class="sig-name descname"><span class="pre">_content_type</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'unknown'</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.readable_proxy.ReadableProxy._content_type" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ivcap_sdk_service.cio.readable_proxy.ReadableProxy._get_urn">
+<span class="sig-name descname"><span class="pre">_get_urn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/readable_proxy.html#ReadableProxy._get_urn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.readable_proxy.ReadableProxy._get_urn" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="ivcap_sdk_service.cio.readable_proxy.ReadableProxy.closed">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">closed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.readable_proxy.ReadableProxy.closed" title="Permalink to this definition"></a></dt>
@@ -131,11 +181,6 @@ inheritance.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="ivcap_sdk_service.cio.readable_proxy.ReadableProxy.mime_type">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mime_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#ivcap_sdk_service.cio.readable_proxy.ReadableProxy.mime_type" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="ivcap_sdk_service.cio.readable_proxy.ReadableProxy._get_urn">
-<span class="sig-name descname"><span class="pre">_get_urn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/readable_proxy.html#ReadableProxy._get_urn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.readable_proxy.ReadableProxy._get_urn" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -206,8 +251,7 @@ downloaded into <cite>_file_obj</cite>.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ivcap_sdk_service.cio.readable_proxy.ReadableProxy.__repr__">
 <span class="sig-name descname"><span class="pre">__repr__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../../_modules/ivcap_sdk_service/cio/readable_proxy.html#ReadableProxy.__repr__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ivcap_sdk_service.cio.readable_proxy.ReadableProxy.__repr__" title="Permalink to this definition"></a></dt>
-<dd><p>Return repr(self).</p>
-</dd></dl>
+<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ivcap_sdk_service.cio.readable_proxy.ReadableProxy.to_json">
@@ -218,15 +262,11 @@ downloaded into <cite>_file_obj</cite>.</p>
 
 </section>
 </section>
-</section>
 
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../readable_file/index.html" class="btn btn-neutral float-left" title="ivcap_sdk_service.cio.readable_file" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../writable_file/index.html" class="btn btn-neutral float-right" title="ivcap_sdk_service.cio.writable_file" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 

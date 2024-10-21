@@ -1,15 +1,31 @@
-:py:mod:`ivcap_sdk_service.ivcap`
-=================================
+ivcap_sdk_service.ivcap
+=======================
 
 .. py:module:: ivcap_sdk_service.ivcap
 
 
-Module Contents
----------------
+Attributes
+----------
+
+.. autoapisummary::
+
+   ivcap_sdk_service.ivcap.DELIVERED
+   ivcap_sdk_service.ivcap._CONFIG
+   ivcap_sdk_service.ivcap.SaverF
+   ivcap_sdk_service.ivcap._CLASS2MIME_TYPE
+   ivcap_sdk_service.ivcap._MIME_TYPE2SAVER
+
+
+Exceptions
+----------
+
+.. autoapisummary::
+
+   ivcap_sdk_service.ivcap.ExitException
 
 
 Functions
-~~~~~~~~~
+---------
 
 .. autoapisummary::
 
@@ -33,41 +49,24 @@ Functions
    ivcap_sdk_service.ivcap.init
 
 
-
-Attributes
-~~~~~~~~~~
-
-.. autoapisummary::
-
-   ivcap_sdk_service.ivcap.DELIVERED
-   ivcap_sdk_service.ivcap._CONFIG
-   ivcap_sdk_service.ivcap.SaverF
-   ivcap_sdk_service.ivcap._CLASS2MIME_TYPE
-   ivcap_sdk_service.ivcap._MIME_TYPE2SAVER
-
+Module Contents
+---------------
 
 .. py:data:: DELIVERED
    :value: []
 
-   
 
 .. py:data:: _CONFIG
-   :type: ivcap_sdk_service.config.Config
+   :type:  ivcap_sdk_service.config.Config
+   :value: None
 
-   
 
 .. py:data:: SaverF
 
-   
-
 .. py:data:: _CLASS2MIME_TYPE
 
-   
-
 .. py:data:: _MIME_TYPE2SAVER
-   :type: Dict[str, SaverF]
-
-   
+   :type:  Dict[str, SaverF]
 
 .. py:function:: publish_artifact(name: str, data_or_lambda: Union[Any, Callable[[ivcap_sdk_service.cio.io_adapter.IOWritable], None]], mime_type: Union[str, ivcap_sdk_service.itypes.SupportedMimeTypes], *, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, is_binary: Optional[bool] = None, on_close: Optional[ivcap_sdk_service.cio.io_adapter.OnCloseF] = None) -> str
 
@@ -131,7 +130,6 @@ Attributes
 
 .. py:function:: deliver_data(name: str, data_or_lambda: Union[Any, Callable[[ivcap_sdk_service.cio.io_adapter.IOWritable], None]], mime_type: Union[str, ivcap_sdk_service.itypes.SupportedMimeTypes], metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, on_close: Optional[ivcap_sdk_service.cio.io_adapter.OnCloseF] = None) -> str
 
-
 .. py:function:: register_saver(mime_type: str, obj_type: Any, saverF: SaverF)
 
    Register a 'saver' function used in 'deliver' for a specific data type.
@@ -184,7 +182,6 @@ Attributes
 
 .. py:function:: _validate_is_urn(val, name)
 
-
 .. py:function:: create_aspect(schema: str, mdict: Optional[AspectDict] = {}, **args) -> AspectDict
 
    Return a dict which has a 'proper' schema declaration added.
@@ -197,7 +194,6 @@ Attributes
 
 
 .. py:function:: publish_metadata(entity_id: str, metadata: ivcap_sdk_service.itypes.MetaDict, schema: Optional[str] = None, name: Optional[str] = None) -> str
-
 
 .. py:function:: publish_result(metadata: ivcap_sdk_service.itypes.MetaDict, schema: Optional[str] = None, name: Optional[str] = None) -> str
 
@@ -258,10 +254,13 @@ Attributes
 
 .. py:exception:: ExitException(msg)
 
-
    Bases: :py:obj:`Exception`
 
+
    Common base class for all non-exit exceptions.
+
+
+   .. py:attribute:: msg
 
 
 .. py:function:: notify(msg, schema=None)
@@ -275,5 +274,4 @@ Attributes
 
 
 .. py:function:: init(argv: Dict[str, str] = None, modify_ap: Callable[[argparse.ArgumentParser], argparse.ArgumentParser] = None)
-
 

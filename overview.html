@@ -53,7 +53,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#license">License</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#credits">Credits</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#development">Development</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#setup">Setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setup-with-conda">Setup with Conda</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#setup-with-nix-flakes">Setup with Nix Flakes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#adding-dependencies">Adding dependencies</a></li>
 </ul>
 </li>
@@ -142,11 +143,25 @@ few messages to logging.</p>
 </section>
 <section id="development">
 <h2>Development<a class="headerlink" href="#development" title="Permalink to this heading"></a></h2>
-<section id="setup">
-<h3>Setup<a class="headerlink" href="#setup" title="Permalink to this heading"></a></h3>
+<section id="setup-with-conda">
+<h3>Setup with Conda<a class="headerlink" href="#setup-with-conda" title="Permalink to this heading"></a></h3>
+<p>To use <code class="docutils literal notranslate"><span class="pre">conda</span></code> to create a virtual python environment named <code class="docutils literal notranslate"><span class="pre">ivcap_service</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">--</span><span class="n">name</span> <span class="n">ivcap_service</span> <span class="n">python</span><span class="o">=</span><span class="mf">3.9</span> <span class="o">-</span><span class="n">y</span>
 <span class="n">conda</span> <span class="n">activate</span> <span class="n">ivcap_service</span>
 <span class="n">pip</span> <span class="n">install</span> <span class="n">poetry</span>
+</pre></div>
+</div>
+</section>
+<section id="setup-with-nix-flakes">
+<h3>Setup with Nix Flakes<a class="headerlink" href="#setup-with-nix-flakes" title="Permalink to this heading"></a></h3>
+<p>Alternatively, if you’d like to use <a class="reference external" href="https://nixos.wiki/wiki/Flakes">Nix Flakes</a> for your
+virtual environment, run:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>nix<span class="w"> </span>develop
+</pre></div>
+</div>
+<p>To use direnv to automatically load the development environment when you enter
+the <code class="docutils literal notranslate"><span class="pre">ivcap-service-sdk-python</span></code> directory, run:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>direnv<span class="w"> </span>allow
 </pre></div>
 </div>
 </section>

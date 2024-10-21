@@ -1,34 +1,32 @@
-:py:mod:`ivcap_sdk_service.cio.writable_proxy`
-==============================================
+ivcap_sdk_service.cio.writable_proxy
+====================================
 
 .. py:module:: ivcap_sdk_service.cio.writable_proxy
 
 
-Module Contents
----------------
-
 Classes
-~~~~~~~
+-------
 
 .. autoapisummary::
 
    ivcap_sdk_service.cio.writable_proxy.WritableProxy
 
 
-
 Functions
-~~~~~~~~~
+---------
 
 .. autoapisummary::
 
    ivcap_sdk_service.cio.writable_proxy.upload_metadata
 
 
+Module Contents
+---------------
 
 .. py:class:: WritableProxy(storage_url: str, mime_type: str, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, name: Optional[str] = None, is_seekable=False, is_binary: Optional[bool] = None, on_close: Optional[Callable[[str, str], str]] = None, encoding=None)
 
-
    Bases: :py:obj:`ivcap_sdk_service.cio.io_adapter.IOWritable`
+
 
    A class which implements the IOWritable interface for writing data. It additionally
    persists the data on disk.
@@ -46,25 +44,59 @@ Functions
    :param encoding: _description_. Defaults to None.
    :type encoding: _type_, optional
 
-   .. py:property:: urn
-      :type: str
+
+   .. py:attribute:: _storage_url
 
 
-   .. py:property:: closed
-      :type: bool
+   .. py:attribute:: _mime_type
+
+
+   .. py:attribute:: _name
+
+
+   .. py:attribute:: _metadata
 
 
    .. py:property:: mode
       :type: str
 
 
+
+   .. py:attribute:: _file_obj
+
+
+   .. py:attribute:: cnt
+      :value: 0
+
+
+
+   .. py:attribute:: _on_close
+
+
+   .. py:attribute:: _closed
+      :value: False
+
+
+
+   .. py:property:: urn
+      :type: str
+
+
+
+   .. py:property:: closed
+      :type: bool
+
+
+
    .. py:property:: name
       :type: str
+
 
 
    .. py:method:: seek(offset, whence=io.SEEK_SET)
 
       Change stream position by offset
+
 
 
    .. py:method:: seekable() -> bool
@@ -73,6 +105,7 @@ Functions
    .. py:method:: tell() -> int
 
       Return current stream position
+
 
 
    .. py:method:: write(bytes_obj: AnyStr) -> int
@@ -101,10 +134,6 @@ Functions
 
    .. py:method:: __repr__()
 
-      Return repr(self).
-
-
 
 .. py:function:: upload_metadata(storage_url: str, entity_urn: str, metadata: ivcap_sdk_service.itypes.MetaDict, *, artifact_id: str = None, url: str = None, name: str = None) -> None
-
 

@@ -1,15 +1,11 @@
-:py:mod:`ivcap_sdk_service.savers`
-==================================
+ivcap_sdk_service.savers
+========================
 
 .. py:module:: ivcap_sdk_service.savers
 
 
-Module Contents
----------------
-
-
 Functions
-~~~~~~~~~
+---------
 
 .. autoapisummary::
 
@@ -21,22 +17,18 @@ Functions
    ivcap_sdk_service.savers.register_savers
 
 
+Module Contents
+---------------
 
 .. py:function:: xa_dataset_saver(name: str, data: Any, io_adapter: ivcap_sdk_service.cio.io_adapter.IOAdapter, **kwargs)
 
-
 .. py:function:: png_pil_saver(name: str, img: Any, io_adapter: ivcap_sdk_service.cio.io_adapter.IOAdapter, **kwargs)
-
 
 .. py:function:: jpeg_pil_saver(name: str, img: Any, io_adapter: ivcap_sdk_service.cio.io_adapter.IOAdapter, **kwargs)
 
-
 .. py:function:: _pil_saver(name: str, img: Any, mtype: ivcap_sdk_service.itypes.SupportedMimeTypes, format: str, io_adapter: ivcap_sdk_service.cio.io_adapter.IOAdapter, kwargs)
-
 
 .. py:function:: _append_meta(kwargs, meta)
 
-
 .. py:function:: register_savers()
-
 

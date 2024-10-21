@@ -1,24 +1,11 @@
-:py:mod:`ivcap_sdk_service.itypes`
-==================================
+ivcap_sdk_service.itypes
+========================
 
 .. py:module:: ivcap_sdk_service.itypes
 
 
-Module Contents
----------------
-
-Classes
-~~~~~~~
-
-.. autoapisummary::
-
-   ivcap_sdk_service.itypes.SupportedMimeTypes
-
-
-
-
 Attributes
-~~~~~~~~~~
+----------
 
 .. autoapisummary::
 
@@ -32,134 +19,138 @@ Attributes
    ivcap_sdk_service.itypes.ServiceArgs
 
 
+Exceptions
+----------
+
+.. autoapisummary::
+
+   ivcap_sdk_service.itypes.MissingParameterValue
+   ivcap_sdk_service.itypes.UnsupportedMimeType
+   ivcap_sdk_service.itypes.MissingSchemaDeclaration
+   ivcap_sdk_service.itypes.MissingFile
+
+
+Classes
+-------
+
+.. autoapisummary::
+
+   ivcap_sdk_service.itypes.SupportedMimeTypes
+
+
+Module Contents
+---------------
+
 .. py:data:: SCHEMA_KEY
    :value: '$schema'
 
-   
 
 .. py:data:: ENTITY_KEY
    :value: '$entity'
 
-   
 
 .. py:class:: SupportedMimeTypes
 
-
    Bases: :py:obj:`enum.Enum`
+
 
    Generic enumeration.
 
    Derive from this class to define new enumerations.
 
+
    .. py:attribute:: TEXT
       :value: 'text'
 
-      
+
 
    .. py:attribute:: CSV
       :value: 'text/csv'
 
-      
+
 
    .. py:attribute:: JSON
       :value: 'application/json'
 
-      
+
 
    .. py:attribute:: NETCDF
       :value: 'application/netcdf'
 
-      
+
 
    .. py:attribute:: PNG
       :value: 'image/png'
 
-      
+
 
    .. py:attribute:: JPEG
       :value: 'image/jpeg'
 
-      
+
 
    .. py:attribute:: PARQUET
       :value: 'application/vnd.apache.parquet'
 
-      
 
 
 .. py:data:: URN
 
-   
-
 .. py:data:: Url
-
-   
 
 .. py:data:: AspectDict
 
-   
-
 .. py:data:: MetaDict
-
-   
 
 .. py:data:: FilePath
 
-   
-
 .. py:data:: ServiceArgs
-
-   
 
 .. py:exception:: MissingParameterValue(name: str, message: str = None)
 
-
    Bases: :py:obj:`Exception`
+
 
    Common base class for all non-exit exceptions.
 
-   .. py:attribute:: name
-      :type: str
 
-      
+   .. py:attribute:: name
+      :type:  str
+
 
    .. py:attribute:: message
-      :type: Optional[str]
-
-      
+      :type:  Optional[str]
 
 
 .. py:exception:: UnsupportedMimeType(mime_type: str)
 
-
    Bases: :py:obj:`Exception`
+
 
    Common base class for all non-exit exceptions.
 
-   .. py:attribute:: mime_type
-      :type: str
 
-      
+   .. py:attribute:: mime_type
+      :type:  str
 
 
 .. py:exception:: MissingSchemaDeclaration
 
-
    Bases: :py:obj:`Exception`
+
 
    Common base class for all non-exit exceptions.
 
 
 .. py:exception:: MissingFile(fname: str)
 
-
    Bases: :py:obj:`Exception`
+
 
    Common base class for all non-exit exceptions.
 
-   .. py:attribute:: fname
-      :type: str
 
-      
+   .. py:attribute:: fname
+      :type:  str
 
 

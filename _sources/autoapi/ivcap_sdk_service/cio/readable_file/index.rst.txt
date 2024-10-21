@@ -1,48 +1,69 @@
-:py:mod:`ivcap_sdk_service.cio.readable_file`
-=============================================
+ivcap_sdk_service.cio.readable_file
+===================================
 
 .. py:module:: ivcap_sdk_service.cio.readable_file
 
 
-Module Contents
----------------
-
 Classes
-~~~~~~~
+-------
 
 .. autoapisummary::
 
    ivcap_sdk_service.cio.readable_file.ReadableFile
 
 
-
+Module Contents
+---------------
 
 .. py:class:: ReadableFile(name: str, path: Optional[str], on_close: Callable[[IO[bytes]], None] = None, is_binary=True, encoding=None)
 
-
    Bases: :py:obj:`ivcap_sdk_service.cio.io_adapter.IOReadable`
+
 
    Helper class that provides a standard way to create an ABC using
    inheritance.
 
-   .. py:property:: closed
-      :type: bool
+
+   .. py:attribute:: _name
+
+
+   .. py:attribute:: _path
 
 
    .. py:property:: mode
       :type: str
 
 
+
+   .. py:attribute:: _file_obj
+
+
+   .. py:attribute:: _on_close
+
+
+   .. py:attribute:: _closed
+      :value: False
+
+
+
+   .. py:property:: closed
+      :type: bool
+
+
+
    .. py:property:: urn
       :type: str
+
 
 
    .. py:property:: name
       :type: str
 
 
+
    .. py:property:: mime_type
       :type: str
+
 
 
    .. py:method:: as_local_file() -> str
@@ -59,12 +80,14 @@ Classes
       Change stream position by offset
 
 
+
    .. py:method:: seekable() -> bool
 
 
    .. py:method:: tell() -> int
 
       Return current stream position
+
 
 
    .. py:method:: read(n: int = -1) -> AnyStr
@@ -81,10 +104,7 @@ Classes
 
    .. py:method:: __repr__()
 
-      Return repr(self).
-
 
    .. py:method:: to_json()
-
 
 

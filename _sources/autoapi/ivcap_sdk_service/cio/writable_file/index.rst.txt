@@ -1,26 +1,24 @@
-:py:mod:`ivcap_sdk_service.cio.writable_file`
-=============================================
+ivcap_sdk_service.cio.writable_file
+===================================
 
 .. py:module:: ivcap_sdk_service.cio.writable_file
 
 
-Module Contents
----------------
-
 Classes
-~~~~~~~
+-------
 
 .. autoapisummary::
 
    ivcap_sdk_service.cio.writable_file.WritableFile
 
 
-
+Module Contents
+---------------
 
 .. py:class:: WritableFile(name: str, on_close: Optional[Callable[[str, IO[Any]], str]] = None, is_binary=True, encoding=None, use_temp_file=False)
 
-
    Bases: :py:obj:`ivcap_sdk_service.cio.io_adapter.IOWritable`
+
 
    A class which implements the IOWritable interface for writing data. It additionally
    persists the data on disk.
@@ -38,25 +36,44 @@ Classes
    :param use_temp_file: _description_. Defaults to True.
    :type use_temp_file: bool, optional
 
+
+   .. py:property:: mode
+      :type: str
+
+
+
+   .. py:attribute:: cnt
+      :value: 0
+
+
+
+   .. py:attribute:: _on_close
+
+
+   .. py:attribute:: _closed
+      :value: False
+
+
+
    .. py:property:: urn
       :type: str
+
 
 
    .. py:property:: closed
       :type: bool
 
 
-   .. py:property:: mode
-      :type: str
-
 
    .. py:property:: name
       :type: str
 
 
+
    .. py:method:: seek(offset, whence=io.SEEK_SET)
 
       Change stream position by offset
+
 
 
    .. py:method:: seekable() -> bool
@@ -65,6 +82,7 @@ Classes
    .. py:method:: tell() -> int
 
       Return current stream position
+
 
 
    .. py:method:: write(bytes_obj: AnyStr) -> int
@@ -89,8 +107,5 @@ Classes
 
 
    .. py:method:: __repr__()
-
-      Return repr(self).
-
 
 

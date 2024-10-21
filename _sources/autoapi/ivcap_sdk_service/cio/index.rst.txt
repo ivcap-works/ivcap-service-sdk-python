@@ -1,45 +1,45 @@
-:py:mod:`ivcap_sdk_service.cio`
-===============================
+ivcap_sdk_service.cio
+=====================
 
 .. py:module:: ivcap_sdk_service.cio
 
 
 Submodules
 ----------
+
 .. toctree::
-   :titlesonly:
    :maxdepth: 1
 
-   io_adapter/index.rst
-   readable_file/index.rst
-   readable_proxy/index.rst
-   writable_file/index.rst
-   writable_proxy/index.rst
+   /autoapi/ivcap_sdk_service/cio/io_adapter/index
+   /autoapi/ivcap_sdk_service/cio/readable_file/index
+   /autoapi/ivcap_sdk_service/cio/readable_proxy/index
+   /autoapi/ivcap_sdk_service/cio/writable_file/index
+   /autoapi/ivcap_sdk_service/cio/writable_proxy/index
 
-
-Package Contents
-----------------
 
 Classes
-~~~~~~~
+-------
 
 .. autoapisummary::
 
    ivcap_sdk_service.cio.IOAdapter
 
 
-
+Package Contents
+----------------
 
 .. py:class:: IOAdapter
 
-
    Bases: :py:obj:`abc.ABC`
+
 
    Helper class that provides a standard way to create an ABC using
    inheritance.
 
+
    .. py:method:: read_artifact(artifact_id: str, binary_content=True, no_caching=False, seekable=False) -> IOReadable
       :abstractmethod:
+
 
       Return a readable file-like object providing the content of an artifact
 
@@ -56,8 +56,10 @@ Classes
       :rtype: IOReadable
 
 
+
    .. py:method:: artifact_readable(artifact_id: str) -> bool
       :abstractmethod:
+
 
       Return true if artifact exists and is readable
 
@@ -68,8 +70,10 @@ Classes
       :rtype: bool
 
 
+
    .. py:method:: write_artifact(mime_type: str, *, name: Optional[str] = None, metadata: Optional[Union[ivcap_sdk_service.itypes.MetaDict, Sequence[ivcap_sdk_service.itypes.MetaDict]]] = None, seekable=False, is_binary: Optional[bool] = None, on_close: Optional[OnCloseF] = None) -> IOWritable
       :abstractmethod:
+
 
       Returns a IOWritable to create a new artifact. It needs to be closed
       in order to be persisted. If `on_close` is provided it is called with the
@@ -92,8 +96,10 @@ Classes
       :rtype: IOWritable
 
 
+
    .. py:method:: write_metadata(entity_id: str, schema: str, metadata: ivcap_sdk_service.itypes.MetaDict) -> str
       :abstractmethod:
+
 
       Add a 'metadata' aspect to 'entity_id' with 'schema'.
 
@@ -108,8 +114,10 @@ Classes
       :rtype: str
 
 
+
    .. py:method:: get_collection(collection_urn: str) -> Collection
       :abstractmethod:
+
 
       Return a collection representing a set of artifacts
 
@@ -121,8 +129,10 @@ Classes
       :rtype: Collection
 
 
+
    .. py:method:: read_aspect(aspect_urn: ivcap_sdk_service.itypes.URN, no_caching=False) -> dict
       :abstractmethod:
+
 
       Return an aspect as a dict
 
@@ -135,8 +145,10 @@ Classes
       :rtype: dict
 
 
+
    .. py:method:: find_aspect(schema: ivcap_sdk_service.itypes.URN = None, entity: ivcap_sdk_service.itypes.URN = None, json_path: str = None, schema2type: Dict[str, Type[ivcap_sdk_service.aspect.Aspect]] = None) -> List[ivcap_sdk_service.aspect.Aspect]
       :abstractmethod:
+
 
       Return a list of aspects
 
@@ -152,8 +164,10 @@ Classes
       :rtype: list[Aspect]
 
 
+
    .. py:method:: get_queue(queue_urn: str) -> Queue
       :abstractmethod:
+
 
       Return a queue representing a set of messages
 
@@ -165,8 +179,10 @@ Classes
       :rtype: Queue
 
 
+
    .. py:method:: get_queue_service(**kwargs) -> QueueService
       :abstractmethod:
+
 
       Create a queue.
 

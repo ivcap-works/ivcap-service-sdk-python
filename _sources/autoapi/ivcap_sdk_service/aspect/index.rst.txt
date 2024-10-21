@@ -1,14 +1,11 @@
-:py:mod:`ivcap_sdk_service.aspect`
-==================================
+ivcap_sdk_service.aspect
+========================
 
 .. py:module:: ivcap_sdk_service.aspect
 
 
-Module Contents
----------------
-
 Classes
-~~~~~~~
+-------
 
 .. autoapisummary::
 
@@ -16,10 +13,10 @@ Classes
    ivcap_sdk_service.aspect.GenericAspect
 
 
-
+Module Contents
+---------------
 
 .. py:class:: Aspect
-
 
    .. py:method:: to_dict() -> Dict[str, any]
 
@@ -34,17 +31,22 @@ Classes
 
 .. py:class:: GenericAspect(schema: ivcap_sdk_service.itypes.URN, **entries)
 
-
    Bases: :py:obj:`Aspect`
 
+
    Used for reading unknown aspects
+
+
+   .. py:attribute:: SCHEMA
+
+
+   .. py:attribute:: ENTITY
+
 
    .. py:method:: to_dict() -> Dict[str, any]
 
 
    .. py:method:: __repr__()
-
-      Return repr(self).
 
 
    .. py:method:: json_schema(json_schema=None)

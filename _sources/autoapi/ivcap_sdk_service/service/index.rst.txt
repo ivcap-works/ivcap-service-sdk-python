@@ -1,14 +1,11 @@
-:py:mod:`ivcap_sdk_service.service`
-===================================
+ivcap_sdk_service.service
+=========================
 
 .. py:module:: ivcap_sdk_service.service
 
 
-Module Contents
----------------
-
 Classes
-~~~~~~~
+-------
 
 .. autoapisummary::
 
@@ -21,163 +18,169 @@ Classes
    ivcap_sdk_service.service.Service
 
 
-
+Module Contents
+---------------
 
 .. py:class:: Option
-
 
    Defines one option of a `Parameter` of type `OPTION`
 
 
-   .. py:attribute:: value
-      :type: str
 
-      
+   .. py:attribute:: value
+      :type:  str
+
 
    .. py:attribute:: name
-      :type: str
+      :type:  str
+      :value: None
 
-      
+
 
    .. py:attribute:: description
-      :type: str
+      :type:  str
+      :value: None
 
-      
 
 
 .. py:class:: Type
 
-
    Bases: :py:obj:`enum.Enum`
 
+
    Enumerates the different types of service `Parameters`
+
 
 
    .. py:attribute:: STRING
       :value: 'string'
 
-      
+
 
    .. py:attribute:: URN
       :value: 'urn'
 
-      
+
 
    .. py:attribute:: INT
       :value: 'int'
 
-      
+
 
    .. py:attribute:: FLOAT
       :value: 'float'
 
-      
+
 
    .. py:attribute:: BOOL
       :value: 'bool'
 
-      
+
 
    .. py:attribute:: OPTION
       :value: 'option'
 
-      
+
 
    .. py:attribute:: ARTIFACT
       :value: 'artifact'
 
-      
+
 
    .. py:attribute:: ASPECT
       :value: 'aspect'
 
-      
+
 
    .. py:attribute:: COLLECTION
       :value: 'collection'
 
-      
+
 
    .. py:attribute:: QUEUE
       :value: 'queue'
 
-      
 
 
 .. py:class:: Parameter
 
-
    Bases: :py:obj:`dataclass_wizard.JSONWizard`
+
 
    Defines a `Service` parameter
 
 
+
    .. py:class:: _
 
-
       Bases: :py:obj:`dataclass_wizard.JSONWizard.Meta`
+
 
       Inner meta class that can be extended by sub-classes for additional
       customization with the JSON load / dump process.
 
+
       .. py:attribute:: skip_defaults
          :value: True
 
-         
+
 
 
    .. py:attribute:: name
-      :type: str
+      :type:  str
 
-      
 
    .. py:attribute:: type
-      :type: Type
+      :type:  Type
 
-      
 
    .. py:attribute:: options
-      :type: List[Option]
+      :type:  List[Option]
+      :value: None
 
-      
+
 
    .. py:attribute:: description
-      :type: str
+      :type:  str
+      :value: None
 
-      
+
 
    .. py:attribute:: default
-      :type: Any
+      :type:  Any
+      :value: None
 
-      
+
 
    .. py:attribute:: unit
-      :type: str
+      :type:  str
+      :value: None
 
-      
+
 
    .. py:attribute:: help
-      :type: str
+      :type:  str
+      :value: None
 
-      
+
 
    .. py:attribute:: optional
-      :type: bool
+      :type:  bool
       :value: False
 
-      
+
 
    .. py:attribute:: unary
-      :type: bool
+      :type:  bool
       :value: False
 
-      
+
 
    .. py:attribute:: constant
-      :type: bool
+      :type:  bool
       :value: False
 
-      
+
 
    .. py:method:: __post_init__()
 
@@ -188,41 +191,41 @@ Classes
       JSON serializable.
 
 
-   .. py:method:: _to_str(v)
 
+   .. py:method:: _to_str(v)
 
 
 .. py:class:: Workflow
 
-
    Bases: :py:obj:`dataclass_wizard.JSONWizard`
+
 
    Defines the workflow associated with a `Service`
 
+
    .. py:class:: _
 
-
       Bases: :py:obj:`dataclass_wizard.JSONWizard.Meta`
+
 
       Inner meta class that can be extended by sub-classes for additional
       customization with the JSON load / dump process.
 
+
       .. py:attribute:: skip_defaults
          :value: False
 
-         
+
 
 
    .. py:attribute:: type
-      :type: str
-
-      
+      :type:  str
 
 
 .. py:class:: BasicWorkflow
 
-
    Bases: :py:obj:`Workflow`
+
 
    Defines an IVCAP 'Service' workflow consisting of a single container
 
@@ -240,47 +243,50 @@ Classes
                     https://cloud.google.com/kubernetes-engine/docs/how-to/autopilot-gpus#use-cases
    :param gpu_number: specify the number of gpu cards, 1,2 or 4 allowed for now.
 
+
    .. py:attribute:: type
-      :type: str
+      :type:  str
       :value: 'basic'
 
-      
+
 
    .. py:attribute:: image
-      :type: str
+      :type:  str
 
-      
 
    .. py:attribute:: command
-      :type: List[str]
+      :type:  List[str]
 
-      
 
    .. py:attribute:: min_memory
-      :type: str
+      :type:  str
+      :value: None
 
-      
+
 
    .. py:attribute:: min_cpu
-      :type: str
+      :type:  str
+      :value: None
 
-      
+
 
    .. py:attribute:: min_ephemeral_storage
-      :type: str
+      :type:  str
+      :value: None
 
-      
+
 
    .. py:attribute:: gpu_type
-      :type: str
+      :type:  str
+      :value: None
 
-      
+
 
    .. py:attribute:: gpu_number
-      :type: int
+      :type:  int
       :value: 0
 
-      
+
 
    .. py:method:: to_dict()
 
@@ -291,8 +297,8 @@ Classes
 
 .. py:class:: PythonWorkflow
 
-
    Bases: :py:obj:`BasicWorkflow`
+
 
    Defines an IVCAP 'Service' workflow consisting of a single python script
 
@@ -307,14 +313,16 @@ Classes
    :param min_ephemeral_storage: Min ephemeral storage requirement in ???
    :type min_ephemeral_storage: int
 
+
    .. py:attribute:: script
-      :type: str
+      :type:  str
       :value: '/app/service.py'
 
-      
+
 
    .. py:method:: def_workflow()
       :classmethod:
+
 
 
    .. py:method:: to_dict()
@@ -326,8 +334,8 @@ Classes
 
 .. py:class:: Service
 
-
    Bases: :py:obj:`dataclass_wizard.JSONWizard`
+
 
    Defines an IVCAP service with all it's necessary components
 
@@ -346,43 +354,40 @@ Classes
    :param workflow: Workflow to use when executing the service [PythonWorkflow]
    :type workflow: Workflow
 
-   .. py:attribute:: name
-      :type: str
 
-      
+   .. py:attribute:: name
+      :type:  str
+
 
    .. py:attribute:: id
-      :type: str
+      :type:  str
 
-      
 
    .. py:attribute:: providerID
-      :type: str
+      :type:  str
 
-      
 
    .. py:attribute:: accountID
-      :type: str
+      :type:  str
 
-      
 
    .. py:attribute:: parameters
-      :type: List[Parameter]
+      :type:  List[Parameter]
 
-      
 
    .. py:attribute:: description
-      :type: str
+      :type:  str
+      :value: None
 
-      
+
 
    .. py:attribute:: workflow
-      :type: Workflow
+      :type:  Workflow
 
-      
 
    .. py:method:: from_file(serviceFile: str) -> None
       :classmethod:
+
 
 
    .. py:method:: to_dict()
@@ -391,10 +396,10 @@ Classes
       JSON serializable.
 
 
+
    .. py:method:: to_yaml() -> str
 
 
    .. py:method:: append_arguments(ap: argparse.ArgumentParser) -> argparse.ArgumentParser
-
 
 
