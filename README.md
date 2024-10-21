@@ -55,12 +55,30 @@ Interested in contributing? Check out the contributing guidelines. Please note t
 
 ## Development
 
-### Setup
+### Setup with Conda
+
+To use `conda` to create a virtual python environment named `ivcap_service`:
 
 ```
 conda create --name ivcap_service python=3.9 -y
 conda activate ivcap_service
 pip install poetry
+```
+
+### Setup with Nix Flakes
+
+Alternatively, if you'd like to use [Nix Flakes](https://nixos.wiki/wiki/Flakes) for your
+virtual environment, run:
+
+```shell
+nix develop
+```
+
+To use direnv to automatically load the development environment when you enter
+the `ivcap-service-sdk-python` directory, run:
+
+```shell
+direnv allow
 ```
 
 ### Adding dependencies
