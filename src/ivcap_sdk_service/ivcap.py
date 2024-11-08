@@ -340,6 +340,14 @@ def get_queue_service() -> QueueService:
     """
     return get_config().IO_ADAPTER.get_queue_service()
 
+def get_secret(secret_name: str, secret_type: str="") -> str:
+    """Get a secret value from secret mgr
+
+    Returns:
+        secret value string
+    """
+    return get_config().IO_ADAPTER.get_secret(secret_name, secret_type)
+
 def get_order_id():
     """Returns the ID of the currently processed order"""
     return get_config().ORDER_ID

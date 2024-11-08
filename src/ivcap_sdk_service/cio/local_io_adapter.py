@@ -398,6 +398,9 @@ class LocalIOAdapter(IOAdapter):
             return TestQueue(queue_urn, self)
         return LocalQueue(queue_urn, self)
 
+    def get_secret(self, secret_name: str, secret_type: str = "", timeout: int = 10) -> str:
+        return ""
+
     def __repr__(self):
         return f"<LocalIOAdapter in_dir={self.in_dir} out_dir={self.out_dir}>"
 
