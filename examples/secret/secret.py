@@ -26,13 +26,16 @@ SERVICE = Service(
     ),
 )
 
-def get_secret_service(args: ServiceArgs, logger: logging):
+def service(args: ServiceArgs, logger: logging):
     """
     Main function to create tasks and add them to the queue.
     """
-    value = get_secret(args.secret_name)
-    # ALERT, don't log it in prod, its only for demo purpose
-    logger.info(f"read out value { value }")
+    try:
+        value = get_secret(args.secret_name)
+        # ALERT, don't log it in prod, its only for demo purpose
+        logger.info(f"read out value { value }")
+    except Exception as e:
+        logger.error(f"Failed to retrieve secret: {e}")
 
 
-register_service(SERVICE, get_secret_service)
+register_service(SERVICE, service)

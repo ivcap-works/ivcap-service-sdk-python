@@ -246,14 +246,12 @@ class IvcapIOAdapter(IOAdapter):
             response.raise_for_status()
 
             if not response.content:
-                logger.error("Failed to read secret: empty response received.")
-                return ""
+                raise Exception("Failed to read secret: empty response received.")
 
             data = response.json()
             return data["secret-value"]
         except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to read seceret: {e}")
-            return []
+            raise Exception(f"Failed to read secret: {e}")
 
     def find_aspect(self,
                     schema: URN = None,
