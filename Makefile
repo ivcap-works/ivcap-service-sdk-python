@@ -24,6 +24,9 @@ publish: build
 test:
 	pytest ${ROOT_DIR}/tests/
 
+mypi:
+	poetry run mypy src
+
 docker-build:
 	@echo "\nStarting build of docker image ${DOCKER_NAME}"
 	docker build -t ${DOCKER_NAME} \

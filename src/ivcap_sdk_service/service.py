@@ -5,13 +5,14 @@
 #
 
 from __future__ import annotations
-from dataclasses import dataclass, field
-from dataclass_wizard import JSONWizard, json_field
-from argparse import ArgumentParser
-from typing import List, Any
+from pydantic import BaseModel, field_serializer, Field, field_validator
+from typing import Callable, List, Any, Optional, Sequence, Union, Type as TypeT
 import yaml
+import sys
 from enum import Enum
 import os
+from argparse import ArgumentParser, ArgumentError
+from collections import namedtuple
 
 from typing import Dict
 
@@ -19,10 +20,15 @@ from ivcap_sdk_service.itypes import URN
 
 from .verifiers import QueueAction, verify_artifact, verify_collection, ArtifactAction
 from .verifiers import verify_aspect, AspectAction, CollectionAction, verify_queue
-from .utils import read_yaml_no_dates
+from .utils import read_yaml_no_dates, print_banner, wait_for_data_proxy
+from .ivcap import init, get_config
+from .logger import logger, sys_logger
+from .config import Command, Config
+from .utils import get_context, Context, use_data_proxy
+from .aspect import Aspect
 
-@dataclass
-class Option:
+
+class Option(BaseModel):
     """Defines one option of a `Parameter` of type `OPTION`
     """
     value: str
@@ -43,23 +49,17 @@ class Type(Enum):
     COLLECTION = 'collection'
     QUEUE = 'queue'
 
-@dataclass()
-class Parameter(JSONWizard):
-    """Defines a `Service` parameter
-    """
-    class _(JSONWizard.Meta):
-        skip_defaults = True
-
+class BaseParameter(BaseModel):
     name: str
     type: Type
-    options: List[Option] = None
     description: str = None
-    default: Any = None
-    unit: str = None
     help: str = None
     optional: bool = False
-    unary: bool = False
     constant: bool = False
+    default: Any = None
+    options: List[Option] = None
+    unit: str = None
+    unary: bool = False
 
     def __post_init__(self):
         # 'default' is supposed to be a string
@@ -77,123 +77,7 @@ class Parameter(JSONWizard):
         else:
             return v
 
-@dataclass
-class Workflow(JSONWizard):
-    """Defines the workflow associated with a `Service`"""
-    class _(JSONWizard.Meta):
-        skip_defaults = False
-
-    type: str
-
-@dataclass
-class BasicWorkflow(Workflow):
-    """Defines an IVCAP 'Service' workflow consisting of a single container
-
-    Args:
-        image (str): Name of docker image ['IVCAP_CONTAINER', '@CONTAINER@']
-        command (str): Path to init executable/script
-        min_memory (int): Min memory requirement in ???
-        min_cpu (int): Min cpu requirement in ???
-        min_ephemeral_storage (int): Min ephemeral storage requirement in ???
-        gpu_type: only nvidia-tesla-t4 allowed for now, check the avalibility at https://cloud.google.com/compute/docs/gpus/gpu-regions-zones and
-                  https://cloud.google.com/kubernetes-engine/docs/how-to/autopilot-gpus#use-cases
-        gpu_number: specify the number of gpu cards, 1,2 or 4 allowed for now.
-    """
-    type: str = "basic"
-    image: str = os.getenv('IVCAP_CONTAINER', '@CONTAINER@')
-    command: List[str] = field(default_factory=list)
-    min_memory: str = None
-    min_cpu:    str = None
-    min_ephemeral_storage: str = None
-    gpu_type:   str = None
-    gpu_number: int = 0
-
-    def to_dict(self):
-        basic = {
-            'command': self.command,
-            'image': self.image
-        }
-        if self.gpu_type:
-            basic['gpu-type'] = self.gpu_type
-        if self.gpu_number:
-            basic['gpu-number'] = self.gpu_number
-        if self.min_memory:
-            basic['memory'] = {'request': self.min_memory}
-        if self.min_cpu:
-            basic['cpu'] = {'request': self.min_cpu}
-        if self.min_ephemeral_storage:
-            basic['ephemeral-storage'] = {'request': self.min_ephemeral_storage}
-        return {
-            'type': 'basic',
-            'basic': basic
-        }
-
-@dataclass
-class PythonWorkflow(BasicWorkflow):
-    """Defines an IVCAP 'Service' workflow consisting of a single python script
-
-    Args:
-        image (str): Name of docker image ['IVCAP_CONTAINER', '@CONTAINER@']
-        script (str): Path to main python script ['/app/service.py']
-        min_memory (int): Min memory requirement in ???
-        min_cpu (int): Min cpu requirement in ???
-        min_ephemeral_storage (int): Min ephemeral storage requirement in ???
-    """
-
-    script: str = '/app/service.py'
-
-    @classmethod
-    def def_workflow(cls):
-        return cls()
-
-    def to_dict(self):
-        d = super().to_dict()
-        d['basic']['command'] = ['python', self.script]
-        return d
-
-@dataclass
-class Service(JSONWizard):
-    """Defines an IVCAP service with all it's necessary components
-
-    Args:
-        id(URN): Service URN ['IVCAP_SERVICE_ID', '@SERVICE_ID@']
-        name(str): Human friendly service name
-        description(str): Detailed description of this service
-        providerID(URN): Provider URN ['IVCAP_PROVIDER_ID', '@PROVIDER_ID@']
-        accountID(URN): Account URN ['IVCAP_ACCOUNT_ID', '@ACCOUNT_ID@']
-        parameters(List[Parameter]): List of parameters for this service
-        workflow(Workflow): Workflow to use when executing the service [PythonWorkflow]
-
-    """
-    # class _(JSONWizard.Meta):
-    #     skip_defaults = True
-
-    name: str
-    id: str = os.getenv('IVCAP_SERVICE_ID', '@SERVICE_ID@')
-    providerID: str = json_field('provider-id', all=True, default=os.getenv('IVCAP_PROVIDER_ID', '@PROVIDER_ID@'))
-    accountID: str = json_field('account-id', all=True, default=os.getenv('IVCAP_ACCOUNT_ID', '@ACCOUNT_ID@'))
-    parameters: List[Parameter] = field(default_factory=list)
-    description: str = None
-    workflow: Workflow = field(default_factory=PythonWorkflow.def_workflow)
-
-    @classmethod
-    def from_file(cls, serviceFile: str) -> None:
-        pd = read_yaml_no_dates(serviceFile)
-        return cls.from_dict(pd)
-
-    # this function is NOT calling the 'to_dict' of referenced JSONWizard classes
-    def to_dict(self):
-        d = super().to_dict()
-        d['parameters'] = list(map(lambda p: p.to_dict(), self.parameters))
-        d['workflow'] = self.workflow.to_dict()
-        return d
-
-    def to_yaml(self) -> str:
-        as_dict = self.to_dict()
-        as_yaml = yaml.dump(as_dict, default_flow_style=False, default_style='"')
-        return as_yaml
-
-    def append_arguments(self, ap: ArgumentParser) -> ArgumentParser:
+    def append_arguments(self, ap: ArgumentParser) -> None:
         type2type = {
             Type.STRING: str,
             Type.URN: URN,
@@ -201,59 +85,156 @@ class Service(JSONWizard):
             Type.FLOAT: float,
             Type.BOOL: bool,
         }
-        # optionals = []
-        for p in self.parameters:
-            if not (p.name and p.type):
-                raise Exception(f"A service parameter needs at least a name and a type - {p}")
-            name = p.name
-            if name.startswith('cre:') or name.startswith('ivcap:'):
-                continue
-            args:Dict[str, Any] = dict(required = True)
-            if p.type == Type.OPTION:
-                ca = list(map(lambda o: o.value, p.options))
-                args['choices'] = ca
-            elif p.type == Type.ARTIFACT:
-                args['type'] = verify_artifact
-                args['metavar'] = "URN"
-                args['action'] = ArtifactAction
-                pass
-            elif p.type == Type.ASPECT:
-                args['type'] = verify_aspect
-                args['metavar'] = "URN"
-                args['action'] = AspectAction
-                pass
-            elif p.type == Type.COLLECTION:
-                args['type'] = verify_collection
-                args['metavar'] = "URN"
-                args['action'] = CollectionAction
-                pass
-            elif p.type == Type.QUEUE:
-                args['type'] = verify_queue
-                args['metavar'] = "URN"
-                args['action'] = QueueAction
-            elif p.type == Type.BOOL:
-                args['action'] ='store_true'
-                args['required'] = False
-            else:
-                if not type(p.type) == Type:
-                    raise Exception(f"Wrong type declaration for '{name}' - use enum 'Type'")
+        if not (self.name and self.type):
+            raise Exception(f"A service parameter needs at least a name and a type - {p}")
+        name = self.name
+        if name.startswith('cre:') or name.startswith('ivcap:'):
+            return
+        args:Dict[str, Any] = dict(required = True)
+        if self.type == Type.OPTION:
+            ca = list(map(lambda o: o.value, self.options))
+            args['choices'] = ca
+        elif self.type == Type.ARTIFACT:
+            args['type'] = verify_artifact
+            args['metavar'] = "URN"
+            args['action'] = ArtifactAction
+            pass
+        elif self.type == Type.ASPECT:
+            args['type'] = verify_aspect
+            args['metavar'] = "URN"
+            args['action'] = AspectAction
+            pass
+        elif self.type == Type.COLLECTION:
+            args['type'] = verify_collection
+            args['metavar'] = "URN"
+            args['action'] = CollectionAction
+            pass
+        elif self.type == Type.QUEUE:
+            args['type'] = verify_queue
+            args['metavar'] = "URN"
+            args['action'] = QueueAction
+        elif self.type == Type.BOOL:
+            args['action'] ='store_true'
+            args['required'] = False
+        else:
+            if not type(self.type) == Type:
+                raise Exception(f"Wrong type declaration for '{name}' - use enum 'Type'")
 
-                t = type2type.get(p.type)
-                if not t:
-                    raise Exception(f"Unsupported type '{p.type}' for '{name}'")
-                args['type'] = t
-                args['metavar'] = p.type.name.upper()
-            if p.default:
-                args['default'] = p.default
-            if p.description:
-                if p.default:
-                    args['help'] = f"{p.description} [{p.default}]"
-                else:
-                    args['help'] = f"{p.description}"
-            if p.optional:
-                args['required'] = not p.optional
-                # optionals.append(name)
-            if p.constant or p.default:
-                args['required'] = False
-            ap.add_argument(f"--{name}", **args)
+            t = type2type.get(self.type)
+            if not t:
+                raise Exception(f"Unsupported type '{self.type}' for '{name}'")
+            args['type'] = t
+            args['metavar'] = self.type.name.upper()
+        if self.default:
+            args['default'] = self.default
+        if self.description:
+            if self.default:
+                args['help'] = f"{self.description} [{self.default}]"
+            else:
+                args['help'] = f"{self.description}"
+        if self.optional:
+            args['required'] = not self.optional
+            # optionals.append(name)
+        if self.constant or self.default:
+            args['required'] = False
+        ap.add_argument(f"--{name}", **args)
+
+
+class Parameter(BaseParameter):
+    """Defines a `Service` parameter
+    """
+    # class _(JSONWizard.Meta):
+    #     skip_defaults = True
+
+
+class Contact(BaseModel):
+    name: str
+    email: str
+
+class LicenseInfo(BaseModel):
+    url: str
+    name: str = None
+
+class BaseService(BaseModel):
+    """Defines an IVCAP service with all it's necessary components
+
+    Args:
+        id(URN): Service URN ['IVCAP_SERVICE_ID', '@SERVICE_ID@']
+        name(str): Human friendly service name
+        description(str): Detailed description of this service
+        accountID(URN): Account URN ['IVCAP_ACCOUNT_ID', '@ACCOUNT_ID@']
+        parameters(List[Parameter]): List of parameters for this service
+
+    """
+    # class _(JSONWizard.Meta):
+    #     skip_defaults = True
+
+    name: str
+    id: str = os.getenv('IVCAP_SERVICE_ID', '@SERVICE_ID@')
+    title: str = None
+    description: str = None
+    contact: Contact = None
+    license_info: LicenseInfo = None
+    accountID: str = Field(os.getenv('IVCAP_ACCOUNT_ID', '@ACCOUNT_ID@'), alias='account-id')
+    parameters: List[BaseParameter] = Field(description="list of paramters accepted by this service")
+
+    @field_serializer("parameters")
+    @staticmethod
+    def serialize_parameters(parameters: List[BaseParameter]) -> dict:
+        d = list(map(lambda p: p.model_dump(exclude_unset=True), parameters))
+        return d
+
+
+    def _run(self, handler: Callable[[Dict], int]):
+        if use_data_proxy():
+            # print banner immediately when inside the cluster
+            print_banner(self)
+
+        init(None, self._append_sys_arguments)
+        cmd = self._get_command(get_config())
+        if not cmd:
+            return # sub class took care of it
+
+        if cmd == Command.SERVICE_RUN:
+            if not use_data_proxy():
+                print_banner(self)
+            wait_for_data_proxy()
+            cfg = get_config()
+            sys_logger.info(f"Starting job for service '{self.name}' on node '{cfg.NODE_ID}' ({cfg.ORDER_ID})")
+            try:
+                ap = ArgumentParser(description=self.description)
+                # Need to wait for 3.10
+                # ap = ArgumentParser(description=service.description, exit_on_error=False)
+                self._append_run_arguments(ap)
+                pargs = ap.parse_args(cfg.SERVICE_ARGS)
+                args = vars(pargs)
+                ST = namedtuple('ServiceArgs', args.keys())
+                at = ST(**args)
+                code = handler(at)
+                sys.exit(code)
+            except ArgumentError as perr:
+                sys_logger.fatal(f"arg error '{perr}'")
+            except Exception as err:
+                sys_logger.exception(err)
+                sys.exit(-1)
+        elif cmd == Command.SERVICE_FILE:
+            print(self.to_yaml())
+        elif cmd == Command.SERVICE_HELP:
+            ap = ArgumentParser(description=self.description, add_help=False)
+            self.append_arguments(ap)
+            ap.print_help()
+        else:
+            sys_logger.error(f"Unexpected command '{cmd}'")
+
+    def _get_command(self, cfg: Config) -> Optional[Command]:
+        """Return the command to execute or None if it has been taken care of
+        """
+        return cfg.SERVICE_COMMAND
+
+    def _append_sys_arguments(self, ap: ArgumentParser) -> ArgumentParser:
+        return ap
+
+    def _append_run_arguments(self, ap: ArgumentParser) -> ArgumentParser:
+        for p in self.parameters:
+            p.append_arguments(ap)
         return ap

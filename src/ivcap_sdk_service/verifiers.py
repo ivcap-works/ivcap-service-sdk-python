@@ -7,9 +7,11 @@ from __future__ import annotations
 from argparse import Action, ArgumentTypeError
 import yaml
 import validators
+import os
 
 from .ivcap import get_config
-from .config import Resource, INSIDE_CONTAINER
+from .config import Resource, QUEUE_PREFIX, SCHEMA_PREFIX
+from .utils import get_context, Context, use_data_proxy
 
 # TODO: Add verifying code
 def verify_artifact(urn):
@@ -45,17 +47,15 @@ def verify_collection(urn: str):
         # treating a artifact as a collection of ONE
         return urn
 
-
-    if INSIDE_CONTAINER:
+    if use_data_proxy():
         # inside a container we get collections served from a queue
-        if urn.startswith(get_config().QUEUE_PREFIX):
+        if urn.startswith(QUEUE_PREFIX):
             return urn
-
-        raise ArgumentTypeError(f"Illegal collection reference '{urn}' - expected url")
     else:
-        # throws an exception if we can't create a collection object
-        get_config().IO_ADAPTER.get_collection(urn)
-        return urn
+        if os.path.isfile(urn) or os.path.isdir(urn):
+            return f"urn:file://{urn}"
+    raise ArgumentTypeError(f"URN '{urn}' is not a valid Collection identifier")
+
 
 class CollectionAction(Action):
     def __call__(self, _1, namespace, value, _2=None):
@@ -105,9 +105,10 @@ def verify_queue(urn):
     if validators.url(urn):
         return urn
 
-    # could be local file
-    if get_config().IO_ADAPTER.artifact_readable(urn):
-        return urn
+    if not use_data_proxy():
+        # could be local directory
+        if os.path.isfile(urn) or os.path.isdir(urn):
+            return f"urn:file://{urn}"
 
     raise ArgumentTypeError(f"URN '{urn}' is not a valid Queue identifier")
 
@@ -120,5 +121,5 @@ class QueueAction(Action):
             raise ArgumentTypeError(err)
 
 def is_valid_resource_urn(urn: str, resource: Resource) -> bool:
-    prefix = f"{get_config().SCHEMA_PREFIX}{resource.value}"
+    prefix = f"{SCHEMA_PREFIX}{resource.value}"
     return urn.startswith(prefix)

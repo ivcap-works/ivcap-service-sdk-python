@@ -7,24 +7,23 @@
 import os
 import sys
 import time
+from typing_extensions import deprecated
 import requests
 
 from typing import Dict, Callable, Sequence, Dict
 from argparse import ArgumentParser, ArgumentError
 from collections import namedtuple
+
+
 # import traceback
 
 from .ivcap import init, get_config
 from .logger import logger, sys_logger
-from .service import Service
-from .config import Command, INSIDE_ARGO, INSIDE_CONTAINER
+from .service import BaseService
+from .utils import get_context, Context, use_data_proxy
+from .config import Command
 
-def run(args: Dict, handler: Callable[[Dict], int]) -> int:
-    sys_logger.info(f"Starting service with '{args}'")
-    code = handler(args, logger)
-    return code
-
-def _print_banner(service: Service):
+def _print_banner(service: BaseService):
     from .__init__ import __version__
     sdk_v = os.getenv('IVCAP_SDK_VERSION', __version__)
     svc_v = os.getenv('IVCAP_SERVICE_VERSION', '?')
@@ -33,41 +32,46 @@ def _print_banner(service: Service):
 
     sys_logger.info(f"IVCAP Service '{service.name}' {svc_v}/{svc_c} (sdk {sdk_v}) built on {svc_d}.")
 
-def register_service(service: Service, handler: Callable[[Dict], int]):
-    if INSIDE_ARGO:
-        # print banner immediately when inside the cluster
-        _print_banner(service)
-
-    init(None, service.append_arguments)
-    cmd = get_config().SERVICE_COMMAND
+@deprecated("Use 'service.run(handler)' instead")
+def register_service(service: BaseService, handler: Callable[[Dict], int]):
+    service.run(handler)
 
 
-    if cmd == Command.SERVICE_RUN:
-        if not INSIDE_ARGO:
-            _print_banner(service)
-        wait_for_data_proxy()
-        cfg = get_config()
-        sys_logger.info(f"Starting order '{cfg.ORDER_ID}' for service '{service.name}' on node '{cfg.NODE_ID}'")
-        try:
-            code = run_service(service, cfg.SERVICE_ARGS, handler)
-            sys.exit(code)
-        except ArgumentError as perr:
-            sys_logger.fatal(f"arg error '{perr}'")
-        except Exception as err:
-            sys_logger.exception(err)
-            sys.exit(-1)
-    elif cmd == Command.SERVICE_FILE:
-        print(service.to_yaml())
-    elif cmd == Command.SERVICE_HELP:
-        ap = ArgumentParser(description=service.description, add_help=False)
-        service.append_arguments(ap)
-        ap.print_help()
-    else:
-        sys_logger.error(f"Unexpected command '{cmd}'")
+# def register_service(service: BaseService, handler: Callable[[Dict], int]):
+#     if use_data_proxy():
+#         # print banner immediately when inside the cluster
+#         _print_banner(service)
+
+#     init(None, service.append_arguments)
+#     cmd = get_config().SERVICE_COMMAND
+
+
+#     if cmd == Command.SERVICE_RUN:
+#         if not not use_data_proxy():
+#             _print_banner(service)
+#         wait_for_data_proxy()
+#         cfg = get_config()
+#         sys_logger.info(f"Starting order '{cfg.ORDER_ID}' for service '{service.name}' on node '{cfg.NODE_ID}'")
+#         try:
+#             code = run_service(service, cfg.SERVICE_ARGS, handler)
+#             sys.exit(code)
+#         except ArgumentError as perr:
+#             sys_logger.fatal(f"arg error '{perr}'")
+#         except Exception as err:
+#             sys_logger.exception(err)
+#             sys.exit(-1)
+#     elif cmd == Command.SERVICE_FILE:
+#         print(service.to_yaml())
+#     elif cmd == Command.SERVICE_HELP:
+#         ap = ArgumentParser(description=service.description, add_help=False)
+#         service.append_arguments(ap)
+#         ap.print_help()
+#     else:
+#         sys_logger.error(f"Unexpected command '{cmd}'")
 
 
 def wait_for_data_proxy():
-    if not INSIDE_ARGO:
+    if not use_data_proxy():
         return
 
     url = f"{get_config().STORAGE_URL}/readyz"
@@ -84,13 +88,18 @@ def wait_for_data_proxy():
             time.sleep(delay)
     raise Exception(f"Can't contact data-proxy after {retries} retries on '{url}'")
 
-def run_service(service: Service, args: Sequence[str], handler: Callable[[Dict], int]) -> int:
-    ap = ArgumentParser(description=service.description)
-    # Need to wait for 3.10
-    # ap = ArgumentParser(description=service.description, exit_on_error=False)
-    service.append_arguments(ap)
-    pargs = ap.parse_args(args)
-    args = vars(pargs)
-    ST = namedtuple('ServiceArgs', args.keys())
-    at = ST(**args)
-    return run(at, handler)
+# def run_service(service: BaseService, args: Sequence[str], handler: Callable[[Dict], int]) -> int:
+#     ap = ArgumentParser(description=service.description)
+#     # Need to wait for 3.10
+#     # ap = ArgumentParser(description=service.description, exit_on_error=False)
+#     service.append_arguments(ap)
+#     pargs = ap.parse_args(args)
+#     args = vars(pargs)
+#     ST = namedtuple('ServiceArgs', args.keys())
+#     at = ST(**args)
+#     return run(at, handler)
+
+def run(args: Dict, handler: Callable[[Dict], int]) -> int:
+    sys_logger.info(f"Starting service with '{args}'")
+    code = handler(args, logger)
+    return code

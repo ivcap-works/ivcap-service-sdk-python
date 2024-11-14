@@ -23,6 +23,7 @@ typing-extensions = "^4.9.0"
 watchdog = ">=3.0.0"
 pydantic = "^2.6.1"
 jsonpath-ng = "^1.6.1"
+mypy = "^1.13.0"
 
 [tool.poetry.dev-dependencies]
 
@@ -48,6 +49,11 @@ upload_to_release = true                    # auto-create GitHub release
 upload_to_pypi = false                      # don't auto-upload to PyPI
 remove_dist = false                         # don't remove dists
 patch_without_tag = true                    # patch release by default
+
+[tool.mypy]
+python_version = "3.9"
+strict = true
+files = ["src"]
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

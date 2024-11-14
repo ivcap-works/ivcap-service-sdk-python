@@ -19,7 +19,7 @@ from .logger import sys_logger as logger
 from .config import Config
 from .itypes import URN, MetaDict, MissingFile, SupportedMimeTypes, Url
 from .itypes import MissingParameterValue, UnsupportedMimeType, SCHEMA_KEY, ENTITY_KEY
-from .aspect import Aspect
+from .aspect import Aspect, GenericAspect
 
 DELIVERED = []
 _CONFIG: Config = None # only use internally and only after calling init()
@@ -80,7 +80,6 @@ def publish_artifact(
         m = dict(name=name, url=url, mime_type=mt, meta=metadata)
         DELIVERED.append(m)
         # TODO: Find a different mechanism
-        #notify(m, _CONFIG.SCHEMA_PREFIX + 'deliver')
         if on_close:
             on_close(url)
 
@@ -157,18 +156,20 @@ def publish_file_as_artifact(
                             metadata=metadata, seekable=seekable,
                             is_binary=is_binary, on_close=on_close)
 
-def create_metadata(schema: str, mdict:Optional[MetaDict] = {}, **args) -> MetaDict:
-    """Return a dict which has a 'proper' schema declaration added.
+def create_metadata(schema: str, mdict:Optional[MetaDict] = {}, **kwargs) -> Aspect:
+    """Return an aspect which has a 'proper' schema declaration added.
 
     Args:
         schema (str): Schema URN
+        mdict (Optional[MetaDict]): Optional dict of aspect fields
+        kwargs
 
     Returns:
-        Dict: A copy of 'args' plus a 'SCHEMA_KEY' entry
+        An Aspect
     """
-    d = dict(mdict, **args)
-    d[SCHEMA_KEY] = schema
-    return d
+    d = kwargs | mdict
+    a = GenericAspect(schema, **d)
+    return a
 
 @deprecated("Use 'publish_artifact' instead")
 def deliver_data(

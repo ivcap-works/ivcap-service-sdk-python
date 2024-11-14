@@ -3,11 +3,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
+from enum import Enum
 from typing import Any
 import yaml
 import json
-from typing import Any
-import yaml
+import requests
+import time
+import os
 
 from .logger import sys_logger as logger
 from .aspect import Aspect
@@ -17,6 +19,29 @@ try:
     from yaml import CSafeLoader as SafeLoader, CDumper as Dumper
 except ImportError:
     from yaml import SafeLoader, Dumper
+
+class Context(Enum):
+    ARGO = "argo"
+    LAMBDA = "lambda"
+    SERVER = "server"
+
+def get_context() -> Context:
+    from .ivcap import get_config
+
+    if os.getenv('ARGO_NODE_ID', None):
+        return Context.ARGO
+    if get_config().SERVICE_URL:
+        return Context.SERVER
+    return Context.LAMBDA
+
+def use_data_proxy() -> bool:
+    if os.getenv('http_proxy', None):
+        return True
+    if os.getenv('https_proxy', None):
+        return True
+    return False
+
+
 
 # Remove date parsing of yaml as datetime not serializable
 # https://stackoverflow.com/questions/34667108/ignore-dates-and-times-while-parsing-yaml
@@ -83,8 +108,42 @@ def json_dump(obj: Any, fileName: str = None, entity: URN = None, failQuietly=Tr
                 fp.write(js)
         return js
     except BaseException as err:
-        logger.warn(f"json_dump: serialising '{obj}' failed with '{err}'")
+        logger.warning(f"json_dump: serialising '{obj}' failed with '{err}'")
         if failQuietly:
             return "{}"
         else:
             raise err
+
+def get_banner(service: "BaseService"):
+    from .__init__ import __version__
+
+
+    sdk_v = os.getenv('IVCAP_SDK_VERSION', __version__)
+    svc_v = os.getenv('IVCAP_SERVICE_VERSION', '?')
+    svc_c = os.getenv('IVCAP_SERVICE_COMMIT', '?')
+    svc_d = os.getenv('IVCAP_SERVICE_BUILD', '?')
+
+    return f"IVCAP Service '{service.name}' {svc_v}/{svc_c} (sdk {sdk_v}) built on {svc_d}."
+
+def print_banner(service: "BaseService"):
+    logger.info(get_banner(service))
+
+def wait_for_data_proxy():
+    from .ivcap import get_config
+
+    if not use_data_proxy():
+        return
+
+    url = f"{get_config().STORAGE_URL}/readyz"
+    retries = int(os.getenv('IVCAP_DATA_PROXY_RETRIES', 5))
+    delay = int(os.getenv('IVCAP_DATA_PROXY_DELAY', 3))
+
+    for _ in range(retries):
+        logger.info(f"Checking for data-proxy at '{url}'.")
+        try:
+            requests.head(url)
+            return
+        except Exception:
+            logger.info(f"Data-proxy doesn't seem to be ready yet, will wait {delay}sec and try again.")
+            time.sleep(delay)
+    raise Exception(f"Can't contact data-proxy after {retries} retries on '{url}'")

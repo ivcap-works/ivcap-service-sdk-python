@@ -380,14 +380,14 @@ class LocalIOAdapter(IOAdapter):
         return jp_parse(p)
 
     def get_collection(self, collection_urn: str) -> Collection:
-        u = urlparse(collection_urn)
-        if u.scheme == "" or u.scheme == "file":
-            if os.path.isfile(u.path) or os.path.isdir(u.path):
-                return LocalCollection(u.path, self)
+        if collection_urn.startswith("urn:file:"):
+            path = urn[len("urn:file://") :]
+            if os.path.isdir(path) or os.path.isdir(path):
+                return LocalCollection(path, self)
             else:
-                raise ValueError(f"Cannot find local file or directory '{u.path}")
+                raise ValueError(f"Cannot find local file or directory '{path}'.")
         else:
-            raise ValueError(f"Remote collection is not supported, yet")
+            raise ValueError(f"Remote collection '{urn}' is not supported, yet")
 
     def get_queue_service(self, **kwargs) -> QueueService:
         return LocalQueueService(**kwargs)
@@ -578,6 +578,7 @@ class LocalQueue(BaseQueue):
     ) -> None:
         from ..config import Resource
         from ..ivcap import get_config  # break import loop
+        from ..config import SCHEMA_PREFIX
 
         super().__init__(urn, adapter, lease, timeout)
         self._path = resource_urn_path(urn, Resource.QUEUE, adapter.in_dir)
@@ -594,7 +595,7 @@ class LocalQueue(BaseQueue):
 
         self._name = Path(self._path).stem
         self._id_prefix = (
-            f"{get_config().SCHEMA_PREFIX}{Resource.MESSAGE.value}#{self._name}-"
+            f"{SCHEMA_PREFIX}{Resource.MESSAGE.value}#{self._name}-"
         )
         self._idx_file = os.path.join(self._path, "_idx")
         self._msg_glob = os.path.join(self._path, "*.json")
@@ -839,6 +840,7 @@ class QueueIter:
 
 def resource_urn_path(urn: str, resource: str, in_dir: str) -> str:
     """Returns the 'path' of a resource urn (eveything after ':' or '#')"""
+    from ..config import SCHEMA_PREFIX
 
     u = urlparse(urn)
     if u.scheme == "" or u.scheme == "file":
@@ -849,7 +851,7 @@ def resource_urn_path(urn: str, resource: str, in_dir: str) -> str:
         if u.fragment != "":
             dname = u.fragment
         else:
-            prefix = f"{get_config().SCHEMA_PREFIX}{resource.value}."
+            prefix = f"{SCHEMA_PREFIX}{resource.value}."
             plen = len(prefix)
             if len(urn) < plen:
                 raise ValueError(

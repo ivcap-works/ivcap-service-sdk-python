@@ -153,6 +153,24 @@ class QueueMessage(JSONWizard):
             content_type = "application/json"
         )
 
+    @classmethod
+    def from_dict(cls, d: dict) -> "QueueMessage":
+        s = d.get("$schema") if d.get("$schema") else d.get("schema")
+        if s == ASPECT_MSG_SCHEMA:
+            return cls(
+                schema=ASPECT_MSG_SCHEMA,
+                id=d.get("id"),
+                content=d.get("content"),
+                content_type = d.get("content_type")
+            )
+        else:
+            return cls(
+                content=d,
+                schema=ASPECT_MSG_SCHEMA,
+                content_type = "application/json"
+            )
+
+
     class _(JSONWizard.Meta):
         skip_defaults = False
         json_key_to_field = {

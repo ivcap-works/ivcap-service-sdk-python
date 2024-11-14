@@ -25,9 +25,12 @@ from .ivcap import SCHEMA_KEY, publish_result
 from .ivcap import get_config, register_saver, get_order_id, get_node_id
 from .ivcap import QueueService, get_queue_service
 from .run import register_service
-from .service import Service, Parameter, Option, Type
-from .service import Workflow, BasicWorkflow, PythonWorkflow
+from .service import Parameter, BaseParameter, Option, Type
+from .workflow import Workflow, BasicWorkflow, PythonWorkflow
 from .aspect import Aspect, GenericAspect
+from .function import FunctionResponse, FunctionService, FunctionRequest
+from .function import ArtifactFunctionRequest, FunctionInParameter, ArtifactFunctionResponse
+from .ai_tool import AITool
 
 from .cio.io_adapter import IOAdapter, IOWritable, IOReadable, QueueMessage
 from .cio.io_adapter import ASPECT_MSG_SCHEMA, END_OF_STREAM_SCHEMA

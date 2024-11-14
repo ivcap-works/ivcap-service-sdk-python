@@ -253,7 +253,9 @@ class IvcapCollection(Collection):
 
     def __iter__(self):
         from ..ivcap import get_config # avoiding circular imports
-        if self._collection_urn.startswith(get_config().QUEUE_PREFIX):
+        from ..config import QUEUE_PREFIX
+
+        if self._collection_urn.startswith(QUEUE_PREFIX):
             return IvcapCollectionIter(self._collection_urn, self._adapter)
         else:
             return IvcapSingleIter(self._collection_urn, self._adapter)
