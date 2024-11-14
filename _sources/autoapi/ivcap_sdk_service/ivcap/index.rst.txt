@@ -42,6 +42,7 @@ Functions
    ivcap_sdk_service.ivcap.publish_result
    ivcap_sdk_service.ivcap.fetch_data
    ivcap_sdk_service.ivcap.get_queue_service
+   ivcap_sdk_service.ivcap.get_secret
    ivcap_sdk_service.ivcap.get_order_id
    ivcap_sdk_service.ivcap.get_node_id
    ivcap_sdk_service.ivcap.notify
@@ -240,6 +241,13 @@ Module Contents
 
    :returns: The queue service adapter
    :rtype: QueueService
+
+
+.. py:function:: get_secret(secret_name: str, secret_type: str = '') -> str
+
+   Get a secret value from secret mgr
+
+   :returns: secret value string
 
 
 .. py:function:: get_order_id()

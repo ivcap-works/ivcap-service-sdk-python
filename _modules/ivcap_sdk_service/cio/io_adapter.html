@@ -434,21 +434,6 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
 
-    <span class="c1"># @abstractmethod</span>
-    <span class="c1"># def read_external(self, url: Url, binary_content=True, no_caching=False, seekable=False) -&gt; IOReadable:</span>
-    <span class="c1">#     &quot;&quot;&quot;Return a readable file-like object providing the content of an external data item.</span>
-
-    <span class="c1">#     Args:</span>
-    <span class="c1">#         url (Url): URL of external object to read</span>
-    <span class="c1">#         binary_content (bool, optional): If true content is expected to be of binary format otherwise text is expected. Defaults to True.</span>
-    <span class="c1">#         no_caching (bool, optional): If set, content is not cached nor read from cache. Defaults to False.</span>
-    <span class="c1">#         seekable (bool, optional): If true, returned readable should be seekable</span>
-
-    <span class="c1">#     Returns:</span>
-    <span class="c1">#         IOReadable: The content of the external data item as a file-like object</span>
-    <span class="c1">#     &quot;&quot;&quot;</span>
-    <span class="c1">#     pass</span>
-
 <div class="viewcode-block" id="IOAdapter.artifact_readable"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOAdapter.artifact_readable">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">artifact_readable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">artifact_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return true if artifact exists and is readable</span>
@@ -460,33 +445,6 @@
 <span class="sd">            bool: True if artifact can be read</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
-
-    <span class="c1"># @abstractmethod</span>
-    <span class="c1"># def write_artifact(</span>
-    <span class="c1">#     self,</span>
-    <span class="c1">#     mime_type: str,</span>
-    <span class="c1">#     name: Optional[str] = None,</span>
-    <span class="c1">#     collection_name: Optional[str] = None,</span>
-    <span class="c1">#     metadata: Optional[Union[MetaDict, Sequence[MetaDict]]] = None,</span>
-    <span class="c1">#     seekable=False,</span>
-    <span class="c1">#     on_close: Optional[OnCloseF] = None</span>
-    <span class="c1"># ) -&gt; IOWritable:</span>
-    <span class="c1">#     &quot;&quot;&quot;Returns a IOWritable to create a new artifact. It needs to be closed</span>
-    <span class="c1">#     in order to be persisted. If `on_close` is provided it is called with the</span>
-    <span class="c1">#     artifactID.</span>
-
-    <span class="c1">#     Args:</span>
-    <span class="c1">#         mime_type (str): _description_</span>
-    <span class="c1">#         name (Optional[str], optional): Optional name. Defaults to None.</span>
-    <span class="c1">#         collection_name (Optional[str], optional): Optional collection name. Defaults to None.</span>
-    <span class="c1">#         metadata (Optional[MetaDict | List[MetaDict]], optional): Key/value pairs (or list of key/value pairs) to add as metadata. Defaults to {}.</span>
-    <span class="c1">#         seekable (bool, optional): If true, writable should be seekable (needed for NetCDF). Defaults to False.</span>
-    <span class="c1">#         on_close (Optional[OnCloseF], optional): Called with assigned artifact ID. Defaults to None.</span>
-
-    <span class="c1">#     Returns:</span>
-    <span class="c1">#         IOWritable: A file-like object to write deliver artifact content - needs to be closed</span>
-    <span class="c1">#     &quot;&quot;&quot;</span>
-    <span class="c1">#     pass</span>
 
 <div class="viewcode-block" id="IOAdapter.write_artifact"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOAdapter.write_artifact">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span> <span class="nf">write_artifact</span><span class="p">(</span>
@@ -598,6 +556,12 @@
     <span class="k">def</span> <span class="nf">get_queue_service</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QueueService</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create a queue.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="IOAdapter.get_secret"><a class="viewcode-back" href="../../../autoapi/ivcap_sdk_service/index.html#ivcap_sdk_service.cio.IOAdapter.get_secret">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_secret</span><span class="p">(</span><span class="n">selef</span><span class="p">,</span> <span class="n">secret_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">secret_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        read secret from secretmgr.</span>
 <span class="sd">        &quot;&quot;&quot;</span></div></div>
 </pre></div>
 

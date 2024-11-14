@@ -95,6 +95,7 @@ Functions
    ivcap_sdk_service.get_order_id
    ivcap_sdk_service.get_node_id
    ivcap_sdk_service.get_queue_service
+   ivcap_sdk_service.get_secret
    ivcap_sdk_service.register_service
 
 
@@ -344,6 +345,13 @@ Package Contents
 
    :returns: The queue service adapter
    :rtype: QueueService
+
+
+.. py:function:: get_secret(secret_name: str, secret_type: str = '') -> str
+
+   Get a secret value from secret mgr
+
+   :returns: secret value string
 
 
 .. py:function:: register_service(service: ivcap_sdk_service.service.Service, handler: Callable[[Dict], int])
@@ -925,6 +933,14 @@ Package Contents
 
 
       Create a queue.
+
+
+
+   .. py:method:: get_secret(secret_name: str, secret_type: str = '', timeout: int = 10) -> str
+      :abstractmethod:
+
+
+      read secret from secretmgr.
 
 
 

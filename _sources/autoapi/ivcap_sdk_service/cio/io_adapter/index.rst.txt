@@ -635,3 +635,11 @@ Module Contents
 
 
 
+   .. py:method:: get_secret(secret_name: str, secret_type: str = '', timeout: int = 10) -> str
+      :abstractmethod:
+
+
+      read secret from secretmgr.
+
+
+
