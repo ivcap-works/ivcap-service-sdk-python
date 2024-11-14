@@ -38,6 +38,7 @@ class IvcapIOAdapter(IOAdapter):
         order_id:str,
         cachable_url: Callable[[str], str],
         queue_url: str = "http://queue.local",
+        secret_url: str = "http://secret.local"
     ) -> None:
         super().__init__()
         self.in_dir = os.path.abspath(in_dir)
@@ -45,6 +46,7 @@ class IvcapIOAdapter(IOAdapter):
         self.storage_url = storage_url
         self.cachable_url = cachable_url
         self.queue_url = queue_url
+        self.secret_url = secret_url
 
     def read_artifact(self, artifact_id: str, binary_content=True, no_caching=False, seekable=False) -> IOReadable:
         """Return a readable file-like object providing the content of an artifact
@@ -222,6 +224,34 @@ class IvcapIOAdapter(IOAdapter):
 
     def get_queue_service(self, **kwargs) -> QueueService:
         return IvcapQueueService(self.queue_url, **kwargs)
+
+    def get_secret(self, secret_name: str, secret_type: str = "", timeout: int = 10) -> str:
+        try:
+            url = f"{self.secret_url}/1/secret"
+
+            secret_name = secret_name.strip()
+            if not secret_name:
+                raise ValueError("empty secret name")
+
+            secret_type = secret_type.strip()
+            if not secret_type:
+                secret_type = "raw"
+
+            params = {
+                "secret-name": secret_name,
+                "secret-type": secret_type,
+            }
+
+            response = requests.get(url, params=params, timeout=timeout)
+            response.raise_for_status()
+
+            if not response.content:
+                raise Exception("Failed to read secret: empty response received.")
+
+            data = response.json()
+            return data["secret-value"]
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Failed to read secret: {e}")
 
     def find_aspect(self,
                     schema: URN = None,
