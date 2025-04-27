@@ -1,8 +1,11 @@
+#
+# Copyright (c) 2025 Commonwealth Scientific and Industrial Research Organisation (CSIRO). All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file. See the AUTHORS file for names of contributors.
+#
 import os
-from typing import Optional, Dict, Any
-from http import HTTPStatus
+from typing import Optional, Dict
 import httpx
-import json
 
 def file_to_http_response(
     file_path: str,

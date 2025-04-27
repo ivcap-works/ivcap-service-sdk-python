@@ -14,10 +14,10 @@ publish: build
 	poetry publish
 
 test:
-	poetry run pytest ${ROOT_DIR}/tests/ --cov=ivcap_fastapi --cov-report=xml
+	poetry run pytest ${ROOT_DIR}/tests/ --cov=ivcap_service --cov-report=xml
 
 add-license:
-	licenseheaders -t .license.tmpl -y 2023 -f src/ivcap_ai_tool/*.py
+	licenseheaders -t .license.tmpl -y $(shell date +%Y) -f src/ivcap_service/*.py
 
 clean:
 	rm -rf *.egg-info

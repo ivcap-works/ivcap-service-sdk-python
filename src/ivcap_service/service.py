@@ -1,3 +1,8 @@
+#
+# Copyright (c) 2025 Commonwealth Scientific and Industrial Research Organisation (CSIRO). All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file. See the AUTHORS file for names of contributors.
+#
 
 import time
 import traceback
@@ -153,7 +158,7 @@ def start_batch_service(
     # summary, description = (worker_fn.__doc__.lstrip() + "\n").split("\n", 1)
 
     if args.test_file is not None:
-        from .testing import file_to_json
+        from .utils import file_to_json
         job = file_to_json(args.test_file)
         resp = do_job(job, worker_fn, input_model, output_model, logger)
         print(resp.model_dump_json(indent=2, by_alias=True))
