@@ -3,18 +3,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
-from dataclasses import Field, dataclass
 import json
 import os
 import traceback
-from typing import Any, Callable, Generic, List, Optional, TypeVar, Union, BinaryIO
+from typing import Optional, Union, BinaryIO
 
 from time import sleep
 from urllib.parse import urlparse, urlunparse
 import httpx
 from pydantic import BaseModel, HttpUrl
-from ivcap_fastapi import getLogger
 
+from .logger import getLogger
 from .types import BinaryResult, ExecutionError, IvcapResult
 
 logger = getLogger("ivcap")
