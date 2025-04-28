@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ivcap_service"
-version = "0.3.2"
+version = "0.3.3"
 description = "SDK library for building services for the IVCAP platform"
 
 authors = ["Max Ott <max.ott@csiro.au>"]

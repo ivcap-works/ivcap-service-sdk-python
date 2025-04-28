@@ -6,15 +6,11 @@
 import inspect
 import json
 import os
-import re
-from typing import Optional, Type, Callable, TypeVar, Any, get_type_hints, Union, Dict, Tuple
+from typing import Optional, Type, Callable, Any, get_type_hints, Dict, Tuple
 
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel
 
-def get_version():
-    return "???"
-
-def _get_input_type(func: Callable) -> Tuple[Optional[Type[BaseModel]], Dict[str, Any]]:
+def get_input_type(func: Callable) -> Tuple[Optional[Type[BaseModel]], Dict[str, Any]]:
     """Gets the input type of a function.
 
     Args:
@@ -46,7 +42,7 @@ def _get_input_type(func: Callable) -> Tuple[Optional[Type[BaseModel]], Dict[str
 
     return pydantic_model_class, additional_params
 
-def _get_function_return_type(func):
+def get_function_return_type(func):
     """Extracts the return type from a function."""
     type_hints = get_type_hints(func)
     # param_types = {k: v for k, v in type_hints.items() if k != 'return'}

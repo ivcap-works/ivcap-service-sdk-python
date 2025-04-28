@@ -17,7 +17,7 @@ from typing import (
 from pydantic import BaseModel, Field
 
 from .types import ExecutionContext
-from .utils import _get_input_type
+from .utils import get_input_type
 
 TOOL_SCHEMA = "urn:sd-core:schema.ai-tool.1"
 
@@ -59,7 +59,7 @@ def create_tool_definition(
         service_id = os.getenv("IVCAP_SERVICE_ID", SERVICE_ID_PLACEHOLDER)
 
     #fn_sig = inspect.signature(fn)
-    input_type, _ = _get_input_type(fn)
+    input_type, _ = get_input_type(fn)
 
     td = ToolDefinition(
         id=f"{id_prefix}.{name}",

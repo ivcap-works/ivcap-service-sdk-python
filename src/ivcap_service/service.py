@@ -21,7 +21,8 @@ import requests
 from .ivcap import get_ivcap_url, push_result, verify_result
 from .logger import getLogger
 from .types import ExecutionError
-from .utils import _get_function_return_type, _get_input_type, get_version
+from .utils import get_function_return_type, get_input_type
+from .version import get_version
 from .tool_definition import print_tool_definition  # Import the requests library
 
 # Number of attempt to request a new job before giving up
@@ -153,8 +154,8 @@ def start_batch_service(
 
     logger.info(f"{title} - {os.getenv('VERSION')} - v{get_version()}")
 
-    input_model, _ = _get_input_type(worker_fn)
-    output_model = _get_function_return_type(worker_fn)
+    input_model, _ = get_input_type(worker_fn)
+    output_model = get_function_return_type(worker_fn)
     # summary, description = (worker_fn.__doc__.lstrip() + "\n").split("\n", 1)
 
     if args.test_file is not None:
