@@ -17,7 +17,7 @@ from typing import (
 from pydantic import BaseModel, Field
 
 from .types import ExecutionContext
-from .utils import get_input_type
+from .utils import clean_description, get_input_type
 
 TOOL_SCHEMA = "urn:sd-core:schema.ai-tool.1"
 
@@ -39,20 +39,24 @@ class ToolDefinition(BaseModel):
 def print_tool_definition(
     fn: Callable[..., Any],
     *,
+    name: Optional[str] = None,
     service_id: Optional[str] = None,
     description: Optional[str] = None,
     id_prefix: str = "urn:sd-core:ai-tool",
 ):
-    td = create_tool_definition(fn, service_id=service_id, description=description, id_prefix=id_prefix)
+    td = create_tool_definition(fn, name=name, service_id=service_id, description=description, id_prefix=id_prefix)
     print(td.model_dump_json(indent=2, by_alias=True))
 
 def create_tool_definition(
     fn: Callable[..., Any], *,
+    name: Optional[str] = None,
     service_id: Optional[str] = None,
     description: Optional[str] = None,
     id_prefix: str = "urn:sd-core:ai-tool",
 ) -> ToolDefinition:
-    name = os.getenv("IVCAP_SERVICE_NAME", fn.__name__)
+    name = os.getenv("IVCAP_SERVICE_NAME", name or fn.__name__)
+    name = name.replace(" ", "_").replace("-", "_").lower()
+
     signature, description = _generate_function_description(fn, name, exclude_types=[ExecutionContext])
 
     if service_id == None:
@@ -65,7 +69,7 @@ def create_tool_definition(
         id=f"{id_prefix}.{name}",
         name=name,
         service_id=service_id,
-        description=description,
+        description=clean_description(description),
         fn_signature=signature,
         fn_schema=input_type.model_json_schema(),
     )

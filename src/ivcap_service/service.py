@@ -14,9 +14,8 @@ from urllib.parse import urlunparse
 
 import os
 import sys
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import requests
-
 
 from .ivcap import get_ivcap_url, push_result, verify_result
 from .logger import getLogger
@@ -24,6 +23,21 @@ from .types import ExecutionError
 from .utils import get_function_return_type, get_input_type
 from .version import get_version
 from .tool_definition import print_tool_definition  # Import the requests library
+
+class ServiceContact(BaseModel):
+    name: str = Field(description="name of the contact person")
+    email: str = Field(description="email address of the contact person")
+    url: Optional[str] = Field(None, description="url of the contact person")
+
+class ServiceLicense(BaseModel):
+    name: str = Field(description="name of the license")
+    url: str = Field(description="url to the license text")
+
+class Service(BaseModel):
+    name: str = Field(description="name of the service")
+    version: str = Field(version=os.environ.get("VERSION", "???"), description="version of the service")
+    contact: ServiceContact = Field(description="contact details of the service")
+    license: Optional[ServiceLicense] = Field(None, description="license of the service")
 
 # Number of attempt to request a new job before giving up
 MAX_REQUEST_JOB_ATTEMPTS = 4
@@ -113,7 +127,7 @@ def do_job(
     return resp
 
 def start_batch_service(
-    title: str,
+    service_description: Service,
     worker_fn: Callable,
     *,
     custom_args: Optional[Callable[[argparse.ArgumentParser], argparse.Namespace]] = None,
@@ -123,7 +137,7 @@ def start_batch_service(
     """A helper function to start a batch service
 
     Args:
-        title (str): the tile
+        service_description (Service): description of the service
         tool_fn (Callable[..., Any]): _description_
         logger (Logger): _description_
         custom_args (Optional[Callable[[argparse.ArgumentParser], argparse.Namespace]], optional): _description_. Defaults to None.
@@ -132,7 +146,7 @@ def start_batch_service(
     """
     logger = getLogger("server")
 
-    parser = argparse.ArgumentParser(description=title)
+    parser = argparse.ArgumentParser(description=service_description.name)
     parser.add_argument('--with-telemetry', action="store_true", help='Initialise OpenTelemetry')
     parser.add_argument('--print-service-description', action="store_true", help='Print service description to stdout')
     parser.add_argument('--print-tool-description', action="store_true", help='Print tool description to stdout')
@@ -145,14 +159,14 @@ def start_batch_service(
 
     if args.print_service_description:
         from .service_definition import print_batch_service_definition
-        print_batch_service_definition(worker_fn)
+        print_batch_service_definition(service_description, worker_fn)
         sys.exit(0)
 
     if args.print_tool_description:
-        print_tool_definition(worker_fn)
+        print_tool_definition(worker_fn, name = service_description.name)
         sys.exit(0)
 
-    logger.info(f"{title} - {os.getenv('VERSION')} - v{get_version()}")
+    logger.info(f"{service_description.name} - {os.getenv('VERSION')} - v{get_version()}")
 
     input_model, _ = get_input_type(worker_fn)
     output_model = get_function_return_type(worker_fn)

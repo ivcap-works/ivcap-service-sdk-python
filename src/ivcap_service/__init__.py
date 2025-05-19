@@ -7,6 +7,6 @@
 
 from .version import __version__
 from .logger import getLogger, logging_init
-from .service import start_batch_service
+from .service import start_batch_service, Service
 from .service_definition import create_service_definition
 from .tool_definition import create_tool_definition, print_tool_definition

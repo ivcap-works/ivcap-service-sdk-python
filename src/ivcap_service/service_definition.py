@@ -9,7 +9,8 @@ import sys
 from typing import Callable, Dict, List, Any, Optional
 from pydantic import BaseModel, Field
 
-from .utils import file_to_json
+from .service import Service, ServiceContact, ServiceLicense
+from .utils import clean_description, file_to_json
 from .tool_definition import SERVICE_ID_PLACEHOLDER
 from .logger import getLogger
 
@@ -43,26 +44,28 @@ class ServiceDefinition(BaseModel):
     name: str
     description: str
     parameters: List[Any] = []
+    contact: ServiceContact = Field(description="contact details of the service")
+    license: Optional[ServiceLicense] = Field(None, description="license details of the service")
     policy: str = Field(default=DEF_POLICY)
     controller_schema: str = Field(default=BATCH_CONTROLLER_SCHEMA)
     controller: Any
 
 def print_batch_service_definition(
+    service_description: Service,
     fn: Callable[..., Any],
     service_id: Optional[str] = None,
-    description: Optional[str] = None,
 ):
     sd = create_batch_service_definition(
+        service_description,
         fn,
         service_id=service_id,
-        description=description,
     )
     print(sd.model_dump_json(indent=2, by_alias=True, exclude_none=True))
 
 def create_batch_service_definition(
+    service_description: Service,
     fn: Callable[..., Any],
     service_id: Optional[str] = None,
-    description: Optional[str] = None,
 ) -> ServiceDefinition:
     # controller
     image = os.getenv("DOCKER_IMG", IMAGE_PLACEHOLDER)
@@ -88,27 +91,30 @@ def create_batch_service_definition(
             sys.exit(-1)
 
     controller = BatchController(image=image, command=command, resources=resources)
-    return create_service_definition(fn, controller, service_id, description)
+    return create_service_definition(service_description, fn, controller, service_id)
 
 def create_service_definition(
+    service_description: Service,
     fn: Callable[..., Any],
     controller: Any,
     service_id: Optional[str] = None,
     description: Optional[str] = None,
 ) -> ServiceDefinition:
-    name = os.getenv("IVCAP_SERVICE_NAME", fn.__name__)
+    name = os.getenv("IVCAP_SERVICE_NAME", service_description.name)
     if service_id == None:
         service_id = os.getenv("IVCAP_SERVICE_ID", SERVICE_ID_PLACEHOLDER)
-    if description == None:
-        description = fn.__doc__ or "no description available"
+    description = clean_description(fn.__doc__ or "no description available")
+    contact = service_description.contact
+    license = service_description.license
     policy = os.getenv("IVCAP_POLICY_URN", DEF_POLICY)
-
 
     sd_data = {
         "$id": service_id,
         "name": name,
         "description": description,
         "policy": policy,
+        "contact": contact,
+        "license": license,
         "controller": controller,
     }
 

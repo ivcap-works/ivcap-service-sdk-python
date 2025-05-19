@@ -5,6 +5,7 @@ from time import time
 from typing import Optional
 from pydantic import BaseModel, Field
 from ivcap_service import getLogger, logging_init
+from ivcap_service.service import Service
 
 this_dir = os.path.dirname(__file__)
 src_dir = os.path.abspath(os.path.join(this_dir, "../../src"))
@@ -13,7 +14,18 @@ sys.path.insert(0, src_dir)
 logging_init()
 logger = getLogger("app")
 
-TITLE="Batch service to test various platform aspects"
+service = Service(
+    name="Batch service example",
+    version=os.environ.get("VERSION", "???"),
+    contact={
+        "name": "Mary Doe",
+        "email": "mary.doe@acme.au",
+    },
+    license_info={
+        "name": "MIT",
+        "url": "https://opensource.org/license/MIT",
+    },
+)
 
 class Request(BaseModel):
     jschema: str = Field("urn:sd:schema:batch-tester.request.1", alias="$schema")
@@ -88,4 +100,4 @@ def consume_compute(req: Request) -> Result:
 
 if __name__ == "__main__":
     from ivcap_service import start_batch_service
-    start_batch_service(TITLE, consume_compute)
+    start_batch_service(service, consume_compute)

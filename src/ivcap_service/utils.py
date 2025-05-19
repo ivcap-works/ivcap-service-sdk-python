@@ -77,3 +77,13 @@ def file_to_json(file_path: str) -> Dict[str, Any]:
         raise ValueError(f"Error decoding JSON from file: {file_path}: {e}")
     except Exception as e:
         raise IOError(f"Error reading file: {file_path}: {e}")
+
+def clean_description(text: str) -> str:
+    """
+    Cleans a string by removing unnecessary whitespace and newlines, while preserving double newlines.
+    """
+    text = text.replace("\n\n", "TEMP_NEWLINE")
+    text = text.replace("\n", " ")
+    text = " ".join(text.split())
+    text = text.replace("TEMP_NEWLINE", "\n")
+    return text
