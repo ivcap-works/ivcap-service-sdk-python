@@ -4,9 +4,10 @@
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
 
+import ast
 import os
 import sys
-from typing import Callable, Dict, List, Any, Optional
+from typing import Callable, Dict, List, Any, Optional, Union
 from pydantic import BaseModel, Field
 
 from .service import Service, ServiceContact, ServiceLicense
@@ -35,7 +36,7 @@ class Resources(BaseModel):
 class BatchController(BaseModel):
     jschema: str = Field(default=BATCH_CONTROLLER_SCHEMA, alias="$schema")
     image: str
-    command: List[str]
+    command: Union[List[str], str]
     resources: Resources = Field(default_factory=Resources)
 
 class ServiceDefinition(BaseModel):
@@ -69,12 +70,9 @@ def create_batch_service_definition(
 ) -> ServiceDefinition:
     # controller
     image = os.getenv("DOCKER_IMG", IMAGE_PLACEHOLDER)
-    service_file_name = fn.__code__.co_filename
-    service_dir = os.path.dirname(service_file_name)
-    service_file_name = os.path.basename(service_file_name)
-    command = ["python", f"/app/{service_file_name}"]
 
-    resources = find_resources_file(service_dir)
+    command = find_command()
+    resources = find_resources_file()
     controller = BatchController(image=image, command=command, resources=resources)
     return create_service_definition(service_description, fn, controller, service_id)
 
@@ -106,14 +104,12 @@ def create_service_definition(
     sd = ServiceDefinition(**sd_data)
     return sd
 
-def find_resources_file(service_dir: str) -> Resources:
+def find_resources_file() -> Resources:
     using_def_resource_file = False
     resource_file = os.getenv("IVCAP_RESOURCES_FILE")
     if resource_file == None:
         using_def_resource_file = True
-        resource_file = os.path.join(service_dir, DEF_RESOURCE_FILE)
-        if not (os.path.exists(resource_file) and os.access(resource_file, os.R_OK)):
-            resource_file = DEF_RESOURCE_FILE
+        resource_file = DEF_RESOURCE_FILE
 
     if os.path.exists(resource_file) and os.access(resource_file, os.R_OK):
         rd = file_to_json(resource_file)
@@ -127,3 +123,23 @@ def find_resources_file(service_dir: str) -> Resources:
             print(f"FATAL: Cannot open resources definition file '{resource_file}'", file=sys.stderr)
             sys.exit(-1)
     return resources
+
+def find_command() -> List[str]:
+    if not(os.path.exists("Dockerfile") and os.access("Dockerfile", os.R_OK)):
+        print("FATAL: Cannot find 'Dockerfile'", file=sys.stderr)
+        sys.exit(-1)
+
+    entry = extract_line("Dockerfile", "ENTRYPOINT")
+    if not entry:
+        print("FATAL: Cannot find 'ENTRYPOINT' in 'Dockerfile'", file=sys.stderr)
+        sys.exit(-1)
+    cs = entry[len("ENTRYPOINT"):].strip()
+    cmd = ast.literal_eval(cs)
+    return cmd
+
+def extract_line(filepath, start_string):
+    with open(filepath, 'r') as f:
+        for line in f:
+            if line.startswith(start_string):
+                return line.strip()
+    return None
