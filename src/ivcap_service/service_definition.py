@@ -74,22 +74,7 @@ def create_batch_service_definition(
     service_file_name = os.path.basename(service_file_name)
     command = ["python", f"/app/{service_file_name}"]
 
-    using_def_resource_file = False
-    resource_file = os.getenv("IVCAP_RESOURCES_FILE")
-    if resource_file == None:
-        using_def_resource_file = True
-        resource_file = os.path.join(service_dir, DEF_RESOURCE_FILE)
-    if os.path.exists(resource_file) and os.access(resource_file, os.R_OK):
-        rd = file_to_json(resource_file)
-        resources = Resources(**rd)
-    else:
-        if using_def_resource_file:
-            logger.info(f"Using default resources as I can't find resources def '{resource_file}'")
-            resources = Resources()
-        else:
-            logger.warning(f"Cannot open resources definition file '{resource_file}'")
-            sys.exit(-1)
-
+    resources = find_resources_file(service_dir)
     controller = BatchController(image=image, command=command, resources=resources)
     return create_service_definition(service_description, fn, controller, service_id)
 
@@ -120,3 +105,25 @@ def create_service_definition(
 
     sd = ServiceDefinition(**sd_data)
     return sd
+
+def find_resources_file(service_dir: str) -> Resources:
+    using_def_resource_file = False
+    resource_file = os.getenv("IVCAP_RESOURCES_FILE")
+    if resource_file == None:
+        using_def_resource_file = True
+        resource_file = os.path.join(service_dir, DEF_RESOURCE_FILE)
+        if not (os.path.exists(resource_file) and os.access(resource_file, os.R_OK)):
+            resource_file = DEF_RESOURCE_FILE
+
+    if os.path.exists(resource_file) and os.access(resource_file, os.R_OK):
+        rd = file_to_json(resource_file)
+        resources = Resources(**rd)
+    else:
+        if using_def_resource_file:
+            # should not use logger as this is likely piped into some other command
+            print(f"WARNING: Using default resources as I can't find resources def '{resource_file}'", file=sys.stderr)
+            resources = Resources()
+        else:
+            print(f"FATAL: Cannot open resources definition file '{resource_file}'", file=sys.stderr)
+            sys.exit(-1)
+    return resources
