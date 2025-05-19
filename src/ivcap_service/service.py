@@ -74,7 +74,7 @@ def wait_for_work(worker_fn: Callable, input_model: type[BaseModel], output_mode
             finally:
                 if result is not None:
                     logger.info(f"job {job_id} finished, sending result message")
-                    push_result(result, job_id, None, logger)
+                    push_result(result, job_id, None)
 
     except requests.exceptions.RequestException as e:
         logger.warning(f"Error during request: {e}")
@@ -176,6 +176,10 @@ def start_batch_service(
         from .utils import file_to_json
         job = file_to_json(args.test_file)
         resp = do_job(job, worker_fn, input_model, output_model, logger)
+
+        # res = verify_result(resp, "0000-000", logger)
+        # push_result(res, "0000-000", None)
+
         print(resp.model_dump_json(indent=2, by_alias=True))
     else:
         wait_for_work(worker_fn, input_model, output_model, logger)
