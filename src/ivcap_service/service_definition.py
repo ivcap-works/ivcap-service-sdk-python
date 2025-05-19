@@ -125,13 +125,14 @@ def find_resources_file() -> Resources:
     return resources
 
 def find_command() -> List[str]:
-    if not(os.path.exists("Dockerfile") and os.access("Dockerfile", os.R_OK)):
-        print("FATAL: Cannot find 'Dockerfile'", file=sys.stderr)
+    docker_file = os.getenv("DOCKERFILE", "Dockerfile")
+    if not(os.path.exists(docker_file) and os.access(docker_file, os.R_OK)):
+        print(f"FATAL: Cannot find Dockerfile '{docker_file}'", file=sys.stderr)
         sys.exit(-1)
 
-    entry = extract_line("Dockerfile", "ENTRYPOINT")
+    entry = extract_line(docker_file, "ENTRYPOINT")
     if not entry:
-        print("FATAL: Cannot find 'ENTRYPOINT' in 'Dockerfile'", file=sys.stderr)
+        print(f"FATAL: Cannot find 'ENTRYPOINT' in '{docker_file}'", file=sys.stderr)
         sys.exit(-1)
     cs = entry[len("ENTRYPOINT"):].strip()
     cmd = ast.literal_eval(cs)
