@@ -7,6 +7,7 @@ import json
 import logging
 from logging.config import dictConfig
 import os
+from typing import Any
 
 LOGGING_CONFIG={}
 
@@ -16,12 +17,16 @@ def getLogger(name: str) -> logging.Logger:
 def service_log_config():
     return LOGGING_CONFIG
 
+def set_service_log_config(config: Any):
+    global LOGGING_CONFIG
+    LOGGING_CONFIG = config
+    dictConfig(LOGGING_CONFIG)
+
 def logging_init(cfg_path: str=None):
     if not cfg_path:
         script_dir = os.path.dirname(__file__)
         cfg_path = os.path.join(script_dir, "logging.json")
 
     with open(cfg_path, 'r') as file:
-        global LOGGING_CONFIG
-        LOGGING_CONFIG = json.load(file)
-        dictConfig(LOGGING_CONFIG)
+        config = json.load(file)
+        set_service_log_config(config)

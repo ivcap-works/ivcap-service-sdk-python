@@ -6,7 +6,7 @@
 """ A library for building services for the IVCAP platform"""
 
 from .version import __version__
-from .logger import getLogger, logging_init, service_log_config
+from .logger import getLogger, logging_init, service_log_config, set_service_log_config
 from .service import start_batch_service, Service
 from .service_definition import create_service_definition, find_resources_file, find_command, IMAGE_PLACEHOLDER, Resources, ServiceDefinition
 from .tool_definition import create_tool_definition, print_tool_definition, ToolDefinition
