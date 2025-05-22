@@ -48,7 +48,7 @@ class ServiceDefinition(BaseModel):
     contact: ServiceContact = Field(description="contact details of the service")
     license: Optional[ServiceLicense] = Field(None, description="license details of the service")
     policy: str = Field(default=DEF_POLICY)
-    controller_schema: str = Field(default=BATCH_CONTROLLER_SCHEMA)
+    controller_schema: str
     controller: Any
 
 def print_batch_service_definition(
@@ -74,11 +74,12 @@ def create_batch_service_definition(
     command = find_command()
     resources = find_resources_file()
     controller = BatchController(image=image, command=command, resources=resources)
-    return create_service_definition(service_description, fn, controller, service_id)
+    return create_service_definition(service_description, fn, BATCH_CONTROLLER_SCHEMA, controller, service_id)
 
 def create_service_definition(
     service_description: Service,
     fn: Callable[..., Any],
+    controller_schema: str,
     controller: Any,
     service_id: Optional[str] = None,
     description: Optional[str] = None,
@@ -98,6 +99,7 @@ def create_service_definition(
         "policy": policy,
         "contact": contact,
         "license": license,
+        "controller_schema": controller_schema,
         "controller": controller,
     }
 

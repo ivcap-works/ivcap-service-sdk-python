@@ -17,7 +17,7 @@ test:
 	poetry run pytest ${ROOT_DIR}/tests/ --cov=ivcap_service --cov-report=xml
 
 add-license:
-	licenseheaders -t .license.tmpl -y $(shell date +%Y) -f src/ivcap_service/*.py
+	poetry run licenseheaders -t .license.tmpl -y $(shell date +%Y) -f ivcap_service/*.py
 
 clean:
 	rm -rf *.egg-info

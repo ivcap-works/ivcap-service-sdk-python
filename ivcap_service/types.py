@@ -4,12 +4,17 @@
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
 import io
-from typing import Any, Callable, Generic, List, Optional, TypeVar, Union, BinaryIO
+from typing import Any, Optional, Union
 from dataclasses import dataclass
 from pydantic import Field, BaseModel
 
 class ExecutionContext:
     pass
+
+@dataclass
+class JobContext:
+    job_id: Optional[str]
+    job_authorization: Optional[str]
 
 @dataclass
 class BinaryResult():

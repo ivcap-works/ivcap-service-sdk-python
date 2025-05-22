@@ -14,9 +14,11 @@ from urllib.parse import urlunparse
 
 import os
 import sys
+import httpx
 from pydantic import BaseModel, Field
 import requests
 
+from .context import JobContext, otel_instrument, set_context
 from .ivcap import get_ivcap_url, push_result, verify_result
 from .logger import getLogger
 from .types import ExecutionError
@@ -35,14 +37,18 @@ class ServiceLicense(BaseModel):
 
 class Service(BaseModel):
     name: str = Field(description="name of the service")
-    version: str = Field(version=os.environ.get("VERSION", "???"), description="version of the service")
+    version: Optional[str] = Field(os.environ.get("VERSION", "???"), description="version of the service")
     contact: ServiceContact = Field(description="contact details of the service")
     license: Optional[ServiceLicense] = Field(None, description="license of the service")
 
 # Number of attempt to request a new job before giving up
 MAX_REQUEST_JOB_ATTEMPTS = 4
 
+exec_context = JobContext(job_id=None, job_authorization=None)
+
 def wait_for_work(worker_fn: Callable, input_model: type[BaseModel], output_model: type[BaseModel], logger: Logger):
+    global exec_context
+
     ivcap_url = get_ivcap_url()
     if ivcap_url is None:
         logger.warning(f"no ivcap url found - cannot request work")
@@ -62,6 +68,7 @@ def wait_for_work(worker_fn: Callable, input_model: type[BaseModel], output_mode
                     sys.exit(0)
 
                 job_id = job.get("id", "unknown_job_id")  # Provide a default value if "id" is missing
+                exec_context.job_id = response.headers.get("job-id")
                 result = do_job(job, worker_fn, input_model, output_model, logger)
                 result = verify_result(result, job_id, logger)
             except Exception as e:
@@ -82,12 +89,14 @@ def wait_for_work(worker_fn: Callable, input_model: type[BaseModel], output_mode
         logger.warning(f"Error processing job: {e}")
 
 def fetch_job(url: str, logger: Logger) -> Any:
+    global exec_context
     wait_time = 1
     attempt = 0
     while attempt < MAX_REQUEST_JOB_ATTEMPTS:
         try:
-            response = requests.get(url)
+            response = httpx.get(url)
             response.raise_for_status()
+            exec_context.job_authorization = response.headers.get("authorization")
             return response
         except Exception as e:
             attempt += 1
@@ -182,4 +191,7 @@ def start_batch_service(
 
         print(resp.model_dump_json(indent=2, by_alias=True))
     else:
+        global exec_context
+        otel_instrument(with_telemetry, None, logger)
+        set_context(lambda: exec_context)
         wait_for_work(worker_fn, input_model, output_model, logger)
