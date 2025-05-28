@@ -1,3 +1,8 @@
+#
+# Copyright (c) 2025 Commonwealth Scientific and Industrial Research Organisation (CSIRO). All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file. See the AUTHORS file for names of contributors.
+#
 import time
 from typing import Any, List, Optional
 from ag_ui.core.events import (

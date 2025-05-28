@@ -14,3 +14,4 @@ from .utils import get_function_return_type, get_input_type
 from .ivcap import get_ivcap_url, verify_result, push_result
 from .types import IvcapResult, BinaryResult, ExecutionError, JobContext
 from .context import otel_instrument, set_context
+from .events import EventReporter
