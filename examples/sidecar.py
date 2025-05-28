@@ -3,8 +3,18 @@ from fastapi.responses import JSONResponse
 import json
 import os
 import uvicorn
+from urllib.parse import unquote
 
 app = FastAPI()
+
+@app.middleware("http")
+async def decode_path(request: Request, call_next):
+    path = request.url.path
+    if path.startswith("//ivcap.local"):
+        p = path[len('//ivcap.local'):]
+        request.scope["path"] = p
+    response = await call_next(request)
+    return response
 
 TEST_LOAD_PATH = os.path.join(os.path.dirname(__file__), "test-batch/tests/load_1.json")
 

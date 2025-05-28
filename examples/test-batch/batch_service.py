@@ -4,7 +4,7 @@ import math
 from time import time
 from typing import Optional
 from pydantic import BaseModel, Field
-from ivcap_service import getLogger, logging_init
+from ivcap_service import getLogger, logging_init, JobContext
 from ivcap_service.service import Service
 
 this_dir = os.path.dirname(__file__)
@@ -40,7 +40,7 @@ class Result(BaseModel):
 import time
 import math
 
-def consume_compute(req: Request) -> Result:
+def consume_compute(req: Request, ctxt: JobContext) -> Result:
     """
     Consumes a significant amount of CPU for a specified duration, useful for testing.
 
@@ -63,6 +63,7 @@ def consume_compute(req: Request) -> Result:
     if not 0 <= target_cpu_percent <= 100:
         raise ValueError("target_cpu_percent must be between 0 and 100")
 
+    ctxt.report.step_started("consume_compute", f"Consuming CPU for {duration_seconds} seconds at {target_cpu_percent}%")
     start_time = time.time()
     end_time = start_time + duration_seconds
     logger.debug(f"Consuming CPU for {duration_seconds} seconds, targeting {target_cpu_percent}% per core...")
@@ -92,7 +93,9 @@ def consume_compute(req: Request) -> Result:
         loop_count += 1
 
     run_time = time.time() - start_time
-    logger.info(f"CPU consumption finished after {run_time} sec (loops: {loop_count})")
+    msg = f"CPU consumption finished after {run_time} sec (loops: {loop_count})"
+    logger.info(msg)
+    ctxt.report.step_finished("consume_compute", msg)
     return Result(msg="CPU consumption finished.", run_time=run_time)
 
 # add_tool_api_route(app, "/", tester, opts=ToolOptions(tags=["Test Tool"], service_id="/"), context=ExecCtxt(msg="Boo!"))

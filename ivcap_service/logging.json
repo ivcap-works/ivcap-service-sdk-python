@@ -23,6 +23,9 @@
   "loggers": {
     "app": {
       "level": "DEBUG"
+    },
+    "event": {
+      "level": "DEBUG"
     }
   },
   "disable_existing_loggers": false

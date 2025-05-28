@@ -83,10 +83,10 @@ def _modify_request(request, context_f: ExecContextF, logger):
     is_local_url = hostname.endswith(".local") or hostname.endswith(".minikube") or hostname.endswith(".ivcap.net")
     if not is_local_url:
         request.url = _wrap_proxy_url(url, headers)
-    job_id = ctxt.job_id
+    job_id = ctxt.job_id if ctxt != None else None
     if job_id != None: # OTEL messages won't have a jobID
         headers["Ivcap-Job-Id"] = job_id
-    auth = ctxt.job_authorization
+    auth = ctxt.job_authorization if ctxt != None else None
     if auth != None and is_local_url:
         logger.debug(f"Adding 'Authorization' header")
         headers["Authorization"] = auth

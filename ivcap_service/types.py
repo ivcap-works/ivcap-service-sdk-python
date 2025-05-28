@@ -6,15 +6,19 @@
 import io
 from typing import Any, Optional, Union
 from dataclasses import dataclass
-from pydantic import Field, BaseModel
+from pydantic import ConfigDict, Field, BaseModel
+
+from .events import EventReporter
 
 class ExecutionContext:
     pass
 
-@dataclass
-class JobContext:
+class JobContext(BaseModel):
     job_id: Optional[str]
+    report: EventReporter
     job_authorization: Optional[str]
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 @dataclass
 class BinaryResult():
