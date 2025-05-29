@@ -19,13 +19,21 @@ from .logger import getLogger
 logger = getLogger("event")
 
 class EventReporter:
+    def __init__(self, job_id: str):
+        self.job_id = job_id
+
+
     def _send(self, event: BaseEvent):
         if event.timestamp is None:
             event.timestamp = int(time.time() * 1000)
-        logger.debug(event.model_dump_json())
+        logger.debug(f"{self.job_id}: {event.model_dump_json()}")
 
     def _emit(self, cls, event_type, **kwargs):
-        self._send(cls(type=event_type, **kwargs))
+        try:
+            self._send(cls(type=event_type, **kwargs))
+        except Exception as e:
+            logger.error(f"Failed to emit event {event_type}: {e}")
+            logger.debug(f"Event data: {kwargs}")
 
     def text_message_start(self, message_id: str, role: str, raw_event: Optional[Any] = None, timestamp: Optional[int] = None):
         self._emit(TextMessageStartEvent, EventType.TEXT_MESSAGE_START, message_id=message_id, role=role, raw_event=raw_event, timestamp=timestamp)
