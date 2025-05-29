@@ -48,8 +48,12 @@ class ServiceDefinition(BaseModel):
     contact: ServiceContact = Field(description="contact details of the service")
     license: Optional[ServiceLicense] = Field(None, description="license details of the service")
     policy: str = Field(default=DEF_POLICY)
-    controller_schema: str
+    controller_schema: str = Field(description="URN identifying the controller for this service", alias="controller-schema")
     controller: Any
+
+    model_config = {
+        "populate_by_name": True,
+    }
 
 def print_batch_service_definition(
     service_description: Service,
