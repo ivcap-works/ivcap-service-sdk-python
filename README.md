@@ -11,14 +11,7 @@ to simplify developing services to be deployed on IVCAP.
 > **Note:** A template git repository using this library can be found on github
 [ivcap-works/ivcap-python-ai-tool-template](https://github.com/ivcap-works/ivcap-python-ai-tool-template). You may clone that and start from there.
 
-## Content
-
-* [Register a Tool Function](#register)
-* [Start the Service](#start)
-* [JSON-RPC Middleware](#json-rpc)
-* [Try-Later Middleware](#try-later)
-
-### Describe the service <a name="register"></a>
+## Describe the service <a name="register"></a>
 
 ```python
 logging_init()
@@ -61,7 +54,7 @@ def some_service(req: Request) -> Result:
     return Result(...)
 ```
 
-### Start the Service <a name="start"></a>
+## Start the Service <a name="start"></a>
 
 ```python
 if __name__ == "__main__":
