@@ -1,0 +1,28 @@
+[project]
+name = "batch-tester"
+version = "0.1.0"
+description = "A batch tool primarily used for load testing."
+authors = [
+    {name = "Max Ott",email = "max.ott@data61.csiro.au"}
+]
+# authors = ["Max Ott <max.ott@data61.csiro.au>"]
+# readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.10,<4.0"
+pydantic = ">=2.11.4,<3.0.0"
+#ivcap_service = { path = "../.." }
+ivcap_service = ">=0.5.7,<1.0.0"
+
+[tool.poetry-plugin-ivcap]
+service-file = "batch_service.py"
+service-id = "urn:ivcap:service:3678e5f1-8fb7-5ad6-b65b-8bd8c23c0948"
+service-type = "batch"
+# policy = "urn:ivcap:policy:ivcap.open.metadata"
+# docker
+#docker-run-opts = []
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

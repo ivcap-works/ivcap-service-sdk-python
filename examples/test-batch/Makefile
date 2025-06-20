@@ -17,7 +17,7 @@ run:
 	env VERSION=$(VERSION) \
 		PYTHONPATH="" \
 		IVCAP_BASE_URL="http://ivcap.local" \
-		python ${PROJECT_DIR}/batch_service.py --test-file ${PROJECT_DIR}/tests/load_1.json
+		poetry run python ${PROJECT_DIR}/batch_service.py --test-file ${PROJECT_DIR}/tests/load_1.json
 
 run-with-proxy:
 	env VERSION=$(VERSION) PYTHONPATH="" \

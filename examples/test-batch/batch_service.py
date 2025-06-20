@@ -31,6 +31,8 @@ class Request(BaseModel):
     jschema: str = Field("urn:sd:schema:batch-tester.request.1", alias="$schema")
     duration_seconds: Optional[int] = Field(10, description="seconds this job should run")
     target_cpu_percent: Optional[int] = Field(80, description="percentage load on CPU")
+    throw_exception_at_end: Optional[bool] = Field(False, description="if True, throw an exception at the end of the job")
+    exit_code_at_end: Optional[int] = Field(None, description="if set, exit with this code after the job is done")
 
 class Result(BaseModel):
     jschema: str = Field("urn:sd:schema:batch-tester.1", alias="$schema")
@@ -94,6 +96,17 @@ def consume_compute(req: Request, ctxt: JobContext) -> Result:
 
     run_time = time.time() - start_time
     msg = f"CPU consumption finished after {run_time} sec (loops: {loop_count})"
+    if req.throw_exception_at_end:
+        msg += " - throwing an exception as requested."
+        ctxt.report.step_finished("consume_compute", msg)
+        raise RuntimeError(msg)
+
+    if req.exit_code_at_end is not None:
+        msg += f" - exiting with code {req.exit_code_at_end} as requested."
+        ctxt.report.step_finished("consume_compute", msg)
+        logger.info(msg)
+        sys.exit(req.exit_code_at_end)
+
     logger.info(msg)
     ctxt.report.step_finished("consume_compute", msg)
     return Result(msg="CPU consumption finished.", run_time=run_time)

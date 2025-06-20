@@ -5,7 +5,6 @@
   },
   "requests": {
     "cpu": "500m",
-    "memory": "1Gi",
-    "ephemeral_storage": "550m"
+    "memory": "1Gi"
   }
 }
