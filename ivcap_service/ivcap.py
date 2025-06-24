@@ -6,7 +6,7 @@
 import json
 import os
 import traceback
-from typing import Optional, Union, BinaryIO
+from typing import Callable, Optional, Union, BinaryIO
 
 from time import sleep
 from urllib.parse import urlparse, urlunparse
@@ -20,6 +20,21 @@ logger = getLogger("ivcap")
 
 # Number of attempt to deliver job result before giving up
 MAX_DELIVER_RESULT_ATTEMPTS = 4
+
+OnResultF = Callable[[Union[IvcapResult, ExecutionError], str, Optional[str]], None]
+
+result_callback: OnResultF = None
+
+def set_result_callback(cbk: OnResultF):
+    """
+    Sets the result handler function to be used for processing job results.
+
+    Args:
+        handler: A callable that takes three arguments: the result, job_id,
+        and the auth token of the incoming request.
+    """
+    global result_callback
+    result_callback = cbk
 
 
 def verify_result(result: any, job_id: str, logger) -> any:
@@ -74,9 +89,14 @@ def verify_result(result: any, job_id: str, logger) -> any:
 
 def push_result(result: Union[IvcapResult, ExecutionError], job_id: str, authorization: Optional[str]=None):
     """Actively push result to sidecar, fail quietly."""
+    if result_callback is not None:
+        # If a result handler is set, call it as well
+        result_callback(result, job_id, authorization)
+
     ivcap_url = get_ivcap_url()
     if ivcap_url is None:
-        logger.warning(f"{job_id}: no ivcap url found - cannot push result")
+        if result_callback is None:
+            logger.warning(f"{job_id}: no ivcap url found - cannot push result")
         return
     url = urlunparse(ivcap_url._replace(path=f"/results/{job_id}"))
 

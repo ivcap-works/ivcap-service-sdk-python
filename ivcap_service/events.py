@@ -4,7 +4,7 @@
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
 import time
-from typing import Any, List, Optional
+from typing import Any, Callable, List, Optional
 from ag_ui.core.events import (
     TextMessageStartEvent, TextMessageContentEvent, TextMessageEndEvent,
     ToolCallStartEvent, ToolCallArgsEvent, ToolCallEndEvent,
@@ -18,6 +18,38 @@ from .logger import getLogger
 
 logger = getLogger("event")
 
+event_reporter_factory = None
+
+EventFactoryF = Callable[[str, Optional[str]], 'EventReporter']
+def set_event_reporter_factory(factory: EventFactoryF):
+    """
+    Set afactory function for creating specialised EventReporter instances.
+
+    Args:
+        factory (EventFactoryF): A factory function that takes a job ID and an optional job authorization token,
+        and returns an instance of EventReporter. If None, the default EventReporter will be used.
+    """
+    global event_reporter_factory
+    if factory is not None and not callable(factory):
+        raise ValueError("Factory must be a callable that returns an EventReporter instance.")
+    event_reporter_factory = factory
+
+def create_event_reporter(job_id: str, job_authorization: Optional[str] = None) -> 'EventReporter':
+    """
+    Create an EventReporter instance for the given job ID.
+
+
+    Args:
+        job_id (str): The unique identifier for the job.
+        job_authorization (Optional[str]): Optional authorization token for the job.
+
+    Returns:
+        EventReporter: An instance of EventReporter initialized with the job ID.
+    """
+    if event_reporter_factory is not None:
+        return event_reporter_factory(job_id, job_authorization)
+    return EventReporter(job_id)
+
 class EventReporter:
     def __init__(self, job_id: str):
         self.job_id = job_id
@@ -26,14 +58,14 @@ class EventReporter:
     def _send(self, event: BaseEvent):
         if event.timestamp is None:
             event.timestamp = int(time.time() * 1000)
-        logger.debug(f"{self.job_id}: {event.model_dump_json()}")
+
+        logger.debug(f"{self.job_id}: {event.model_dump_json(exclude_none=True)}")
 
     def _emit(self, cls, event_type, **kwargs):
         try:
             self._send(cls(type=event_type, **kwargs))
         except Exception as e:
             logger.error(f"Failed to emit event {event_type}: {e}")
-            logger.debug(f"Event data: {kwargs}")
 
     def text_message_start(self, message_id: str, role: str, raw_event: Optional[Any] = None, timestamp: Optional[int] = None):
         self._emit(TextMessageStartEvent, EventType.TEXT_MESSAGE_START, message_id=message_id, role=role, raw_event=raw_event, timestamp=timestamp)

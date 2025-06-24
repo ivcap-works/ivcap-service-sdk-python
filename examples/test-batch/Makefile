@@ -8,7 +8,7 @@ SERVICE_URL=http://localhost:8099
 HTTP_PROXY=http://localhost:9999
 TIMEOUT=3
 
-include Makefile.common
+#include Makefile.common
 
 # fix service ID
 SERVICE_ID=urn:ivcap:service:3678e5f1-8fb7-5ad6-b65b-8bd8c23c0948
