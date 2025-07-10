@@ -1,0 +1,31 @@
+{
+  "$schema": "urn:ivcap:schema.service.2",
+  "$id": "urn:ivcap:service:3678e5f1-8fb7-5ad6-b65b-8bd8c23c0999",
+  "name": "Batch service example - bad",
+  "description": "An example of a service which fails immedaitely doue to mis-configured service description",
+  "parameters": [],
+  "contact": {
+    "name": "Mary Doe",
+    "email": "mary.doe@acme.au"
+  },
+  "policy": "urn:ivcap:policy:ivcap.open.service",
+  "controller-schema": "urn:ivcap:schema.service.batch.1",
+  "controller": {
+    "$schema": "urn:ivcap:schema.service.batch.1",
+    "image": "45a06508-5c3a-4678-8e6d-e6399bf27538/batch_tester_amd64:d20e1d6",
+    "command": [
+      "python",
+      "/app/bad.py"
+    ],
+    "resources": {
+      "limits": {
+        "cpu": "500m",
+        "memory": "1Gi"
+      },
+      "requests": {
+        "cpu": "500m",
+        "memory": "1Gi"
+      }
+    }
+  }
+}

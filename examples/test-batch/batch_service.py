@@ -33,6 +33,7 @@ class Request(BaseModel):
     target_cpu_percent: Optional[int] = Field(80, description="percentage load on CPU")
     throw_exception_at_end: Optional[bool] = Field(False, description="if True, throw an exception at the end of the job")
     exit_code_at_end: Optional[int] = Field(None, description="if set, exit with this code after the job is done")
+    create_oom_error_at_end: Optional[bool]
 
 class Result(BaseModel):
     jschema: str = Field("urn:sd:schema:batch-tester.1", alias="$schema")
@@ -106,6 +107,13 @@ def consume_compute(req: Request, ctxt: JobContext) -> Result:
         ctxt.report.step_finished("consume_compute", msg)
         logger.info(msg)
         sys.exit(req.exit_code_at_end)
+
+    if req.create_oom_error_at_end:
+        # This script will eventually raise a MemoryError or be killed by the OS
+        data = []
+        while True:
+            # Allocate 10MB chunks repeatedly
+            data.append(' ' * 10_000_000)
 
     logger.info(msg)
     ctxt.report.step_finished("consume_compute", msg)
