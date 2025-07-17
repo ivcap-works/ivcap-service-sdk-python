@@ -14,9 +14,9 @@ class ExecutionContext:
     pass
 
 class JobContext(BaseModel):
-    job_id: Optional[str]
-    report: EventReporter
-    job_authorization: Optional[str]
+    job_id: Optional[str] = None
+    report: Optional[EventReporter] = None
+    job_authorization: Optional[str] = None
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
