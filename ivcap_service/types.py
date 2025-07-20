@@ -8,6 +8,8 @@ from typing import Any, Optional, Union
 from dataclasses import dataclass
 from pydantic import ConfigDict, Field, BaseModel
 
+from ivcap_client import IVCAP
+
 from .events import EventReporter
 
 class ExecutionContext:
@@ -17,6 +19,7 @@ class JobContext(BaseModel):
     job_id: Optional[str] = None
     report: Optional[EventReporter] = None
     job_authorization: Optional[str] = None
+    ivcap: Optional[IVCAP] = None
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
