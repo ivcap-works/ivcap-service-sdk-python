@@ -26,11 +26,11 @@ def get_tags_pointing_at_head():
 def main():
     version = get_version_from_pyproject()
     tags = get_tags_pointing_at_head()
-    expected_tags = [version, f"v{version}"]
+    expected_tags = [f"v{version}"]
 
     if not any(tag in expected_tags for tag in tags):
         print(
-            f"FAIL: No tag matching version '{version}' or 'v{version}' found on current commit.",
+            f"FAIL: No tag matching version 'v{version}' found on current commit.",
             file=sys.stderr,
         )
         sys.exit(1)
