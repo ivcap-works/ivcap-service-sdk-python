@@ -23,10 +23,21 @@ jobs:
       - name: Install package
         run: poetry install
 
+      - name: Check for tests directory
+        id: check_tests
+        run: |
+          if [ -d tests ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Test with pytest
+        if: steps.check_tests.outputs.exists == 'true'
         run: poetry run pytest tests/ --cov=ivcap_sdk_service --cov-report=xml
 
       - name: Use Codecov to track coverage
+        if: steps.check_tests.outputs.exists == 'true'
         uses: codecov/codecov-action@v2
         with:
           files: ./coverage.xml # coverage report
