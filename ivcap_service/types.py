@@ -6,7 +6,7 @@
 import io
 from typing import Any, Optional, Union
 from dataclasses import dataclass
-from pydantic import ConfigDict, Field, BaseModel
+from pydantic import ConfigDict, Field, BaseModel, PrivateAttr
 
 from ivcap_client import IVCAP
 
@@ -19,9 +19,16 @@ class JobContext(BaseModel):
     job_id: Optional[str] = None
     report: Optional[EventReporter] = None
     job_authorization: Optional[str] = None
-    ivcap: Optional[IVCAP] = None
+
+    _ivcap: Optional[IVCAP] = PrivateAttr(None)
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    @property
+    def ivcap(self) -> Optional[IVCAP]:
+        if self._ivcap is None:
+            self._ivcap = IVCAP()
+        return self._ivcap
 
 @dataclass
 class BinaryResult():

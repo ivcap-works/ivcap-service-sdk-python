@@ -128,7 +128,7 @@ def do_job(
     mreq = svc_ctxt.input_model(**jc)
     logger.info(f"{job_id}: calling worker with - {mreq}")
     reporter = create_event_reporter(job_id=job_id, job_authorization=job_authorization)
-    svc_ctxt.job_context = JobContext(job_id=job_id, job_authorization=job_authorization, report=reporter, ivcap=IVCAP())
+    svc_ctxt.job_context = JobContext(job_id=job_id, job_authorization=job_authorization, report=reporter)
     try:
         f = svc_ctxt.worker_fn
         if svc_ctxt.fn_add_job_context is None:
