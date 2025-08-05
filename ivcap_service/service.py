@@ -21,13 +21,13 @@ import requests
 from ivcap_client import IVCAP
 
 from .context import JobContext, otel_instrument, set_context
-from .ivcap import get_ivcap_url, push_result, verify_result
+from .ivcap import SidecarReporter, get_ivcap_url, push_result, verify_result
 from .logger import getLogger
 from .types import ExecutionError
 from .utils import get_function_return_type, get_input_type
 from .version import get_version
 from .tool_definition import print_tool_definition  # Import the requests library
-from .events import EventReporter, create_event_reporter
+from .events import EventReporter, create_event_reporter, set_event_reporter_factory
 
 class ServiceContact(BaseModel):
     name: str = Field(description="name of the contact person")
@@ -192,16 +192,17 @@ def start_batch_service(
 
     logger.info(f"{service_description.name} - {os.getenv('VERSION')} - v{get_version()}")
 
+    set_event_reporter_factory(SidecarReporter)
     svc_ctxt = create_service_context(worker_fn, logger)
     if args.test_file is not None:
         from .utils import file_to_json
         job = file_to_json(args.test_file)
-        resp = do_job(job, svc_ctxt)
+        res = do_job(job, svc_ctxt)
+        if get_ivcap_url() is not None:
+            result = verify_result(res, job['id'], logger)
+            push_result(result, job['id'], None)
 
-        # res = verify_result(resp, "0000-000", logger)
-        # push_result(res, "0000-000", None)
-
-        print(resp.model_dump_json(indent=2, by_alias=True))
+        print(res.model_dump_json(indent=2, by_alias=True))
     else:
         otel_instrument(with_telemetry, None, logger)
         set_context(lambda: svc_ctxt.job_context)

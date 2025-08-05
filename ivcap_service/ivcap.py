@@ -12,7 +12,9 @@ from time import sleep
 from urllib.parse import urlparse, urlunparse
 import httpx
 from pydantic import BaseModel, HttpUrl
+from ag_ui.core.events import BaseEvent
 
+from .events import EventReporter
 from .logger import getLogger
 from .types import BinaryResult, ExecutionError, IvcapResult
 
@@ -153,6 +155,33 @@ def push_result(result: Union[IvcapResult, ExecutionError], job_id: str, authori
 
     logger.warning(f"{job_id}: giving up pushing result after {attempt} attempts")
 
+
+class SidecarReporter(EventReporter):
+    def __init__(self, job_id: str, job_authorization: str):
+        super().__init__(job_id, job_authorization)
+        self._ivcap_url = get_ivcap_url()
+
+    def _send(self, event: BaseEvent):
+        if self._ivcap_url is None:
+            logger.debug(f"{self.job_id}: {event.model_dump_json(exclude_none=True)}")
+            return
+
+        url = urlunparse(self._ivcap_url._replace(path=f"/events/{self.job_id}"))
+        headers = {"Content-Type": "application/json"}
+        if not (self.job_authorization == None or self.job_authorization == ""):
+            headers["Authorization"] = self.job_authorization
+        try:
+            m = event.model_dump()
+            m["$schema"] = "urn:ag-ui:schema:event.1"
+            data = json.dumps(m)
+            response = httpx.post(
+                url=url,
+                headers=headers,
+                data=data,
+            )
+            response.raise_for_status()
+        except Exception as e:
+            logger.warning(f"could not deliver event - {e}")
 
 def get_ivcap_url() -> HttpUrl:
     """

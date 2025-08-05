@@ -3,8 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
+from contextlib import contextmanager
 import time
-from typing import Any, Callable, List, Optional
+import traceback
+from typing import Any, Callable, Generator, List, Optional
 from ag_ui.core.events import (
     TextMessageStartEvent, TextMessageContentEvent, TextMessageEndEvent,
     ToolCallStartEvent, ToolCallArgsEvent, ToolCallEndEvent,
@@ -13,6 +15,7 @@ from ag_ui.core.events import (
     RunErrorEvent, StepStartedEvent, StepFinishedEvent, EventType, BaseEvent
 )
 from ag_ui.core.types import Message, State
+
 
 from .logger import getLogger
 
@@ -48,22 +51,37 @@ def create_event_reporter(job_id: str, job_authorization: Optional[str] = None) 
     """
     if event_reporter_factory is not None:
         return event_reporter_factory(job_id, job_authorization)
-    return EventReporter(job_id)
+    return EventReporter(job_id, job_authorization)
+
+class EventContext:
+    def __init__(self, event_name:str):
+        self._event_name = event_name
+        self._exit_msg = None
+        self._exit_timestamp = None
+
+    def finished(self, msg: Optional[Any] = None, timestamp: Optional[int] = None):
+        self._exit_msg = msg
+        self._exit_timestamp = timestamp
+
+    def _finished(self, finish_fn):
+        finish_fn(self._event_name, self._exit_msg, self._exit_timestamp)
+
+EventCtxtGenerator = Generator[EventContext, None, None]
 
 class EventReporter:
-    def __init__(self, job_id: str):
+    def __init__(self, job_id: str, job_authorization: str):
         self.job_id = job_id
-
+        self.job_authorization = job_authorization
 
     def _send(self, event: BaseEvent):
-        if event.timestamp is None:
-            event.timestamp = int(time.time() * 1000)
-
         logger.debug(f"{self.job_id}: {event.model_dump_json(exclude_none=True)}")
 
     def _emit(self, cls, event_type, **kwargs):
         try:
-            self._send(cls(type=event_type, **kwargs))
+            event = cls(type=event_type, **kwargs)
+            if event.timestamp is None:
+                    event.timestamp = int(time.time() * 1000)
+            self._send(event)
         except Exception as e:
             logger.error(f"Failed to emit event {event_type}: {e}")
 
@@ -114,3 +132,26 @@ class EventReporter:
 
     def step_finished(self, step_name: str, raw_event: Optional[Any] = None, timestamp: Optional[int] = None):
         self._emit(StepFinishedEvent, EventType.STEP_FINISHED, step_name=step_name, raw_event=raw_event, timestamp=timestamp)
+
+    def step(self, step_name, raw_event=None, timestamp=None):
+        return self._event_scope(step_name, self.step_started, self.step_finished, raw_event, timestamp)
+
+    @contextmanager
+    def _event_scope(
+        self,
+        event_name: str,
+        start_fn: Callable[[str, Optional[Any], Optional[int]], None],
+        finish_fn: Callable[[str, Optional[Any], Optional[int]], None],
+        raw_event: Optional[Any] = None,
+        timestamp: Optional[int] = None
+    ) -> EventCtxtGenerator:
+        ctxt = EventContext(event_name)
+        start_fn(event_name, raw_event, timestamp)
+        try:
+            yield ctxt
+        except Exception as e:
+            import traceback
+            trace = traceback.format_exc()
+            self.run_error(f"exception in event '{event_name}' - {str(e)}", trace)
+            raise e
+        ctxt._finished(finish_fn)
