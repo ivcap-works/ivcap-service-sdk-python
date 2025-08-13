@@ -3,6 +3,7 @@ SERVICE_NAME=test-batch
 
 IVCAP_SERVICE_FILE=service.json
 
+PROJECT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 PORT=8095
 SERVICE_URL=http://localhost:8099
 HTTP_PROXY=http://localhost:9999

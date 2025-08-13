@@ -13,7 +13,7 @@ package-mode = false
 python = ">=3.10,<4.0"
 pydantic = ">=2.11.4,<3.0.0"
 #ivcap_service = { path = "../.." }
-ivcap_service = ">=0.5.7,<1.0.0"
+ivcap_service = "^0.6.3"
 
 [tool.poetry-plugin-ivcap]
 service-file = "batch_service.py"

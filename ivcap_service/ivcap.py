@@ -19,6 +19,7 @@ from .logger import getLogger
 from .types import BinaryResult, ExecutionError, IvcapResult
 
 logger = getLogger("ivcap")
+event_logger = getLogger("ivcap.event")
 
 # Number of attempt to deliver job result before giving up
 MAX_DELIVER_RESULT_ATTEMPTS = 4
@@ -162,8 +163,8 @@ class SidecarReporter(EventReporter):
         self._ivcap_url = get_ivcap_url()
 
     def _send(self, event: BaseEvent):
+        event_logger.debug(f"{self.job_id}: {event.model_dump_json(exclude_none=True)}")
         if self._ivcap_url is None:
-            logger.debug(f"{self.job_id}: {event.model_dump_json(exclude_none=True)}")
             return
 
         url = urlunparse(self._ivcap_url._replace(path=f"/events/{self.job_id}"))

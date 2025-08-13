@@ -33,7 +33,7 @@ class Request(BaseModel):
     target_cpu_percent: Optional[int] = Field(80, description="percentage load on CPU")
     throw_exception_at_end: Optional[bool] = Field(False, description="if True, throw an exception at the end of the job")
     exit_code_at_end: Optional[int] = Field(None, description="if set, exit with this code after the job is done")
-    create_oom_error_at_end: Optional[bool]
+    create_oom_error_at_end: Optional[bool] = Field(False, description="force an OOM error at end of run")
 
 class Result(BaseModel):
     jschema: str = Field("urn:sd:schema:batch-tester.1", alias="$schema")
@@ -66,58 +66,57 @@ def consume_compute(req: Request, ctxt: JobContext) -> Result:
     if not 0 <= target_cpu_percent <= 100:
         raise ValueError("target_cpu_percent must be between 0 and 100")
 
-    ctxt.report.step_started("consume_compute", f"Consuming CPU for {duration_seconds} seconds at {target_cpu_percent}%")
-    start_time = time.time()
-    end_time = start_time + duration_seconds
-    logger.debug(f"Consuming CPU for {duration_seconds} seconds, targeting {target_cpu_percent}% per core...")
+    with ctxt.report.step("consume_compute", f"Consuming CPU for {duration_seconds} seconds at {target_cpu_percent}%") as ectxt:
+        start_time = time.time()
+        end_time = start_time + duration_seconds
+        logger.debug(f"Consuming CPU for {duration_seconds} seconds, targeting {target_cpu_percent}% per core...")
 
-    # Constants to control the workload.  These may need adjustment.
-    base_iterations = 10000  # A starting point for the loop iterations.
-    load_factor = target_cpu_percent / 100.0  # Convert percentage to a fraction.
+        # Constants to control the workload.  These may need adjustment.
+        base_iterations = 10000  # A starting point for the loop iterations.
+        load_factor = target_cpu_percent / 100.0  # Convert percentage to a fraction.
 
-    loop_count = 0
-    while time.time() < end_time:
-        # Adjust the number of iterations to try to hit the target CPU.
-        iterations = int(base_iterations * load_factor)
+        loop_count = 0
+        while time.time() < end_time:
+            # Adjust the number of iterations to try to hit the target CPU.
+            iterations = int(base_iterations * load_factor)
 
-        # A simple loop with some math operations to consume CPU.
-        for i in range(iterations):
-            x = math.sqrt(i * 1.234)
-            y = math.log(x + 1)
-            z = math.pow(y, 2.345)
-            w = math.sin(z)
+            # A simple loop with some math operations to consume CPU.
+            for i in range(iterations):
+                x = math.sqrt(i * 1.234)
+                y = math.log(x + 1)
+                z = math.pow(y, 2.345)
+                w = math.sin(z)
 
-        # A small sleep to prevent the loop from running *too* fast and
-        # potentially starving other processes or causing issues.  The
-        # optimal sleep time may vary by system.  If target_cpu_percent
-        # is very high (e.g., > 90), this might need to be reduced or
-        # eliminated.
-        time.sleep(0.001)
-        loop_count += 1
+            # A small sleep to prevent the loop from running *too* fast and
+            # potentially starving other processes or causing issues.  The
+            # optimal sleep time may vary by system.  If target_cpu_percent
+            # is very high (e.g., > 90), this might need to be reduced or
+            # eliminated.
+            time.sleep(0.001)
+            loop_count += 1
 
-    run_time = time.time() - start_time
-    msg = f"CPU consumption finished after {run_time} sec (loops: {loop_count})"
-    if req.throw_exception_at_end:
-        msg += " - throwing an exception as requested."
-        ctxt.report.step_finished("consume_compute", msg)
-        raise RuntimeError(msg)
+        run_time = time.time() - start_time
+        msg = f"CPU consumption finished after {run_time} sec (loops: {loop_count})"
+        if req.throw_exception_at_end:
+            msg += " - throwing an exception as requested."
+            ctxt.report.step_finished("consume_compute", msg)
+            raise RuntimeError(msg)
 
-    if req.exit_code_at_end is not None:
-        msg += f" - exiting with code {req.exit_code_at_end} as requested."
-        ctxt.report.step_finished("consume_compute", msg)
-        logger.info(msg)
-        sys.exit(req.exit_code_at_end)
+        if req.exit_code_at_end is not None:
+            msg += f" - exiting with code {req.exit_code_at_end} as requested."
+            ctxt.report.step_finished("consume_compute", msg)
+            logger.info(msg)
+            sys.exit(req.exit_code_at_end)
 
-    if req.create_oom_error_at_end:
-        # This script will eventually raise a MemoryError or be killed by the OS
-        data = []
-        while True:
-            # Allocate 10MB chunks repeatedly
-            data.append(' ' * 10_000_000)
+        if req.create_oom_error_at_end:
+            # This script will eventually raise a MemoryError or be killed by the OS
+            data = []
+            while True:
+                # Allocate 10MB chunks repeatedly
+                data.append(' ' * 10_000_000)
 
-    logger.info(msg)
-    ctxt.report.step_finished("consume_compute", msg)
-    return Result(msg="CPU consumption finished.", run_time=run_time)
+        ectxt.finished(msg)
+        return Result(msg="CPU consumption finished.", run_time=run_time)
 
 # add_tool_api_route(app, "/", tester, opts=ToolOptions(tags=["Test Tool"], service_id="/"), context=ExecCtxt(msg="Boo!"))
 # add_tool_api_route(app, "/async", async_tester, opts=ToolOptions(tags=["Test Tool"]))
