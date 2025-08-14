@@ -161,6 +161,7 @@ def _generate_function_description(func: Callable, name: Optional[str] = None, e
         # Get the correct type from the Pydantic model
         field_type = field_info.get('type', None)
 
+        is_optional = False
         # If type is not available in the schema, try to get it from the model's __annotations__
         if field_type is None and hasattr(pydantic_model_class, '__annotations__'):
             annotation = pydantic_model_class.__annotations__.get(field_name)
@@ -179,7 +180,6 @@ def _generate_function_description(func: Callable, name: Optional[str] = None, e
                 field_type = 'Any'
         else:
             # Handle optional fields
-            is_optional = False
             if 'default' in field_info or field_name not in model_schema.get('required', []):
                 is_optional = True
 
