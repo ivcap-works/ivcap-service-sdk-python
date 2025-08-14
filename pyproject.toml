@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ivcap_service"
-version = "0.6.5"
+version = "0.6.6"
 description = "SDK library for building services for the IVCAP platform"
 
 authors = ["Max Ott <max.ott@csiro.au>"]
@@ -18,7 +18,6 @@ opentelemetry-instrumentation-requests = "^0.51b0"
 opentelemetry-instrumentation-httpx = "^0.51b0"
 httpx = "^0.28.1"
 pydantic = "^2.11.4"
-ag-ui-protocol = "^0.1.5"
 ivcap-client = "^0.44.2"
 
 [tool.poetry.group.dev.dependencies]

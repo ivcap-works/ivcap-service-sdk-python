@@ -6,20 +6,19 @@
 import json
 import os
 import traceback
-from typing import Callable, Optional, Union, BinaryIO
+from typing import Callable, Optional, Union, BinaryIO, Any
 
 from time import sleep
 from urllib.parse import urlparse, urlunparse
 import httpx
 from pydantic import BaseModel, HttpUrl
-from ag_ui.core.events import BaseEvent
 
-from .events import EventReporter
+from .events import EventReporter, BaseEvent
 from .logger import getLogger
 from .types import BinaryResult, ExecutionError, IvcapResult
 
 logger = getLogger("ivcap")
-event_logger = getLogger("ivcap.event")
+event_logger = getLogger("app.event")
 
 # Number of attempt to deliver job result before giving up
 MAX_DELIVER_RESULT_ATTEMPTS = 4
@@ -40,7 +39,7 @@ def set_result_callback(cbk: OnResultF):
     result_callback = cbk
 
 
-def verify_result(result: any, job_id: str, logger) -> any:
+def verify_result(result: Any, job_id: str, logger) -> Any:
     if isinstance(result, ExecutionError):
         return result
     if isinstance(result, BaseModel):

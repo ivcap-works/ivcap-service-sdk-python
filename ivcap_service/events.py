@@ -6,18 +6,52 @@
 from contextlib import contextmanager
 import time
 import traceback
-from typing import Any, Callable, Generator, List, Optional
-from ag_ui.core.events import (
-    TextMessageStartEvent, TextMessageContentEvent, TextMessageEndEvent,
-    ToolCallStartEvent, ToolCallArgsEvent, ToolCallEndEvent,
-    StateSnapshotEvent, StateDeltaEvent, MessagesSnapshotEvent,
-    RawEvent, CustomEvent, RunStartedEvent, RunFinishedEvent,
-    RunErrorEvent, StepStartedEvent, StepFinishedEvent, EventType, BaseEvent
-)
-from ag_ui.core.types import Message, State
-
+from typing import Any, Callable, ClassVar, Generator, List, Optional, Type, TypeVar
+from pydantic import BaseModel, Field
+import json
 
 from .logger import getLogger
+
+class BaseEvent(BaseModel):
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if 'SCHEMA' not in getattr(cls, '__annotations__', {}):
+            raise TypeError(f"{cls.__name__} must annotate SCHEMA as 'ClassVar[str]'")
+        if not hasattr(cls, 'SCHEMA'):
+            raise TypeError(f"{cls.__name__} must define a class constant 'SCHEMA'")
+
+    def model_dump(self, *args, **kwargs):
+        d = super().model_dump(*args, **kwargs)
+        d["$schema"] = self.__class__.SCHEMA
+        return d
+
+    def model_dump_json(self, *args, **kwargs):
+        # Only pass *args, **kwargs to model_dump, not to json.dumps
+        return json.dumps(self.model_dump(*args, **kwargs))
+
+class GenericEvent(BaseEvent):
+    SCHEMA: ClassVar[str] = "urn:ivcap:schema:service.event.generic.1"
+    name: str = Field(description="Name of event")
+    options: Optional[dict[str, Any]] = Field(None, description="Optional list of options")
+
+class GenericErrorEvent(BaseEvent):
+    SCHEMA: ClassVar[str]= "urn:ivcap:schema:service.event.error.1"
+    error: str = Field(description="Error description")
+    context: Optional[str] = Field(None, description="Optional description of contexy")
+    stacktrace:  Optional[list[str]] = Field(None, description="Optional stacktrace")
+
+
+class StepStartEvent(GenericEvent):
+    SCHEMA: ClassVar[str] = "urn:ivcap:schema:service.event.step.start.1"
+
+class StepInfoEvent(GenericEvent):
+    SCHEMA: ClassVar[str] = "urn:ivcap:schema:service.event.step.info.1"
+
+class StepErrorEvent(GenericErrorEvent):
+    SCHEMA: ClassVar[str] = "urn:ivcap:schema:service.event.step.error.1"
+
+class StepFinishEvent(GenericEvent):
+    SCHEMA: ClassVar[str] = "urn:ivcap:schema:service.event.step.finish.1"
 
 logger = getLogger("event")
 
@@ -54,17 +88,49 @@ def create_event_reporter(job_id: str, job_authorization: Optional[str] = None) 
     return EventReporter(job_id, job_authorization)
 
 class EventContext:
-    def __init__(self, event_name:str):
+    def __init__(self,
+                 event_name:str,
+                 reporter:'EventReporter',
+                 finishEventClass: Optional[Type[BaseEvent]],
+                 errorEventClass: Optional[Type[GenericErrorEvent]]
+        ):
         self._event_name = event_name
-        self._exit_msg = None
-        self._exit_timestamp = None
+        self._reporter = reporter
+        self._finishEventClass = finishEventClass
+        self._errorEventClass = errorEventClass
+        self._finished_sent = False
 
-    def finished(self, msg: Optional[Any] = None, timestamp: Optional[int] = None):
-        self._exit_msg = msg
-        self._exit_timestamp = timestamp
+    @property
+    def name(self):
+        return self._event_name
 
-    def _finished(self, finish_fn):
-        finish_fn(self._event_name, self._exit_msg, self._exit_timestamp)
+    def finished(self, event: BaseEvent = None, **kwargs):
+        if event:
+            if isinstance(event, dict):
+                kwargs = event
+                event = None
+            elif not isinstance(event, BaseEvent):
+                logger.warning(f"unknown 'finished' event type '{type(event)}' for '{self._event_name}'")
+                return
+
+        if not event:
+            if self._finishEventClass:
+                event = self._finishEventClass(name=self._event_name, **kwargs)
+            else:
+                event = GenericEvent(name=self._event_name, options=kwargs)
+        self._reporter.emit(event)
+        self._finished_sent = True
+
+    def info(self, event: BaseEvent | dict):
+        self._reporter.emit(event)
+
+    def error(self, err: Exception, context: Optional[str]=None):
+        evc = self._errorEventClass if self._errorEventClass is not None else GenericErrorEvent
+        stacktrace = traceback.format_tb(err.__traceback__)
+        if not context:
+            context = self._event_name
+        event = evc(error=err, stacktrace=stacktrace, context=context)
+        self._reporter.emit(event)
 
 EventCtxtGenerator = Generator[EventContext, None, None]
 
@@ -76,82 +142,33 @@ class EventReporter:
     def _send(self, event: BaseEvent):
         logger.debug(f"{self.job_id}: {event.model_dump_json(exclude_none=True)}")
 
-    def _emit(self, cls, event_type, **kwargs):
-        try:
-            event = cls(type=event_type, **kwargs)
-            if event.timestamp is None:
-                    event.timestamp = int(time.time() * 1000)
-            self._send(event)
-        except Exception as e:
-            logger.error(f"Failed to emit event {event_type}: {e}")
+    def emit(self, event: BaseEvent):
+        self._send(event)
 
-    def text_message_start(self, message_id: str, role: str, raw_event: Optional[Any] = None, timestamp: Optional[int] = None):
-        self._emit(TextMessageStartEvent, EventType.TEXT_MESSAGE_START, message_id=message_id, role=role, raw_event=raw_event, timestamp=timestamp)
+    def step_started(self, step_name: str, options: Optional[dict[str, Any]]=None):
+        self.emit(StepStartEvent(name=step_name, options=options))
 
-    def text_message_content(self, message_id: str, delta: str, raw_event: Optional[Any] = None, timestamp: Optional[int] = None):
-        self._emit(TextMessageContentEvent, EventType.TEXT_MESSAGE_CONTENT, message_id=message_id, delta=delta, raw_event=raw_event, timestamp=timestamp)
+    def step_finished(self, step_name: str, options: Optional[dict[str, Any]]=None):
+        self.emit(StepFinishEvent(name=step_name, options=options))
 
-    def text_message_end(self, message_id: str, raw_event: Optional[Any] = None, timestamp: Optional[int] = None):
-        self._emit(TextMessageEndEvent, EventType.TEXT_MESSAGE_END, message_id=message_id, raw_event=raw_event, timestamp=timestamp)
-
-    def tool_call_start(self, tool_call_id: str, tool_call_name: str, parent_message_id: Optional[str] = None, raw_event: Optional[Any] = None, timestamp: Optional[int] = None):
-        self._emit(ToolCallStartEvent, EventType.TOOL_CALL_START, tool_call_id=tool_call_id, tool_call_name=tool_call_name, parent_message_id=parent_message_id, raw_event=raw_event, timestamp=timestamp)
-
-    def tool_call_args(self, tool_call_id: str, delta: str, raw_event: Optional[Any] = None, timestamp: Optional[int] = None):
-        self._emit(ToolCallArgsEvent, EventType.TOOL_CALL_ARGS, tool_call_id=tool_call_id, delta=delta, raw_event=raw_event, timestamp=timestamp)
-
-    def tool_call_end(self, tool_call_id: str, raw_event: Optional[Any] = None, timestamp: Optional[int] = None):
-        self._emit(ToolCallEndEvent, EventType.TOOL_CALL_END, tool_call_id=tool_call_id, raw_event=raw_event, timestamp=timestamp)
-
-    def state_snapshot(self, snapshot: State, raw_event: Optional[Any] = None, timestamp: Optional[int] = None):
-        self._emit(StateSnapshotEvent, EventType.STATE_SNAPSHOT, snapshot=snapshot, raw_event=raw_event, timestamp=timestamp)
-
-    def state_delta(self, delta: List[Any], raw_event: Optional[Any] = None, timestamp: Optional[int] = None):
-        self._emit(StateDeltaEvent, EventType.STATE_DELTA, delta=delta, raw_event=raw_event, timestamp=timestamp)
-
-    def messages_snapshot(self, messages: List[Message], raw_event: Optional[Any] = None, timestamp: Optional[int] = None):
-        self._emit(MessagesSnapshotEvent, EventType.MESSAGES_SNAPSHOT, messages=messages, raw_event=raw_event, timestamp=timestamp)
-
-    def raw(self, event: Any, source: Optional[str] = None, raw_event: Optional[Any] = None, timestamp: Optional[int] = None):
-        self._emit(RawEvent, EventType.RAW, event=event, source=source, raw_event=raw_event, timestamp=timestamp)
-
-    def custom(self, name: str, value: Any, raw_event: Optional[Any] = None, timestamp: Optional[int] = None):
-        self._emit(CustomEvent, EventType.CUSTOM, name=name, value=value, raw_event=raw_event, timestamp=timestamp)
-
-    def run_started(self, thread_id: str, run_id: str, raw_event: Optional[Any] = None, timestamp: Optional[int] = None):
-        self._emit(RunStartedEvent, EventType.RUN_STARTED, thread_id=thread_id, run_id=run_id, raw_event=raw_event, timestamp=timestamp)
-
-    def run_finished(self, thread_id: str, run_id: str, raw_event: Optional[Any] = None, timestamp: Optional[int] = None):
-        self._emit(RunFinishedEvent, EventType.RUN_FINISHED, thread_id=thread_id, run_id=run_id, raw_event=raw_event, timestamp=timestamp)
-
-    def run_error(self, message: str, code: Optional[str] = None, raw_event: Optional[Any] = None, timestamp: Optional[int] = None):
-        self._emit(RunErrorEvent, EventType.RUN_ERROR, message=message, code=code, raw_event=raw_event, timestamp=timestamp)
-
-    def step_started(self, step_name: str, raw_event: Optional[Any] = None, timestamp: Optional[int] = None):
-        self._emit(StepStartedEvent, EventType.STEP_STARTED, step_name=step_name, raw_event=raw_event, timestamp=timestamp)
-
-    def step_finished(self, step_name: str, raw_event: Optional[Any] = None, timestamp: Optional[int] = None):
-        self._emit(StepFinishedEvent, EventType.STEP_FINISHED, step_name=step_name, raw_event=raw_event, timestamp=timestamp)
-
-    def step(self, step_name, raw_event=None, timestamp=None):
-        return self._event_scope(step_name, self.step_started, self.step_finished, raw_event, timestamp)
+    def step(self, step_name: str, **kwargs):
+        ev = StepStartEvent(name=step_name, options=kwargs)
+        self.emit(ev)
+        return self._event_scope(step_name, StepFinishEvent(name=step_name), StepErrorEvent)
 
     @contextmanager
     def _event_scope(
         self,
         event_name: str,
-        start_fn: Callable[[str, Optional[Any], Optional[int]], None],
-        finish_fn: Callable[[str, Optional[Any], Optional[int]], None],
-        raw_event: Optional[Any] = None,
-        timestamp: Optional[int] = None
+        defaultFinishEvent: Optional[BaseEvent] = None,
+        errorEventClass: Optional[Type[GenericErrorEvent]] = None,
     ) -> EventCtxtGenerator:
-        ctxt = EventContext(event_name)
-        start_fn(event_name, raw_event, timestamp)
+        fevc = defaultFinishEvent.__class__ if defaultFinishEvent else None
+        ctxt = EventContext(event_name, self, fevc, errorEventClass)
         try:
             yield ctxt
         except Exception as e:
-            import traceback
-            trace = traceback.format_exc()
-            self.run_error(f"exception in event '{event_name}' - {str(e)}", trace)
+            ctxt.error(e, event_name)
             raise e
-        ctxt._finished(finish_fn)
+        if not ctxt._finished_sent:
+            self.emit(defaultFinishEvent)

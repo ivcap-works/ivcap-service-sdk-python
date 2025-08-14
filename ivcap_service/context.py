@@ -7,7 +7,6 @@
 # Various "patches" to maiontain context between incoming requests
 # and calls to external services within a "session"
 #
-from dataclasses import dataclass
 import functools
 from logging import Logger
 from ivcap_service import getLogger
@@ -15,8 +14,6 @@ import os
 from typing import Any, Callable, Literal, Optional
 from httpx import URL as URLx
 from urllib.parse import urlparse
-
-import urllib
 
 from .types import JobContext
 
@@ -66,17 +63,16 @@ def extend_requests(context_f: ExecContextF):
     def _send(
         self: Session, request: PreparedRequest, **kwargs: Any
     ):
-        logger.debug(f"Instrumenting 'requests' request to {request.url}")
-        _modify_request(request, context_f, logger)
+        ctxt = context_f()
+        logger.debug(f"{ctxt.job_id if ctxt else '???'}: Instrumenting 'requests' request to {request.url}")
+        _modify_request(request, ctxt, logger)
         # Call original method
         return wrapped_send(self, request, **kwargs)
 
     # Apply wrapper
     Session.send = _send
 
-def _modify_request(request, context_f: ExecContextF, logger):
-    ctxt = context_f()
-
+def _modify_request(request, ctxt: JobContext, logger):
     headers = request.headers
     url = request.url
     hostname = _get_hostname(url)
@@ -131,8 +127,9 @@ def extend_httpx(context_f: ExecContextF):
     # Save original function
     wrapped_send = httpx.Client.send
     def _send(self, request, **kwargs):
-        logger.debug(f"Instrumenting 'httpx' request to {request.url}")
-        _modify_request(request, context_f, logger)
+        ctxt = context_f()
+        logger.debug(f"{ctxt.job_id if ctxt else '???'}: Instrumenting 'httpx' request to {request.url}")
+        _modify_request(request, ctxt, logger)
         # Call original method
         return wrapped_send(self, request, **kwargs)
     # Apply wrapper
@@ -140,8 +137,9 @@ def extend_httpx(context_f: ExecContextF):
 
     wrapped_asend = httpx.AsyncClient.send
     def _asend(self, request, **kwargs):
-        logger.debug(f"Instrumenting 'httpx' async request to {request.url}")
-        _modify_request(request, context_f, logger)
+        ctxt = context_f()
+        logger.debug(f"{ctxt.job_id if ctxt else '???'}: Instrumenting 'httpx' async request to {request.url}")
+        _modify_request(request, ctxt, logger)
         return wrapped_asend(self, request, **kwargs)
     httpx.AsyncClient.send = _asend
 

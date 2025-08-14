@@ -66,7 +66,7 @@ def consume_compute(req: Request, ctxt: JobContext) -> Result:
     if not 0 <= target_cpu_percent <= 100:
         raise ValueError("target_cpu_percent must be between 0 and 100")
 
-    with ctxt.report.step("consume_compute", f"Consuming CPU for {duration_seconds} seconds at {target_cpu_percent}%") as ectxt:
+    with ctxt.report.step("consume_compute", msg=f"Consuming CPU for {duration_seconds} seconds at {target_cpu_percent}%") as ectxt:
         start_time = time.time()
         end_time = start_time + duration_seconds
         logger.debug(f"Consuming CPU for {duration_seconds} seconds, targeting {target_cpu_percent}% per core...")
@@ -115,7 +115,7 @@ def consume_compute(req: Request, ctxt: JobContext) -> Result:
                 # Allocate 10MB chunks repeatedly
                 data.append(' ' * 10_000_000)
 
-        ectxt.finished(msg)
+        ectxt.finished(msg=msg)
         return Result(msg="CPU consumption finished.", run_time=run_time)
 
 # add_tool_api_route(app, "/", tester, opts=ToolOptions(tags=["Test Tool"], service_id="/"), context=ExecCtxt(msg="Boo!"))

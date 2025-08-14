@@ -26,6 +26,9 @@
     },
     "event": {
       "level": "DEBUG"
+    },
+    "ivcap": {
+      "level": "DEBUG"
     }
   },
   "disable_existing_loggers": false
