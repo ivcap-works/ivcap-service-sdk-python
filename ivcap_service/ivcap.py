@@ -172,7 +172,6 @@ class SidecarReporter(EventReporter):
             headers["Authorization"] = self.job_authorization
         try:
             m = event.model_dump()
-            m["$schema"] = "urn:ag-ui:schema:event.1"
             data = json.dumps(m)
             response = httpx.post(
                 url=url,
