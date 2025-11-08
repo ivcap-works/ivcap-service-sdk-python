@@ -47,7 +47,7 @@ class ExecutionError(BaseModel):
     """
     Pydantic model for execution errors.
     """
-    jschema: str = Field("urn:ivcap:schema.ai-tool.error.1", alias="$schema")
+    jschema: str = Field("urn:ivcap:schema.service.error.1", alias="$schema")
     error: str = Field(description="Error message")
     type: str = Field(description="Error type")
     traceback: Optional[str] = Field(None, description="traceback")

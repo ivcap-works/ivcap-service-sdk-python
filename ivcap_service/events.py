@@ -4,9 +4,8 @@
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
 from contextlib import contextmanager
-import time
 import traceback
-from typing import Any, Callable, ClassVar, Generator, List, Optional, Type, TypeVar
+from typing import Any, Callable, ClassVar, Generator, Optional, Type
 from pydantic import BaseModel, Field
 import json
 
@@ -37,7 +36,7 @@ class GenericEvent(BaseEvent):
 class GenericErrorEvent(BaseEvent):
     SCHEMA: ClassVar[str]= "urn:ivcap:schema:service.event.error.1"
     error: str = Field(description="Error description")
-    context: Optional[str] = Field(None, description="Optional description of contexy")
+    context: Optional[str] = Field(None, description="Optional description of context")
     stacktrace:  Optional[list[str]] = Field(None, description="Optional stacktrace")
 
 
@@ -104,20 +103,11 @@ class EventContext:
     def name(self):
         return self._event_name
 
-    def finished(self, event: BaseEvent = None, **kwargs):
-        if event:
-            if isinstance(event, dict):
-                kwargs = event
-                event = None
-            elif not isinstance(event, BaseEvent):
-                logger.warning(f"unknown 'finished' event type '{type(event)}' for '{self._event_name}'")
-                return
-
-        if not event:
-            if self._finishEventClass:
-                event = self._finishEventClass(name=self._event_name, **kwargs)
-            else:
-                event = GenericEvent(name=self._event_name, options=kwargs)
+    def finished(self, **kwargs):
+        if self._finishEventClass:
+            event = self._finishEventClass(name=self._event_name, **kwargs)
+        else:
+            event = GenericEvent(name=self._event_name, options=kwargs)
         self._reporter.emit(event)
         self._finished_sent = True
 
@@ -129,7 +119,7 @@ class EventContext:
         stacktrace = traceback.format_tb(err.__traceback__)
         if not context:
             context = self._event_name
-        event = evc(error=err, stacktrace=stacktrace, context=context)
+        event = evc(error=str(err), stacktrace=stacktrace, context=context)
         self._reporter.emit(event)
 
 EventCtxtGenerator = Generator[EventContext, None, None]
@@ -145,15 +135,14 @@ class EventReporter:
     def emit(self, event: BaseEvent):
         self._send(event)
 
-    def step_started(self, step_name: str, options: Optional[dict[str, Any]]=None):
-        self.emit(StepStartEvent(name=step_name, options=options))
+    def step_started(self, step_name: str, **kwargs):
+        self.emit(StepStartEvent(name=step_name, options=kwargs))
 
-    def step_finished(self, step_name: str, options: Optional[dict[str, Any]]=None):
-        self.emit(StepFinishEvent(name=step_name, options=options))
+    def step_finished(self, step_name: str, **kwargs):
+        self.emit(StepFinishEvent(name=step_name, options=kwargs))
 
-    def step(self, step_name: str, **kwargs):
-        ev = StepStartEvent(name=step_name, options=kwargs)
-        self.emit(ev)
+    def step(self, step_name, **kwargs):
+        self.step_started(step_name, options=kwargs)
         return self._event_scope(step_name, StepFinishEvent(name=step_name), StepErrorEvent)
 
     @contextmanager

@@ -28,13 +28,17 @@ run-with-proxy:
 		python ${PROJECT_DIR}/batch_service.py
 
 REQUEST_FILE=${PROJECT_DIR}/tests/req_1.json
+
+test-ivcap-stream:
+	poetry ivcap job-exec ${REQUEST_FILE} -- --stream
+
 IVCAP_URL=$(shell ivcap context get url)
 test-ivcap:
 	curl -X POST \
 		-H "content-type: application/json" \
 		-H "Authorization: Bearer $(shell ivcap context get access-token --refresh-token)" \
 		-H "Timeout: ${TIMEOUT}" \
-		--data @${REQUEST_FILE} \
+		--data REQUEST_FILE} \
 		${IVCAP_URL}/1/services2/${SERVICE_ID}/jobs
 
 service-description:
@@ -62,7 +66,7 @@ docker-run: #docker-build
 		-e http_proxy=http://192.168.68.103:9999 \
 		--platform=${TARGET_PLATFORM} \
 		--rm \
-		${DOCKER_TAG} --port ${PORT}
+		${DOCKER_TAG} --@${port ${PORT}
 
 docker-debug: #docker-build
 	docker run -it \
