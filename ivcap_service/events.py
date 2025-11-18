@@ -103,11 +103,14 @@ class EventContext:
     def name(self):
         return self._event_name
 
-    def finished(self, **kwargs):
+    def finished(self, message=None, **kwargs):
+        options=kwargs
+        if message:
+            options["message"] = message
         if self._finishEventClass:
-            event = self._finishEventClass(name=self._event_name, **kwargs)
+            event = self._finishEventClass(name=self._event_name, options=options)
         else:
-            event = GenericEvent(name=self._event_name, options=kwargs)
+            event = GenericEvent(name=self._event_name, options=options)
         self._reporter.emit(event)
         self._finished_sent = True
 
@@ -135,14 +138,20 @@ class EventReporter:
     def emit(self, event: BaseEvent):
         self._send(event)
 
-    def step_started(self, step_name: str, **kwargs):
-        self.emit(StepStartEvent(name=step_name, options=kwargs))
+    def step_started(self, step_name: str, message=None, **kwargs):
+        options=kwargs
+        if message:
+            options["message"] = message
+        self.emit(StepStartEvent(name=step_name, options=options))
 
-    def step_finished(self, step_name: str, **kwargs):
-        self.emit(StepFinishEvent(name=step_name, options=kwargs))
+    def step_finished(self, step_name: str, message=None, **kwargs):
+        options=kwargs
+        if message:
+            options["message"] = message
+        self.emit(StepFinishEvent(name=step_name, options=options))
 
-    def step(self, step_name, **kwargs):
-        self.step_started(step_name, options=kwargs)
+    def step(self, step_name, message=None, **kwargs):
+        self.step_started(step_name, message, **kwargs)
         return self._event_scope(step_name, StepFinishEvent(name=step_name), StepErrorEvent)
 
     @contextmanager
