@@ -18,3 +18,4 @@ from .events import (
     EventReporter, set_event_reporter_factory, EventFactoryF, create_event_reporter,
     BaseEvent, GenericEvent, GenericErrorEvent,
 )
+from .secret import get_secret
