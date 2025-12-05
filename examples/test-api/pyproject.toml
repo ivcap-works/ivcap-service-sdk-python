@@ -1,0 +1,28 @@
+[project]
+name = "batch-api-tester"
+version = "0.1.0"
+description = "A batch tool primarily used for testing the IVCAP API from inside the platform."
+authors = [
+    {name = "Max Ott",email = "max.ott@data61.csiro.au"}
+]
+# authors = ["Max Ott <max.ott@data61.csiro.au>"]
+# readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.10,<4.0"
+pydantic = ">=2.11.4,<3.0.0"
+ivcap-service = "^0.6.12"
+ivcap-client = "^0.47.5"
+
+[tool.poetry-plugin-ivcap]
+service-file = "api_test_service.py"
+service-id = "urn:ivcap:service:393998e3-0c4a-5f33-8fa9-d84382020295"
+service-type = "batch"
+# policy = "urn:ivcap:policy:ivcap.open.metadata"
+# docker
+#docker-run-opts = []
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
