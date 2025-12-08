@@ -96,7 +96,7 @@ def _get_hostname(url):
     except Exception:
         return ""
 
-ivcap_proxy_url = os.getenv('IVCAP_PROXY_URL')
+ivcap_proxy_url = os.getenv('IVCAP_PROXY_URL', os.getenv('IVCAP_PROXY'))
 
 def _wrap_proxy_url(url, headers):
     global ivcap_proxy_url
