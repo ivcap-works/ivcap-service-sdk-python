@@ -19,6 +19,8 @@ from .types import JobContext
 
 ExecContextF = Callable[[], JobContext]
 
+logger = getLogger("app.context")
+
 def otel_instrument(
     with_telemetry: Optional[Literal[True]],
     extension: Optional[Callable[[str], None]],
@@ -97,6 +99,7 @@ def _get_hostname(url):
         return ""
 
 ivcap_proxy_url = os.getenv('IVCAP_PROXY_URL', os.getenv('IVCAP_PROXY'))
+logger.info(f"Using IVCAP_PROXY_URL - {ivcap_proxy_url}")
 
 def _wrap_proxy_url(url, headers):
     global ivcap_proxy_url
@@ -114,6 +117,7 @@ def _wrap_proxy_url(url, headers):
         forward_url = url # urllib.parse.quote_plus(url)
         proxy_url = ivcap_proxy_url
     headers["Ivcap-Forward-Url"] = forward_url
+    logger.debug(f"Rerouting external '{forward_url}' to '{ivcap_proxy_url}'")
     return proxy_url
 
 def extend_httpx(context_f: ExecContextF):

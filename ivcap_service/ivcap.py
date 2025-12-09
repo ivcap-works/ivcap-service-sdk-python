@@ -97,8 +97,9 @@ def push_result(result: Union[IvcapResult, ExecutionError], job_id: str, authori
 
     ivcap_url = get_ivcap_url()
     if ivcap_url is None:
-        if result_callback is None:
-            logger.warning(f"{job_id}: no ivcap url found - cannot push result")
+        # Make this library more useful outside the confines of IVCAP
+        # if result_callback is None:
+        #     logger.warning(f"{job_id}: no ivcap url found - cannot push result")
         return
     url = urlunparse(ivcap_url._replace(path=f"/results/{job_id}"))
 
