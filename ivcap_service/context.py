@@ -80,13 +80,13 @@ def _modify_request(request, ctxt: JobContext, logger):
     hostname = _get_hostname(url)
     is_local_url = hostname.endswith(".local") or hostname.endswith(".minikube") or hostname.endswith(".ivcap.net")
     if not is_local_url:
-        request.url = _wrap_proxy_url(url, headers)
+        (request.url, is_local_url) = _wrap_proxy_url(url, headers)
     job_id = ctxt.job_id if ctxt != None else None
     if job_id != None: # OTEL messages won't have a jobID
         headers["Ivcap-Job-Id"] = job_id
     auth = ctxt.job_authorization if ctxt != None else None
     if auth != None and is_local_url:
-        logger.debug(f"Adding 'Authorization' header")
+        logger.debug(f"Adding 'Authorization' header to `{request.url}'")
         headers["Authorization"] = auth
 
 def _get_hostname(url):
@@ -104,7 +104,7 @@ logger.info(f"Using IVCAP_PROXY_URL - {ivcap_proxy_url}")
 def _wrap_proxy_url(url, headers):
     global ivcap_proxy_url
     if ivcap_proxy_url == None:
-        return url
+        return (url, False)
 
     if isinstance(url, URLx):
         # ensuring that any 'unset' query parameters are not included
@@ -118,7 +118,7 @@ def _wrap_proxy_url(url, headers):
         proxy_url = ivcap_proxy_url
     headers["Ivcap-Forward-Url"] = forward_url
     logger.debug(f"Rerouting external '{forward_url}' to '{ivcap_proxy_url}'")
-    return proxy_url
+    return (proxy_url, True)
 
 def extend_httpx(context_f: ExecContextF):
     try:
