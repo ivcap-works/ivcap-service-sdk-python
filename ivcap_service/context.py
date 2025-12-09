@@ -19,8 +19,6 @@ from .types import JobContext
 
 ExecContextF = Callable[[], JobContext]
 
-logger = getLogger("app.context")
-
 def otel_instrument(
     with_telemetry: Optional[Literal[True]],
     extension: Optional[Callable[[str], None]],
@@ -80,7 +78,7 @@ def _modify_request(request, ctxt: JobContext, logger):
     hostname = _get_hostname(url)
     is_local_url = hostname.endswith(".local") or hostname.endswith(".minikube") or hostname.endswith(".ivcap.net")
     if not is_local_url:
-        (request.url, is_local_url) = _wrap_proxy_url(url, headers)
+        (request.url, is_local_url) = _wrap_proxy_url(url, headers, logger)
     job_id = ctxt.job_id if ctxt != None else None
     if job_id != None: # OTEL messages won't have a jobID
         headers["Ivcap-Job-Id"] = job_id
@@ -98,10 +96,9 @@ def _get_hostname(url):
     except Exception:
         return ""
 
-ivcap_proxy_url = os.getenv('IVCAP_PROXY_URL', os.getenv('IVCAP_PROXY'))
-logger.info(f"Using IVCAP_PROXY_URL - {ivcap_proxy_url}")
+ivcap_proxy_url = os.getenv('IVCAP_PROXY_URL')
 
-def _wrap_proxy_url(url, headers):
+def _wrap_proxy_url(url, headers, logger):
     global ivcap_proxy_url
     if ivcap_proxy_url == None:
         return (url, False)
@@ -135,7 +132,8 @@ def extend_httpx(context_f: ExecContextF):
         logger.debug(f"{ctxt.job_id if ctxt else '???'}: Instrumenting 'httpx' request to {request.url}")
         _modify_request(request, ctxt, logger)
         # Call original method
-        return wrapped_send(self, request, **kwargs)
+        r = wrapped_send(self, request, **kwargs)
+        return r
     # Apply wrapper
     httpx.Client.send = _send
 
