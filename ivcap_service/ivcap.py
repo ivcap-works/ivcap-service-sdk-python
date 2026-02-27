@@ -40,6 +40,8 @@ def set_result_callback(cbk: OnResultF):
 
 
 def verify_result(result: Any, job_id: str, logger) -> Any:
+    if not result:
+        return ExecutionError(error="service did not return a result", type="no-result-error")
     if isinstance(result, ExecutionError):
         return result
     if isinstance(result, BaseModel):

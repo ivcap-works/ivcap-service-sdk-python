@@ -38,7 +38,7 @@ test-ivcap:
 		-H "content-type: application/json" \
 		-H "Authorization: Bearer $(shell ivcap context get access-token --refresh-token)" \
 		-H "Timeout: ${TIMEOUT}" \
-		--data REQUEST_FILE} \
+		--data @${REQUEST_FILE} \
 		${IVCAP_URL}/1/services2/${SERVICE_ID}/jobs
 
 service-description:

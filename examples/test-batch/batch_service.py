@@ -118,9 +118,6 @@ def consume_compute(req: Request, ctxt: JobContext) -> Result:
         ectxt.finished(msg=msg)
         return Result(msg="CPU consumption finished.", run_time=run_time)
 
-# add_tool_api_route(app, "/", tester, opts=ToolOptions(tags=["Test Tool"], service_id="/"), context=ExecCtxt(msg="Boo!"))
-# add_tool_api_route(app, "/async", async_tester, opts=ToolOptions(tags=["Test Tool"]))
-
 if __name__ == "__main__":
     from ivcap_service import start_batch_service
     start_batch_service(service, consume_compute)

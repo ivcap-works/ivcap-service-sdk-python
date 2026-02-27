@@ -43,7 +43,8 @@ def api_tester(req: Request, ctxt: JobContext) -> Result:
 
     if req.artifact:
         art = ctxt.ivcap.get_artifact(req.artifact)
-        return art.as_local_file()
+        path = art.as_local_file()
+        return Result(result=str(path))
     else:
         raise "Missing command"
 
