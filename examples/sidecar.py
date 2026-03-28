@@ -1,9 +1,9 @@
-from fastapi import FastAPI, Path, Request
-from fastapi.responses import JSONResponse
 import json
 import os
+
 import uvicorn
-from urllib.parse import unquote
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
@@ -18,12 +18,11 @@ async def decode_path(request: Request, call_next):
 
 TEST_LOAD_PATH = os.path.join(os.path.dirname(__file__), "test-batch/tests/load_1.json")
 
-from fastapi import Header
 
 @app.get("/next_job")
 async def next_job():
     try:
-        with open(TEST_LOAD_PATH, "r") as f:
+        with open(TEST_LOAD_PATH) as f:
             content = json.load(f)
         headers = {"job-id": "0000-0000", "Authorization": "Bearer xxxxx"}
         return JSONResponse(content, headers=headers)

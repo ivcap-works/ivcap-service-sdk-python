@@ -4,69 +4,73 @@
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
 
-import time
-import traceback
-from typing import Callable, Tuple
 import argparse
-from logging import Logger
-from typing import Any, Callable, Dict, Optional
-from urllib.parse import urlunparse
-
 import os
 import sys
-import httpx
-from pydantic import BaseModel, ConfigDict, Field
-import requests
+import time
+import traceback
+from collections.abc import Callable
+from logging import Logger
+from typing import Any
 
-from ivcap_client import IVCAP
+import httpx
+import requests
+from pydantic import BaseModel, ConfigDict, Field
 
 from .context import JobContext, otel_instrument, set_context
+from .events import create_event_reporter, set_event_reporter_factory
 from .ivcap import SidecarReporter, get_ivcap_url, push_result, verify_result
 from .logger import getLogger
+from .tool_definition import print_tool_definition  # Import the requests library
 from .types import ExecutionError
 from .utils import get_function_return_type, get_input_type
 from .version import get_version
-from .tool_definition import print_tool_definition  # Import the requests library
-from .events import EventReporter, create_event_reporter, set_event_reporter_factory
+
 
 class ServiceContact(BaseModel):
     name: str = Field(description="name of the contact person")
     email: str = Field(description="email address of the contact person")
-    url: Optional[str] = Field(None, description="url of the contact person")
+    url: str | None = Field(None, description="url of the contact person")
+
 
 class ServiceLicense(BaseModel):
     name: str = Field(description="name of the license")
     url: str = Field(description="url to the license text")
 
+
 class Service(BaseModel):
     name: str = Field(description="name of the service")
-    version: Optional[str] = Field(os.environ.get("VERSION", "???"), description="version of the service")
+    version: str | None = Field(
+        os.environ.get("VERSION", "???"), description="version of the service"
+    )
     contact: ServiceContact = Field(description="contact details of the service")
-    license: Optional[ServiceLicense] = Field(None, description="license of the service")
+    license: ServiceLicense | None = Field(None, description="license of the service")
+
 
 # Number of attempt to request a new job before giving up
 MAX_REQUEST_JOB_ATTEMPTS = 4
+
 
 class ServiceContext(BaseModel):
     worker_fn: Callable
     input_model: type[BaseModel]
     output_model: type[BaseModel]
-    fn_add_job_context: Optional[str]
-    job_context: Optional[JobContext] = None
+    fn_add_job_context: str | None
+    job_context: JobContext | None = None
     logger: Logger
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
+
 def wait_for_work(svc_ctxt: ServiceContext):
     ivcap_url = get_ivcap_url()
     if ivcap_url is None:
-        svc_ctxt.logger.warning(f"no ivcap url found - cannot request work")
+        svc_ctxt.logger.warning("no ivcap url found - cannot request work")
         return
-    url = urlunparse(ivcap_url._replace(path=f"/next_job"))
+    url = f"{ivcap_url}/next_job"
     logger = svc_ctxt.logger
     logger.info(f"... checking for work at '{url}'")
     try:
-
         while True:
             result = None
             try:
@@ -77,14 +81,16 @@ def wait_for_work(svc_ctxt: ServiceContext):
                     logger.info("no more jobs - we are done")
                     sys.exit(0)
 
-                job_id = job.get("id", "unknown_job_id")  # Provide a default value if "id" is missing
-                result = do_job(job, svc_ctxt, job_authorization)
-                result = verify_result(result, job_id, logger)
+                job_id = job.get(
+                    "id", "unknown_job_id"
+                )  # Provide a default value if "id" is missing
+                raw_result = do_job(job, svc_ctxt, job_authorization)
+                result = verify_result(raw_result, job_id, logger)
             except Exception as e:
                 result = ExecutionError(
                     error=str(e),
                     type=type(e).__name__,
-                    traceback=traceback.format_exc()
+                    traceback=traceback.format_exc(),
                 )
                 logger.warning(f"job {job_id} failed - {result.error}")
             finally:
@@ -97,7 +103,8 @@ def wait_for_work(svc_ctxt: ServiceContext):
     except Exception as e:
         logger.warning(f"Error processing job: {e}")
 
-def fetch_job(url: str, logger: Logger) -> Tuple[Any, Optional[str]]:
+
+def fetch_job(url: str, logger: Logger) -> tuple[Any, str | None]:
     wait_time = 1
     attempt = 0
     while attempt < MAX_REQUEST_JOB_ATTEMPTS:
@@ -108,18 +115,19 @@ def fetch_job(url: str, logger: Logger) -> Tuple[Any, Optional[str]]:
             return (response, job_authorization)
         except Exception as e:
             attempt += 1
-            logger.info(f"attempt #{attempt} failed to fetch new job - will try again in {wait_time} sec - {type(e)}: {e}")
+            logger.info(
+                f"attempt #{attempt} failed to fetch new job - will try again in {wait_time} sec - {type(e)}: {e}"
+            )
             time.sleep(wait_time)
             wait_time *= 2
     logger.info("cannot contact sidecar - bailing out")
     sys.exit(255)
 
-def do_job(
-    job: Any,
-    svc_ctxt: ServiceContext,
-    job_authorization: Optional[str] = None
-):
-    job_id = job.get("id", "unknown_job_id")  # Provide a default value if "id" is missing
+
+def do_job(job: Any, svc_ctxt: ServiceContext, job_authorization: str | None = None):
+    job_id = job.get(
+        "id", "unknown_job_id"
+    )  # Provide a default value if "id" is missing
     ct = job["in-content-type"]
     if ct != "application/json":
         raise Exception(f"cannot handle content-type '{ct}'")
@@ -128,7 +136,9 @@ def do_job(
     mreq = svc_ctxt.input_model(**jc)
     logger.info(f"{job_id}: calling worker with - {mreq}")
     reporter = create_event_reporter(job_id=job_id, job_authorization=job_authorization)
-    svc_ctxt.job_context = JobContext(job_id=job_id, job_authorization=job_authorization, report=reporter)
+    svc_ctxt.job_context = JobContext(
+        job_id=job_id, job_authorization=job_authorization, report=reporter
+    )
     try:
         f = svc_ctxt.worker_fn
         if svc_ctxt.fn_add_job_context is None:
@@ -138,25 +148,26 @@ def do_job(
             d[svc_ctxt.fn_add_job_context] = svc_ctxt.job_context
             resp = f(mreq, **d)
         logger.info(f"{job_id}: worker finished with - {resp}")
-        if type(resp) != svc_ctxt.output_model:
-            logger.warning(f"{job_id}: result is of type '{type(resp)}' but expected '{svc_ctxt.output_model}'")
+        if not isinstance(resp, svc_ctxt.output_model):
+            logger.warning(
+                f"{job_id}: result is of type '{type(resp)}' but expected '{svc_ctxt.output_model}'"
+            )
 
     except BaseException as ex:
         logger.warning(f"{job_id}: failed - '{ex}'")
         resp = ExecutionError(
-                        error=str(ex),
-                        type=type(ex).__name__,
-                        traceback=traceback.format_exc()
-                    )
+            error=str(ex), type=type(ex).__name__, traceback=traceback.format_exc()
+        )
     return resp
+
 
 def start_batch_service(
     service_description: Service,
     worker_fn: Callable,
     *,
-    custom_args: Optional[Callable[[argparse.ArgumentParser], argparse.Namespace]] = None,
-    run_opts: Optional[Dict[str, Any]] = None,
-    with_telemetry: Optional[bool] = None,
+    custom_args: Callable[[argparse.ArgumentParser], argparse.Namespace] | None = None,
+    run_opts: dict[str, Any] | None = None,
+    with_telemetry: bool | None = None,
 ):
     """A helper function to start a batch service
 
@@ -171,10 +182,22 @@ def start_batch_service(
     logger = getLogger("server")
 
     parser = argparse.ArgumentParser(description=service_description.name)
-    parser.add_argument('--with-telemetry', action="store_true", help='Initialise OpenTelemetry')
-    parser.add_argument('--print-service-description', action="store_true", help='Print service description to stdout')
-    parser.add_argument('--print-tool-description', action="store_true", help='Print tool description to stdout')
-    parser.add_argument('--test-file', type=str, help='path to job file for testing service')
+    parser.add_argument(
+        "--with-telemetry", action="store_true", help="Initialise OpenTelemetry"
+    )
+    parser.add_argument(
+        "--print-service-description",
+        action="store_true",
+        help="Print service description to stdout",
+    )
+    parser.add_argument(
+        "--print-tool-description",
+        action="store_true",
+        help="Print tool description to stdout",
+    )
+    parser.add_argument(
+        "--test-file", type=str, help="path to job file for testing service"
+    )
 
     if custom_args is not None:
         args = custom_args(parser)
@@ -183,24 +206,32 @@ def start_batch_service(
 
     if args.print_service_description:
         from .service_definition import print_batch_service_definition
+
         print_batch_service_definition(service_description, worker_fn)
         sys.exit(0)
 
     if args.print_tool_description:
-        print_tool_definition(worker_fn, name = service_description.name)
+        print_tool_definition(worker_fn, name=service_description.name)
         sys.exit(0)
 
-    logger.info(f"{service_description.name} - {os.getenv('VERSION')} - v{get_version()}")
+    logger.info(
+        f"{service_description.name} - {os.getenv('VERSION')} - v{get_version()}"
+    )
 
-    set_event_reporter_factory(SidecarReporter)
+    set_event_reporter_factory(
+        lambda job_id, job_authorization: SidecarReporter(
+            job_id, job_authorization or ""
+        )
+    )
     svc_ctxt = create_service_context(worker_fn, logger)
     if args.test_file is not None:
         from .utils import file_to_json
+
         job = file_to_json(args.test_file)
         res = do_job(job, svc_ctxt)
         if get_ivcap_url() is not None:
-            result = verify_result(res, job['id'], logger)
-            push_result(result, job['id'], None)
+            result = verify_result(res, job["id"], logger)
+            push_result(result, job["id"], None)
 
         print(res.model_dump_json(indent=2, by_alias=True))
     else:
@@ -211,17 +242,31 @@ def start_batch_service(
 
 def create_service_context(worker_fn: Callable, logger: Logger) -> ServiceContext:
     input_model, extras = get_input_type(worker_fn)
+    if input_model is None:
+        logger.warning(
+            f"worker function '{worker_fn.__name__}' must declare a Pydantic input model as its first argument"
+        )
+        sys.exit(1)
     if len(extras) > 1:
-        logger.warning(f"worker function '{worker_fn.__name__}' has more than one extra paramter - only JobContext is allowed")
+        logger.warning(
+            f"worker function '{worker_fn.__name__}' has more than one extra paramter - only JobContext is allowed"
+        )
         sys.exit(1)
     fn_job_context_p = None
     if len(extras) == 1:
         fn_job_context_p = list(extras.keys())[0]
         if extras[fn_job_context_p] != JobContext:
-            logger.warning(f"worker function '{worker_fn.__name__}' can only have 'JobContext' as additional parameter")
+            logger.warning(
+                f"worker function '{worker_fn.__name__}' can only have 'JobContext' as additional parameter"
+            )
             sys.exit(1)
 
     output_model = get_function_return_type(worker_fn)
+    if output_model is None:
+        logger.warning(
+            f"worker function '{worker_fn.__name__}' must declare a Pydantic output model as its return type"
+        )
+        sys.exit(1)
 
     return ServiceContext(
         worker_fn=worker_fn,

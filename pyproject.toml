@@ -9,6 +9,11 @@ readme = "README.md"
 
 include = ["ivcap_service/py.typed"]
 
+[tool.poe.tasks]    # using poethepoet
+lint = "ruff check ."
+format = "ruff format ."
+typecheck = "pyright"
+
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
 cachetools = "^5.5.2"
@@ -30,6 +35,9 @@ sphinx-autoapi = "^2.0.0"
 sphinx-rtd-theme = "^1.0.0"
 licenseheaders = "^0.8.8"
 toml = "^0.10.2"
+ruff = "^0.15.4"
+poethepoet = "^0.42.1"
+pyright = "^1.1.396"
 
 [tool.semantic_release]
 version_variable = "pyproject.toml:version" # version location
@@ -40,6 +48,17 @@ upload_to_release = true                    # auto-create GitHub release
 upload_to_pypi = false                      # don't auto-upload to PyPI
 remove_dist = false                         # don't remove dists
 patch_without_tag = true                    # patch release by default
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]   # pycodestyle, pyflakes, isort, pyupgrade
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

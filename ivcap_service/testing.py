@@ -4,12 +4,13 @@
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
 import os
-from typing import Optional, Dict
+
 import httpx
+
 
 def file_to_http_response(
     file_path: str,
-    headers: Optional[Dict[str, str]] = None,
+    headers: dict[str, str] | None = None,
     status_code: int = 200,
 ) -> httpx.Response:
     """
@@ -49,7 +50,7 @@ def file_to_http_response(
         with open(file_path, "rb") as file:
             file_data = file.read()
     except Exception as e:
-        raise IOError(f"Error reading file: {file_path}: {e}")
+        raise OSError(f"Error reading file: {file_path}: {e}")
 
     # Create an httpx.Response object
     response = httpx.Response(

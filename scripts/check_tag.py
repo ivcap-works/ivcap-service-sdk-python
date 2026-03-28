@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-import sys
 import subprocess
+import sys
+
 import toml
+
 
 def get_version_from_pyproject():
     try:
-        with open("pyproject.toml", "r") as f:
+        with open("pyproject.toml") as f:
             pyproject = toml.load(f)
         # Poetry projects: version is under [tool.poetry]
         return pyproject["tool"]["poetry"]["version"]
