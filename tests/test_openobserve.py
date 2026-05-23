@@ -1,3 +1,8 @@
+#
+# Copyright (c) 2026 Commonwealth Scientific and Industrial Research Organisation (CSIRO). All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file. See the AUTHORS file for names of contributors.
+#
 import pytest
 
 from ivcap_service.openobserve import load_openobserve_config_from_env
