@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="CSIRO" /><link rel="canonical" href="https://ivcap-works.github.io/ivcap-service-sdk-python/guides/error-handling/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Error Handling - IVCAP Service SDK (Python)</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Error Handling";
+        var mkdocs_page_input_path = "guides/error-handling.md";
+        var mkdocs_page_url = "/ivcap-service-sdk-python/guides/error-handling/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> IVCAP Service SDK (Python)
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/quick-start/">Quick Start</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/first-service/">Your First Service</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Guides</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../job-processing/">Job Processing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../artifacts/">Working with Artifacts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../service-composition/">Service Composition</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../observability/">Observability & Logging</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Error Handling</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#automatic-error-reporting">Automatic Error Reporting</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#manual-error-reporting">Manual Error Reporting</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#try-except-patterns">Try-Except Patterns</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#recover-from-specific-errors">Recover from Specific Errors</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#retry-logic">Retry Logic</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#graceful-degradation">Graceful Degradation</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#validation-errors">Validation Errors</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#cleanup-on-error">Cleanup on Error</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#partial-success-handling">Partial Success Handling</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#custom-error-types">Custom Error Types</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../deployment/">Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../best-practices/">Best Practices</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/service/">Service</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/job-context/">JobContext</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/events/">Events & Reporting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/types/">Types</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/utilities/">Utilities</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../examples/batch-service/">Batch Service</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../examples/advanced-patterns/">Advanced Patterns</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/environment-variables/">Environment Variables</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/service-definition/">Service Definition Schema</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Community</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../community/contributing/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../community/conduct/">Code of Conduct</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">IVCAP Service SDK (Python)</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Guides</li>
+      <li class="breadcrumb-item active">Error Handling</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/ivcap-works/ivcap-service-sdk-python/edit/main/docs/docs/guides/error-handling.md">Edit on ivcap-service-sdk-python</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="error-handling-guide">Error Handling Guide<a class="headerlink" href="#error-handling-guide" title="Permanent link">&para;</a></h1>
+<p>Build robust services with comprehensive error handling.</p>
+<h2 id="automatic-error-reporting">Automatic Error Reporting<a class="headerlink" href="#automatic-error-reporting" title="Permanent link">&para;</a></h2>
+<p>Exceptions are automatically caught and reported:</p>
+<pre><code class="language-python">def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    # Any exception here is automatically reported
+    result = process(req)  # If this raises, it's reported
+    return Result(result=result)
+</code></pre>
+<h2 id="manual-error-reporting">Manual Error Reporting<a class="headerlink" href="#manual-error-reporting" title="Permanent link">&para;</a></h2>
+<p>Explicitly report errors to the event system:</p>
+<pre><code class="language-python">def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    with ctx.report.step(&quot;processing&quot;) as step:
+        try:
+            result = process(req)
+        except ValueError as e:
+            step.error(e)
+            logger.error(f&quot;Invalid input: {e}&quot;)
+            raise
+        except Exception as e:
+            step.error(e)
+            logger.error(f&quot;Unexpected error: {e}&quot;, exc_info=True)
+            raise
+
+    return Result(result=result)
+</code></pre>
+<h2 id="try-except-patterns">Try-Except Patterns<a class="headerlink" href="#try-except-patterns" title="Permanent link">&para;</a></h2>
+<h3 id="recover-from-specific-errors">Recover from Specific Errors<a class="headerlink" href="#recover-from-specific-errors" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    ivcap = ctx.ivcap()
+
+    with ctx.report.step(&quot;download&quot;) as step:
+        try:
+            data = ivcap.artifact(req.artifact_id).read()
+        except FileNotFoundError:
+            logger.warning(f&quot;Artifact not found: {req.artifact_id}&quot;)
+            step.finished(msg=&quot;Using default data&quot;)
+            data = DEFAULT_DATA
+        except Exception as e:
+            step.error(e)
+            raise
+
+    return Result(result=process(data))
+</code></pre>
+<h3 id="retry-logic">Retry Logic<a class="headerlink" href="#retry-logic" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">import time
+
+def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    ivcap = ctx.ivcap()
+    max_retries = 3
+
+    for attempt in range(max_retries):
+        try:
+            with ctx.report.step(f&quot;attempt-{attempt+1}&quot;) as step:
+                result = ivcap.service(service_id).run(req)
+                step.finished()
+                return Result(result=result)
+        except Exception as e:
+            if attempt &lt; max_retries - 1:
+                wait_time = 2 ** attempt
+                logger.warning(f&quot;Attempt {attempt+1} failed, retrying in {wait_time}s&quot;)
+                time.sleep(wait_time)
+            else:
+                logger.error(f&quot;All {max_retries} attempts failed&quot;)
+                raise
+</code></pre>
+<h3 id="graceful-degradation">Graceful Degradation<a class="headerlink" href="#graceful-degradation" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    ivcap = ctx.ivcap()
+
+    # Try to use high-quality service
+    with ctx.report.step(&quot;process&quot;) as step:
+        try:
+            result = ivcap.service(hq_service_id).run(req)
+            step.finished(msg=&quot;High-quality processing&quot;)
+        except Exception as e:
+            logger.warning(f&quot;HQ service failed, using fallback: {e}&quot;)
+            step.info(event={&quot;fallback&quot;: True})
+            # Use lower-quality fallback
+            result = ivcap.service(fallback_service_id).run(req)
+            step.finished(msg=&quot;Fallback processing&quot;)
+
+    return Result(result=result, degraded=True)
+</code></pre>
+<h2 id="validation-errors">Validation Errors<a class="headerlink" href="#validation-errors" title="Permanent link">&para;</a></h2>
+<p>Pydantic validates request models automatically:</p>
+<pre><code class="language-python">from pydantic import BaseModel, Field, field_validator
+
+class Request(BaseModel):
+    email: str
+    age: int = Field(ge=0, le=150)
+
+    @field_validator(&quot;email&quot;)
+    @classmethod
+    def validate_email(cls, v):
+        if &quot;@&quot; not in v:
+            raise ValueError(&quot;Invalid email format&quot;)
+        return v
+
+def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    # Request is guaranteed to be valid
+    # Invalid requests cause job to fail before this is called
+    return Result(result=f&quot;Processing {req.email}&quot;)
+</code></pre>
+<h2 id="cleanup-on-error">Cleanup on Error<a class="headerlink" href="#cleanup-on-error" title="Permanent link">&para;</a></h2>
+<p>Use try-finally for cleanup:</p>
+<pre><code class="language-python">import tempfile
+import os
+
+def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    tmp_file = None
+
+    try:
+        # Create temporary file
+        with tempfile.NamedTemporaryFile(delete=False) as tmp:
+            tmp_file = tmp.name
+            # Use temp file...
+            result = process_file(tmp_file)
+
+    except Exception as e:
+        logger.error(f&quot;Processing failed: {e}&quot;, exc_info=True)
+        raise
+    finally:
+        # Always clean up
+        if tmp_file and os.path.exists(tmp_file):
+            os.unlink(tmp_file)
+
+    return Result(result=result)
+</code></pre>
+<h2 id="partial-success-handling">Partial Success Handling<a class="headerlink" href="#partial-success-handling" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    results = []
+    errors = []
+
+    with ctx.report.step(&quot;batch_processing&quot;) as step:
+        for i, item in enumerate(req.items):
+            try:
+                result = process_item(item)
+                results.append(result)
+            except Exception as e:
+                errors.append({
+                    &quot;index&quot;: i,
+                    &quot;item&quot;: item,
+                    &quot;error&quot;: str(e)
+                })
+                logger.warning(f&quot;Failed to process item {i}: {e}&quot;)
+
+        step.finished(msg=f&quot;Processed {len(results)}/{len(req.items)} items&quot;)
+
+    return Result(
+        results=results,
+        errors=errors,
+        success=len(errors) == 0
+    )
+</code></pre>
+<h2 id="custom-error-types">Custom Error Types<a class="headerlink" href="#custom-error-types" title="Permanent link">&para;</a></h2>
+<pre><code class="language-python">class ProcessingError(Exception):
+    &quot;&quot;&quot;Base error for processing failures.&quot;&quot;&quot;
+    pass
+
+class ValidationError(ProcessingError):
+    &quot;&quot;&quot;Input validation failed.&quot;&quot;&quot;
+    pass
+
+class ResourceError(ProcessingError):
+    &quot;&quot;&quot;Resource not available.&quot;&quot;&quot;
+    pass
+
+def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    try:
+        if not validate(req):
+            raise ValidationError(&quot;Invalid input&quot;)
+
+        ivcap = ctx.ivcap()
+        if not ivcap:
+            raise ResourceError(&quot;IVCAP not available&quot;)
+
+        return Result(result=process(req))
+
+    except ValidationError as e:
+        logger.error(f&quot;Validation failed: {e}&quot;)
+        raise
+    except ResourceError as e:
+        logger.error(f&quot;Resource error: {e}&quot;)
+        raise
+    except Exception as e:
+        logger.error(f&quot;Unexpected error: {e}&quot;, exc_info=True)
+        raise
+</code></pre>
+<h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../job-processing/">Job Processing</a> — Core patterns</li>
+<li><a href="../observability/">Observability</a> — Logging and monitoring</li>
+<li><a href="../best-practices/">Best Practices</a> — Production patterns</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../observability/" class="btn btn-neutral float-left" title="Observability & Logging"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../deployment/" class="btn btn-neutral float-right" title="Deployment">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>Copyright &copy; 2022-2026 CSIRO</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/ivcap-works/ivcap-service-sdk-python" class="fa fa-code-fork" style="color: #fcfcfc"> ivcap-service-sdk-python</a>
+        </span>
+    
+    
+      <span><a href="../observability/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../deployment/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

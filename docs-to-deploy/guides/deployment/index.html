@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="CSIRO" /><link rel="canonical" href="https://ivcap-works.github.io/ivcap-service-sdk-python/guides/deployment/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Deployment - IVCAP Service SDK (Python)</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Deployment";
+        var mkdocs_page_input_path = "guides/deployment.md";
+        var mkdocs_page_url = "/ivcap-service-sdk-python/guides/deployment/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> IVCAP Service SDK (Python)
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/quick-start/">Quick Start</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/first-service/">Your First Service</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Guides</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../job-processing/">Job Processing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../artifacts/">Working with Artifacts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../service-composition/">Service Composition</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../observability/">Observability & Logging</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error-handling/">Error Handling</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Deployment</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#docker-containerization">Docker Containerization</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#environment-configuration">Environment Configuration</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#local-development">Local Development</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#production-environment">Production Environment</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#service-registration">Service Registration</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#kubernetes-deployment">Kubernetes Deployment</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#scalability-patterns">Scalability Patterns</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#horizontal-scaling">Horizontal Scaling</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#resource-requirements">Resource Requirements</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#monitoring">Monitoring</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#health-checks">Health Checks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#log-aggregation">Log Aggregation</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#troubleshooting">Troubleshooting</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#container-wont-start">Container Won't Start</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#jobs-failing">Jobs Failing</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#performance-issues">Performance Issues</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../best-practices/">Best Practices</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/service/">Service</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/job-context/">JobContext</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/events/">Events & Reporting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/types/">Types</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/utilities/">Utilities</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../examples/batch-service/">Batch Service</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../examples/advanced-patterns/">Advanced Patterns</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/environment-variables/">Environment Variables</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/service-definition/">Service Definition Schema</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Community</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../community/contributing/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../community/conduct/">Code of Conduct</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">IVCAP Service SDK (Python)</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Guides</li>
+      <li class="breadcrumb-item active">Deployment</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/ivcap-works/ivcap-service-sdk-python/edit/main/docs/docs/guides/deployment.md">Edit on ivcap-service-sdk-python</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="deployment-guide">Deployment Guide<a class="headerlink" href="#deployment-guide" title="Permanent link">&para;</a></h1>
+<p>Deploy your IVCAP service to production.</p>
+<h2 id="docker-containerization">Docker Containerization<a class="headerlink" href="#docker-containerization" title="Permanent link">&para;</a></h2>
+<p>Create a <code>Dockerfile</code>:</p>
+<pre><code class="language-dockerfile">FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY pyproject.toml poetry.lock* ./
+RUN pip install poetry &amp;&amp; \
+    poetry config virtualenvs.create false &amp;&amp; \
+    poetry install --no-dev
+
+# Copy service code
+COPY my_service.py .
+
+# Run the service
+ENTRYPOINT [&quot;python&quot;, &quot;my_service.py&quot;]
+</code></pre>
+<p>Build the image:</p>
+<pre><code class="language-bash">docker build -t my-service:latest .
+</code></pre>
+<h2 id="environment-configuration">Environment Configuration<a class="headerlink" href="#environment-configuration" title="Permanent link">&para;</a></h2>
+<h3 id="local-development">Local Development<a class="headerlink" href="#local-development" title="Permanent link">&para;</a></h3>
+<pre><code class="language-bash"># Optional: OpenObserve integration
+export OPENOBSERVE_URL=&quot;http://localhost:5080&quot;
+export OPENOBSERVE_ORG=&quot;myorg&quot;
+export OPENOBSERVE_USERNAME=&quot;admin@example.com&quot;
+export OPENOBSERVE_TOKEN=&quot;&lt;token&gt;&quot;
+
+# Run the service
+python my_service.py --print-service-description
+</code></pre>
+<h3 id="production-environment">Production Environment<a class="headerlink" href="#production-environment" title="Permanent link">&para;</a></h3>
+<p>Set environment variables in your deployment:</p>
+<pre><code class="language-bash"># Service configuration
+export IVCAP_URL=&quot;https://ivcap.example.com&quot;
+
+# Observability
+export OPENOBSERVE_URL=&quot;https://observe.example.com&quot;
+export OPENOBSERVE_ORG=&quot;production&quot;
+export OPENOBSERVE_USERNAME=&quot;service@example.com&quot;
+export OPENOBSERVE_TOKEN=&quot;&lt;production-token&gt;&quot;
+
+# Custom settings
+export API_KEY=&quot;&lt;external-api-key&gt;&quot;
+export LOG_LEVEL=&quot;INFO&quot;
+</code></pre>
+<h2 id="service-registration">Service Registration<a class="headerlink" href="#service-registration" title="Permanent link">&para;</a></h2>
+<p>Get the service definition:</p>
+<pre><code class="language-bash">docker run my-service:latest --print-service-description &gt; service.json
+</code></pre>
+<p>Register with IVCAP:</p>
+<pre><code class="language-bash">ivcap service register service.json
+</code></pre>
+<h2 id="kubernetes-deployment">Kubernetes Deployment<a class="headerlink" href="#kubernetes-deployment" title="Permanent link">&para;</a></h2>
+<p>Create a <code>deployment.yaml</code>:</p>
+<pre><code class="language-yaml">apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-service
+  template:
+    metadata:
+      labels:
+        app: my-service
+    spec:
+      containers:
+      - name: my-service
+        image: my-service:latest
+        env:
+        - name: OPENOBSERVE_URL
+          value: &quot;https://observe.example.com&quot;
+        - name: OPENOBSERVE_ORG
+          valueFrom:
+            secretKeyRef:
+              name: observability
+              key: org
+        - name: OPENOBSERVE_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: observability
+              key: token
+        resources:
+          requests:
+            memory: &quot;256Mi&quot;
+            cpu: &quot;250m&quot;
+          limits:
+            memory: &quot;512Mi&quot;
+            cpu: &quot;500m&quot;
+</code></pre>
+<p>Deploy:</p>
+<pre><code class="language-bash">kubectl apply -f deployment.yaml
+</code></pre>
+<h2 id="scalability-patterns">Scalability Patterns<a class="headerlink" href="#scalability-patterns" title="Permanent link">&para;</a></h2>
+<h3 id="horizontal-scaling">Horizontal Scaling<a class="headerlink" href="#horizontal-scaling" title="Permanent link">&para;</a></h3>
+<p>The IVCAP platform automatically distributes jobs across service instances. Design your service to be stateless:</p>
+<pre><code class="language-python">def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    # Don't store state between jobs
+    # Each job runs independently
+    return Result(result=process(req.data))
+</code></pre>
+<h3 id="resource-requirements">Resource Requirements<a class="headerlink" href="#resource-requirements" title="Permanent link">&para;</a></h3>
+<p>Specify resource needs in your service definition. The platform uses this for scheduling:</p>
+<pre><code class="language-python">from ivcap_service import ResourceRequirements
+
+service = Service(
+    name=&quot;GPU-Intensive Service&quot;,
+    resources=ResourceRequirements(
+        cpu=2,
+        memory=&quot;4Gi&quot;,
+        gpu=1  # Request GPU
+    )
+)
+</code></pre>
+<h2 id="monitoring">Monitoring<a class="headerlink" href="#monitoring" title="Permanent link">&para;</a></h2>
+<h3 id="health-checks">Health Checks<a class="headerlink" href="#health-checks" title="Permanent link">&para;</a></h3>
+<p>Implement health monitoring:</p>
+<pre><code class="language-bash"># Docker health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c &quot;import ivcap_service; print('healthy')&quot;
+</code></pre>
+<h3 id="log-aggregation">Log Aggregation<a class="headerlink" href="#log-aggregation" title="Permanent link">&para;</a></h3>
+<p>Logs automatically export to OpenObserve. Query them:</p>
+<pre><code class="language-bash"># View service logs
+ivcap logs -service my-service -hours 1
+</code></pre>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="container-wont-start">Container Won't Start<a class="headerlink" href="#container-wont-start" title="Permanent link">&para;</a></h3>
+<p>Check logs:</p>
+<pre><code class="language-bash">docker logs my-service
+</code></pre>
+<p>Ensure service code is correct:</p>
+<pre><code class="language-bash"># Test locally
+docker run -it my-service:latest --print-service-description
+</code></pre>
+<h3 id="jobs-failing">Jobs Failing<a class="headerlink" href="#jobs-failing" title="Permanent link">&para;</a></h3>
+<p>Check OpenObserve for logs and errors. Common issues:</p>
+<ol>
+<li>Missing environment variables</li>
+<li>Network connectivity to IVCAP</li>
+<li>Insufficient resources</li>
+<li>Unhandled exceptions</li>
+</ol>
+<h3 id="performance-issues">Performance Issues<a class="headerlink" href="#performance-issues" title="Permanent link">&para;</a></h3>
+<ol>
+<li><strong>Increase replicas</strong> for more parallel processing</li>
+<li><strong>Optimize code</strong> to process faster</li>
+<li><strong>Profile</strong> using OpenObserve metrics</li>
+<li><strong>Use caching</strong> for expensive operations</li>
+</ol>
+<h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../best-practices/">Best Practices</a> — Production patterns</li>
+<li><a href="../observability/">Observability</a> — Monitoring setup</li>
+<li><a href="../error-handling/">Error Handling</a> — Robust error handling</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../error-handling/" class="btn btn-neutral float-left" title="Error Handling"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../best-practices/" class="btn btn-neutral float-right" title="Best Practices">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>Copyright &copy; 2022-2026 CSIRO</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/ivcap-works/ivcap-service-sdk-python" class="fa fa-code-fork" style="color: #fcfcfc"> ivcap-service-sdk-python</a>
+        </span>
+    
+    
+      <span><a href="../error-handling/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../best-practices/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

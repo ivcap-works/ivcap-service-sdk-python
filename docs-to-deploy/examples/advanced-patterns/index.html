@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="CSIRO" /><link rel="canonical" href="https://ivcap-works.github.io/ivcap-service-sdk-python/examples/advanced-patterns/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Advanced Patterns - IVCAP Service SDK (Python)</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Advanced Patterns";
+        var mkdocs_page_input_path = "examples/advanced-patterns.md";
+        var mkdocs_page_url = "/ivcap-service-sdk-python/examples/advanced-patterns/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> IVCAP Service SDK (Python)
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/quick-start/">Quick Start</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/first-service/">Your First Service</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/job-processing/">Job Processing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/artifacts/">Working with Artifacts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/service-composition/">Service Composition</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/observability/">Observability & Logging</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/error-handling/">Error Handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/deployment/">Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/best-practices/">Best Practices</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/service/">Service</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/job-context/">JobContext</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/events/">Events & Reporting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/types/">Types</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/utilities/">Utilities</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../batch-service/">Batch Service</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Advanced Patterns</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#service-composition-pipeline">Service Composition Pipeline</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#parallel-processing">Parallel Processing</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#streaming-large-files">Streaming Large Files</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#retry-with-exponential-backoff">Retry with Exponential Backoff</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#dynamic-service-discovery">Dynamic Service Discovery</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#conditional-processing">Conditional Processing</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#caching-strategy">Caching Strategy</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/environment-variables/">Environment Variables</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/service-definition/">Service Definition Schema</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Community</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../community/contributing/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../community/conduct/">Code of Conduct</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">IVCAP Service SDK (Python)</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Examples</li>
+      <li class="breadcrumb-item active">Advanced Patterns</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/ivcap-works/ivcap-service-sdk-python/edit/main/docs/docs/examples/advanced-patterns.md">Edit on ivcap-service-sdk-python</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="advanced-patterns">Advanced Patterns<a class="headerlink" href="#advanced-patterns" title="Permanent link">&para;</a></h1>
+<p>Advanced techniques for building sophisticated IVCAP services.</p>
+<h2 id="service-composition-pipeline">Service Composition Pipeline<a class="headerlink" href="#service-composition-pipeline" title="Permanent link">&para;</a></h2>
+<p>Build complex workflows by composing multiple services:</p>
+<pre><code class="language-python">def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    ivcap = ctx.ivcap()
+
+    with ctx.report.step(&quot;validate&quot;) as s:
+        validated = ivcap.service(&quot;validate-service&quot;).run(req.data)
+        s.finished()
+
+    with ctx.report.step(&quot;transform&quot;) as s:
+        transformed = ivcap.service(&quot;transform-service&quot;).run(validated)
+        s.finished()
+
+    with ctx.report.step(&quot;enrich&quot;) as s:
+        enriched = ivcap.service(&quot;enrich-service&quot;).run(transformed)
+        s.finished()
+
+    return Result(result=enriched)
+</code></pre>
+<h2 id="parallel-processing">Parallel Processing<a class="headerlink" href="#parallel-processing" title="Permanent link">&para;</a></h2>
+<p>Process multiple items in parallel:</p>
+<pre><code class="language-python">from concurrent.futures import ThreadPoolExecutor, as_completed
+
+def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    ivcap = ctx.ivcap()
+    results = {}
+
+    with ctx.report.step(&quot;parallel_processing&quot;) as step:
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            futures = {
+                executor.submit(
+                    ivcap.service(service_id).run, item
+                ): item_id
+                for item_id, item in enumerate(req.items)
+            }
+
+            completed = 0
+            for future in as_completed(futures):
+                item_id = futures[future]
+                results[item_id] = future.result()
+                completed += 1
+
+                if completed % 10 == 0:
+                    step.info(event={&quot;completed&quot;: completed})
+
+        step.finished(msg=f&quot;Completed {len(results)} items&quot;)
+
+    return Result(results=results)
+</code></pre>
+<h2 id="streaming-large-files">Streaming Large Files<a class="headerlink" href="#streaming-large-files" title="Permanent link">&para;</a></h2>
+<p>Handle large files efficiently:</p>
+<pre><code class="language-python">import io
+
+def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    ivcap = ctx.ivcap()
+    chunk_size = 1024 * 1024  # 1MB chunks
+
+    with ctx.report.step(&quot;download&quot;) as step:
+        artifact = ivcap.artifact(req.input_id)
+        step.finished()
+
+    with ctx.report.step(&quot;process&quot;) as step:
+        processed_chunks = []
+        bytes_processed = 0
+
+        for chunk in artifact.iter_content(chunk_size=chunk_size):
+            processed = process_chunk(chunk)
+            processed_chunks.append(processed)
+            bytes_processed += len(chunk)
+
+            if bytes_processed % (10 * 1024 * 1024) == 0:  # Every 10MB
+                step.info(event={&quot;bytes_processed&quot;: bytes_processed})
+
+        step.finished()
+
+    with ctx.report.step(&quot;upload&quot;) as step:
+        final_data = b&quot;&quot;.join(processed_chunks)
+        artifact_id = ivcap.artifact_new(data=final_data)
+        step.finished()
+
+    return Result(artifact_id=artifact_id)
+</code></pre>
+<h2 id="retry-with-exponential-backoff">Retry with Exponential Backoff<a class="headerlink" href="#retry-with-exponential-backoff" title="Permanent link">&para;</a></h2>
+<p>Robust error handling with exponential backoff:</p>
+<pre><code class="language-python">import time
+import random
+
+def retry_with_backoff(func, max_retries=3, base_wait=1):
+    for attempt in range(max_retries):
+        try:
+            return func()
+        except Exception as e:
+            if attempt == max_retries - 1:
+                raise
+            wait_time = base_wait * (2 ** attempt) + random.uniform(0, 1)
+            logger.warning(f&quot;Attempt {attempt+1} failed, retrying in {wait_time:.1f}s: {e}&quot;)
+            time.sleep(wait_time)
+
+def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    ivcap = ctx.ivcap()
+
+    with ctx.report.step(&quot;call_service&quot;) as step:
+        result = retry_with_backoff(
+            lambda: ivcap.service(service_id).run(req)
+        )
+        step.finished()
+
+    return Result(result=result)
+</code></pre>
+<h2 id="dynamic-service-discovery">Dynamic Service Discovery<a class="headerlink" href="#dynamic-service-discovery" title="Permanent link">&para;</a></h2>
+<p>Find and invoke services dynamically:</p>
+<pre><code class="language-python">def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    ivcap = ctx.ivcap()
+
+    # Find service by name
+    service_name = req.processor_type
+    service_id = ivcap.service_by_name(service_name)
+
+    if not service_id:
+        raise ValueError(f&quot;Service not found: {service_name}&quot;)
+
+    with ctx.report.step(&quot;process&quot;) as step:
+        result = ivcap.service(service_id).run(req.data)
+        step.finished()
+
+    return Result(result=result)
+</code></pre>
+<h2 id="conditional-processing">Conditional Processing<a class="headerlink" href="#conditional-processing" title="Permanent link">&para;</a></h2>
+<p>Branch logic based on input:</p>
+<pre><code class="language-python">def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    ivcap = ctx.ivcap()
+
+    if req.type == &quot;small&quot;:
+        service = &quot;fast-processor&quot;
+    elif req.type == &quot;large&quot;:
+        service = &quot;powerful-processor&quot;
+    else:
+        service = &quot;default-processor&quot;
+
+    with ctx.report.step(&quot;process&quot;) as step:
+        result = ivcap.service(service).run(req.data)
+        step.finished()
+
+    return Result(result=result)
+</code></pre>
+<h2 id="caching-strategy">Caching Strategy<a class="headerlink" href="#caching-strategy" title="Permanent link">&para;</a></h2>
+<p>Implement intelligent caching:</p>
+<pre><code class="language-python">from functools import lru_cache
+import hashlib
+
+@lru_cache(maxsize=100)
+def get_cached_model(model_id: str):
+    &quot;&quot;&quot;Load model with caching.&quot;&quot;&quot;
+    return load_model(model_id)
+
+def get_input_hash(data: bytes) -&gt; str:
+    return hashlib.md5(data).hexdigest()
+
+result_cache = {}
+
+def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    # Check cache
+    input_hash = get_input_hash(req.data)
+    if input_hash in result_cache:
+        logger.info(&quot;Cache hit!&quot;)
+        return Result(result=result_cache[input_hash])
+
+    # Process
+    with ctx.report.step(&quot;process&quot;) as step:
+        model = get_cached_model(req.model_id)
+        result = model.predict(req.data)
+        step.finished()
+
+    # Cache result
+    result_cache[input_hash] = result
+
+    return Result(result=result)
+</code></pre>
+<h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../../guides/service-composition/">Service Composition Guide</a></li>
+<li><a href="../../guides/job-processing/">Job Processing Guide</a></li>
+<li><a href="../../guides/best-practices/">Best Practices</a></li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../batch-service/" class="btn btn-neutral float-left" title="Batch Service"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../../reference/environment-variables/" class="btn btn-neutral float-right" title="Environment Variables">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>Copyright &copy; 2022-2026 CSIRO</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/ivcap-works/ivcap-service-sdk-python" class="fa fa-code-fork" style="color: #fcfcfc"> ivcap-service-sdk-python</a>
+        </span>
+    
+    
+      <span><a href="../batch-service/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../../reference/environment-variables/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

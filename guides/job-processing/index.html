@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="CSIRO" /><link rel="canonical" href="https://ivcap-works.github.io/ivcap-service-sdk-python/guides/job-processing/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Job Processing - IVCAP Service SDK (Python)</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Job Processing";
+        var mkdocs_page_input_path = "guides/job-processing.md";
+        var mkdocs_page_url = "/ivcap-service-sdk-python/guides/job-processing/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> IVCAP Service SDK (Python)
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/quick-start/">Quick Start</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/first-service/">Your First Service</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Guides</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Job Processing</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#the-job-processor-function">The Job Processor Function</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#function-signature">Function Signature</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#request-result-types">Request &amp; Result Types</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#accessing-job-context">Accessing Job Context</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#progress-reporting">Progress Reporting</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#step-lifecycle">Step Lifecycle</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#error-handling">Error Handling</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#common-patterns">Common Patterns</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#multi-step-workflow">Multi-Step Workflow</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#progress-tracking-with-loops">Progress Tracking with Loops</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#batch-processing">Batch Processing</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#accessing-external-data">Accessing External Data</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#from-artifacts">From Artifacts</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#from-environment-variables">From Environment Variables</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#validation-and-error-handling">Validation and Error Handling</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#performance-considerations">Performance Considerations</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#caching">Caching</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#memory-management">Memory Management</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../artifacts/">Working with Artifacts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../service-composition/">Service Composition</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../observability/">Observability & Logging</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error-handling/">Error Handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../deployment/">Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../best-practices/">Best Practices</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/service/">Service</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/job-context/">JobContext</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/events/">Events & Reporting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/types/">Types</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/utilities/">Utilities</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../examples/batch-service/">Batch Service</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../examples/advanced-patterns/">Advanced Patterns</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/environment-variables/">Environment Variables</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/service-definition/">Service Definition Schema</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Community</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../community/contributing/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../community/conduct/">Code of Conduct</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">IVCAP Service SDK (Python)</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Guides</li>
+      <li class="breadcrumb-item active">Job Processing</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/ivcap-works/ivcap-service-sdk-python/edit/main/docs/docs/guides/job-processing.md">Edit on ivcap-service-sdk-python</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="job-processing-guide">Job Processing Guide<a class="headerlink" href="#job-processing-guide" title="Permanent link">&para;</a></h1>
+<p>This guide covers the fundamentals of processing jobs in IVCAP services.</p>
+<h2 id="the-job-processor-function">The Job Processor Function<a class="headerlink" href="#the-job-processor-function" title="Permanent link">&para;</a></h2>
+<p>Every service needs a function that processes jobs:</p>
+<pre><code class="language-python">def process_job(request: MyRequest, context: JobContext) -&gt; MyResult:
+    &quot;&quot;&quot;Process a single job.&quot;&quot;&quot;
+    # Your logic here
+    return MyResult(...)
+</code></pre>
+<h3 id="function-signature">Function Signature<a class="headerlink" href="#function-signature" title="Permanent link">&para;</a></h3>
+<p>The function <strong>must</strong>:
+1. Accept exactly 2 parameters:
+   - Request of your defined type (Pydantic BaseModel)
+   - <code>JobContext</code> for job operations
+2. Return your Result type (Pydantic BaseModel)
+3. Can raise exceptions (automatically reported)</p>
+<h3 id="request-result-types">Request &amp; Result Types<a class="headerlink" href="#request-result-types" title="Permanent link">&para;</a></h3>
+<p>Use Pydantic models for type safety:</p>
+<pre><code class="language-python">from pydantic import BaseModel, Field
+
+class ProcessRequest(BaseModel):
+    &quot;&quot;&quot;Request to process data.&quot;&quot;&quot;
+    input_data: str = Field(description=&quot;Input to process&quot;)
+    options: dict = Field(default_factory=dict, description=&quot;Options&quot;)
+
+class ProcessResult(BaseModel):
+    &quot;&quot;&quot;Result after processing.&quot;&quot;&quot;
+    output_data: str = Field(description=&quot;Processed output&quot;)
+    statistics: dict = Field(default_factory=dict, description=&quot;Stats&quot;)
+
+def process_job(req: ProcessRequest, ctx: JobContext) -&gt; ProcessResult:
+    return ProcessResult(
+        output_data=process(req.input_data),
+        statistics={&quot;items_processed&quot;: 1}
+    )
+</code></pre>
+<h2 id="accessing-job-context">Accessing Job Context<a class="headerlink" href="#accessing-job-context" title="Permanent link">&para;</a></h2>
+<p>The <code>JobContext</code> provides essential information and APIs:</p>
+<pre><code class="language-python">def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    # Job identifiers
+    print(f&quot;Job: {ctx.job_id}&quot;)
+    print(f&quot;Request: {ctx.request_id}&quot;)
+
+    # Progress reporting
+    with ctx.report.step(&quot;processing&quot;) as step:
+        result = do_work()
+        step.finished()
+
+    # IVCAP platform access
+    ivcap = ctx.ivcap()  # May be None outside IVCAP environment
+    if ivcap:
+        artifact = ivcap.artifact(artifact_id).read()
+
+    return Result(result=result)
+</code></pre>
+<h2 id="progress-reporting">Progress Reporting<a class="headerlink" href="#progress-reporting" title="Permanent link">&para;</a></h2>
+<p>Report multi-step workflows using the event system:</p>
+<pre><code class="language-python">def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    # Step 1: Validate
+    with ctx.report.step(&quot;validate&quot;, msg=&quot;Validating input&quot;) as step:
+        if not is_valid(req):
+            raise ValueError(&quot;Invalid input&quot;)
+        step.finished(msg=&quot;Validation passed&quot;)
+
+    # Step 2: Process
+    with ctx.report.step(&quot;process&quot;, msg=&quot;Processing&quot;) as step:
+        result = process(req)
+        step.info(event={&quot;progress&quot;: 50})  # Send events
+        step.finished(msg=&quot;Done&quot;)
+
+    return Result(result=result)
+</code></pre>
+<h3 id="step-lifecycle">Step Lifecycle<a class="headerlink" href="#step-lifecycle" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">with ctx.report.step(&quot;step_name&quot;, msg=&quot;Description&quot;) as step:
+    # Step started automatically
+
+    # Send progress events
+    step.info(event={&quot;key&quot;: &quot;value&quot;})
+
+    # Mark completion
+    step.finished(msg=&quot;Complete&quot;)
+
+    # Errors automatically reported on exception
+</code></pre>
+<h2 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h2>
+<p>Exceptions are automatically reported:</p>
+<pre><code class="language-python">def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    try:
+        result = process_data(req)
+    except Exception as e:
+        # Automatically reported to context
+        logger.error(f&quot;Processing failed: {e}&quot;, exc_info=True)
+        raise  # Re-raise to fail the job
+
+    return Result(result=result)
+</code></pre>
+<h2 id="common-patterns">Common Patterns<a class="headerlink" href="#common-patterns" title="Permanent link">&para;</a></h2>
+<h3 id="multi-step-workflow">Multi-Step Workflow<a class="headerlink" href="#multi-step-workflow" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    with ctx.report.step(&quot;load&quot;, msg=&quot;Loading data&quot;) as s:
+        data = load(req.source)
+        s.finished()
+
+    with ctx.report.step(&quot;transform&quot;, msg=&quot;Transforming&quot;) as s:
+        transformed = transform(data)
+        s.finished(msg=f&quot;Transformed {len(data)} items&quot;)
+
+    with ctx.report.step(&quot;validate&quot;, msg=&quot;Validating&quot;) as s:
+        validate(transformed)
+        s.finished()
+
+    with ctx.report.step(&quot;save&quot;, msg=&quot;Saving&quot;) as s:
+        save(transformed)
+        s.finished()
+
+    return Result(status=&quot;success&quot;)
+</code></pre>
+<h3 id="progress-tracking-with-loops">Progress Tracking with Loops<a class="headerlink" href="#progress-tracking-with-loops" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    items = load_items(req.source)
+    results = []
+
+    with ctx.report.step(&quot;processing&quot;, msg=&quot;Processing items&quot;) as step:
+        for i, item in enumerate(items):
+            result = process_item(item)
+            results.append(result)
+
+            # Report progress
+            if i % 100 == 0:
+                step.info(event={
+                    &quot;processed&quot;: i,
+                    &quot;total&quot;: len(items),
+                    &quot;percentage&quot;: (i / len(items)) * 100
+                })
+
+        step.finished(msg=f&quot;Processed {len(items)} items&quot;)
+
+    return Result(results=results)
+</code></pre>
+<h3 id="batch-processing">Batch Processing<a class="headerlink" href="#batch-processing" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    items = load_items(req.source)
+    batch_size = 32
+    results = []
+
+    with ctx.report.step(&quot;batching&quot;, msg=&quot;Processing in batches&quot;) as step:
+        for batch_idx in range(0, len(items), batch_size):
+            batch = items[batch_idx:batch_idx + batch_size]
+            batch_results = process_batch(batch)
+            results.extend(batch_results)
+
+            step.info(event={
+                &quot;batch&quot;: batch_idx // batch_size,
+                &quot;items_processed&quot;: min(batch_idx + batch_size, len(items))
+            })
+
+        step.finished()
+
+    return Result(results=results)
+</code></pre>
+<h2 id="accessing-external-data">Accessing External Data<a class="headerlink" href="#accessing-external-data" title="Permanent link">&para;</a></h2>
+<h3 id="from-artifacts">From Artifacts<a class="headerlink" href="#from-artifacts" title="Permanent link">&para;</a></h3>
+<p>See <a href="../artifacts/">Artifacts Guide</a></p>
+<h3 id="from-environment-variables">From Environment Variables<a class="headerlink" href="#from-environment-variables" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">import os
+
+def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    # Application settings
+    api_url = os.getenv(&quot;API_URL&quot;, &quot;http://localhost:8000&quot;)
+    api_key = os.getenv(&quot;API_KEY&quot;, &quot;&quot;)
+
+    # Use in processing
+    result = call_api(api_url, api_key, req.data)
+
+    return Result(result=result)
+</code></pre>
+<h2 id="validation-and-error-handling">Validation and Error Handling<a class="headerlink" href="#validation-and-error-handling" title="Permanent link">&para;</a></h2>
+<p>Pydantic automatically validates request models:</p>
+<pre><code class="language-python">from pydantic import BaseModel, Field, field_validator
+
+class Request(BaseModel):
+    email: str = Field(description=&quot;User email&quot;)
+    count: int = Field(ge=1, le=1000, description=&quot;Items to process&quot;)
+
+    @field_validator(&quot;email&quot;)
+    @classmethod
+    def validate_email(cls, v):
+        if &quot;@&quot; not in v:
+            raise ValueError(&quot;Invalid email&quot;)
+        return v
+
+def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    # Request is already validated!
+    # Invalid data causes the job to fail before process_job is called
+    return Result(result=f&quot;Processing {req.count} items for {req.email}&quot;)
+</code></pre>
+<h2 id="performance-considerations">Performance Considerations<a class="headerlink" href="#performance-considerations" title="Permanent link">&para;</a></h2>
+<h3 id="caching">Caching<a class="headerlink" href="#caching" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">from functools import lru_cache
+
+@lru_cache(maxsize=100)
+def load_model(model_path: str):
+    &quot;&quot;&quot;Load model once, reuse across jobs.&quot;&quot;&quot;
+    return load_from_disk(model_path)
+
+def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    # Model is loaded once and cached
+    model = load_model(&quot;/path/to/model&quot;)
+    return Result(result=model.predict(req.input))
+</code></pre>
+<h3 id="memory-management">Memory Management<a class="headerlink" href="#memory-management" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    # Process in chunks to avoid memory issues
+    results = []
+    for chunk in iter_chunks(req.data, chunk_size=1000):
+        result = process_chunk(chunk)
+        results.extend(result)
+        # Chunk is garbage collected
+
+    return Result(results=results)
+</code></pre>
+<h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../../api/job-context/">JobContext API</a> — Full context documentation</li>
+<li><a href="../artifacts/">Artifacts</a> — Working with files</li>
+<li><a href="../error-handling/">Error Handling</a> — Exception handling patterns</li>
+<li><a href="../../examples/batch-service/">Examples</a> — Complete working examples</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../overview/" class="btn btn-neutral float-left" title="Overview"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../artifacts/" class="btn btn-neutral float-right" title="Working with Artifacts">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>Copyright &copy; 2022-2026 CSIRO</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/ivcap-works/ivcap-service-sdk-python" class="fa fa-code-fork" style="color: #fcfcfc"> ivcap-service-sdk-python</a>
+        </span>
+    
+    
+      <span><a href="../overview/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../artifacts/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

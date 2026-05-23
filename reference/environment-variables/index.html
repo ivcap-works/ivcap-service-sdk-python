@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="CSIRO" /><link rel="canonical" href="https://ivcap-works.github.io/ivcap-service-sdk-python/reference/environment-variables/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Environment Variables - IVCAP Service SDK (Python)</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Environment Variables";
+        var mkdocs_page_input_path = "reference/environment-variables.md";
+        var mkdocs_page_url = "/ivcap-service-sdk-python/reference/environment-variables/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> IVCAP Service SDK (Python)
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/quick-start/">Quick Start</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/first-service/">Your First Service</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/job-processing/">Job Processing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/artifacts/">Working with Artifacts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/service-composition/">Service Composition</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/observability/">Observability & Logging</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/error-handling/">Error Handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/deployment/">Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/best-practices/">Best Practices</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/service/">Service</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/job-context/">JobContext</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/events/">Events & Reporting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/types/">Types</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/utilities/">Utilities</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../examples/batch-service/">Batch Service</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../examples/advanced-patterns/">Advanced Patterns</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Environment Variables</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#service-configuration">Service Configuration</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#ivcap_url">IVCAP_URL</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#ivcap_api_key">IVCAP_API_KEY</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#openobserve-integration">OpenObserve Integration</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#openobserve_url">OPENOBSERVE_URL</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#openobserve_org">OPENOBSERVE_ORG</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#openobserve_username">OPENOBSERVE_USERNAME</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#openobserve_token">OPENOBSERVE_TOKEN</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#openobserve_enable_logs">OPENOBSERVE_ENABLE_LOGS</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#openobserve_enable_metrics">OPENOBSERVE_ENABLE_METRICS</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#openobserve_metrics_interval">OPENOBSERVE_METRICS_INTERVAL</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#opentelemetry-configuration">OpenTelemetry Configuration</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#otel_exporter_otlp_endpoint">OTEL_EXPORTER_OTLP_ENDPOINT</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#otel_exporter_otlp_headers">OTEL_EXPORTER_OTLP_HEADERS</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#openobserve_use_unified_otlp_endpoint">OPENOBSERVE_USE_UNIFIED_OTLP_ENDPOINT</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#logging-configuration">Logging Configuration</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#ivcap_log_level">IVCAP_LOG_LEVEL</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#ivcap_log_format">IVCAP_LOG_FORMAT</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#custom-application-variables">Custom Application Variables</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#setting-variables">Setting Variables</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#docker">Docker</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#docker-compose">Docker Compose</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#kubernetes">Kubernetes</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#command-line">Command Line</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../service-definition/">Service Definition Schema</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Community</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../community/contributing/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../community/conduct/">Code of Conduct</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">IVCAP Service SDK (Python)</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Reference</li>
+      <li class="breadcrumb-item active">Environment Variables</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/ivcap-works/ivcap-service-sdk-python/edit/main/docs/docs/reference/environment-variables.md">Edit on ivcap-service-sdk-python</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="environment-variables-reference">Environment Variables Reference<a class="headerlink" href="#environment-variables-reference" title="Permanent link">&para;</a></h1>
+<p>Complete reference of all environment variables used by the IVCAP Service SDK.</p>
+<h2 id="service-configuration">Service Configuration<a class="headerlink" href="#service-configuration" title="Permanent link">&para;</a></h2>
+<h3 id="ivcap_url">IVCAP_URL<a class="headerlink" href="#ivcap_url" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: String</li>
+<li><strong>Default</strong>: Auto-detected from environment</li>
+<li><strong>Description</strong>: Base URL for the IVCAP platform</li>
+<li><strong>Example</strong>: <code>https://ivcap.example.com</code></li>
+</ul>
+<h3 id="ivcap_api_key">IVCAP_API_KEY<a class="headerlink" href="#ivcap_api_key" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: String</li>
+<li><strong>Description</strong>: API key for IVCAP authentication</li>
+<li><strong>Example</strong>: <code>sk_prod_...</code></li>
+</ul>
+<h2 id="openobserve-integration">OpenObserve Integration<a class="headerlink" href="#openobserve-integration" title="Permanent link">&para;</a></h2>
+<h3 id="openobserve_url">OPENOBSERVE_URL<a class="headerlink" href="#openobserve_url" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: String</li>
+<li><strong>Description</strong>: Base URL for OpenObserve instance</li>
+<li><strong>Example</strong>: <code>https://observe.example.com</code></li>
+</ul>
+<h3 id="openobserve_org">OPENOBSERVE_ORG<a class="headerlink" href="#openobserve_org" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: String</li>
+<li><strong>Description</strong>: OpenObserve organization name</li>
+<li><strong>Example</strong>: <code>production</code></li>
+</ul>
+<h3 id="openobserve_username">OPENOBSERVE_USERNAME<a class="headerlink" href="#openobserve_username" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: String</li>
+<li><strong>Description</strong>: OpenObserve username for authentication</li>
+<li><strong>Example</strong>: <code>service@example.com</code></li>
+</ul>
+<h3 id="openobserve_token">OPENOBSERVE_TOKEN<a class="headerlink" href="#openobserve_token" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: String</li>
+<li><strong>Description</strong>: OpenObserve API token</li>
+<li><strong>Example</strong>: <code>zo_prod_...</code></li>
+</ul>
+<h3 id="openobserve_enable_logs">OPENOBSERVE_ENABLE_LOGS<a class="headerlink" href="#openobserve_enable_logs" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: Boolean</li>
+<li><strong>Default</strong>: <code>true</code></li>
+<li><strong>Description</strong>: Enable log export to OpenObserve</li>
+<li><strong>Values</strong>: <code>true</code>, <code>false</code>, <code>1</code>, <code>0</code></li>
+</ul>
+<h3 id="openobserve_enable_metrics">OPENOBSERVE_ENABLE_METRICS<a class="headerlink" href="#openobserve_enable_metrics" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: Boolean</li>
+<li><strong>Default</strong>: <code>true</code></li>
+<li><strong>Description</strong>: Enable metrics export to OpenObserve</li>
+<li><strong>Values</strong>: <code>true</code>, <code>false</code>, <code>1</code>, <code>0</code></li>
+</ul>
+<h3 id="openobserve_metrics_interval">OPENOBSERVE_METRICS_INTERVAL<a class="headerlink" href="#openobserve_metrics_interval" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: Integer</li>
+<li><strong>Default</strong>: <code>60</code></li>
+<li><strong>Description</strong>: Metrics collection interval in seconds</li>
+<li><strong>Example</strong>: <code>30</code></li>
+</ul>
+<h2 id="opentelemetry-configuration">OpenTelemetry Configuration<a class="headerlink" href="#opentelemetry-configuration" title="Permanent link">&para;</a></h2>
+<h3 id="otel_exporter_otlp_endpoint">OTEL_EXPORTER_OTLP_ENDPOINT<a class="headerlink" href="#otel_exporter_otlp_endpoint" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: String</li>
+<li><strong>Description</strong>: Custom OTLP endpoint for metrics and traces</li>
+<li><strong>Example</strong>: <code>http://otel-collector:4318</code></li>
+</ul>
+<h3 id="otel_exporter_otlp_headers">OTEL_EXPORTER_OTLP_HEADERS<a class="headerlink" href="#otel_exporter_otlp_headers" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: String</li>
+<li><strong>Description</strong>: Custom headers for OTLP exports</li>
+<li><strong>Example</strong>: <code>Authorization=Bearer &lt;token&gt;,x-scope=service</code></li>
+</ul>
+<h3 id="openobserve_use_unified_otlp_endpoint">OPENOBSERVE_USE_UNIFIED_OTLP_ENDPOINT<a class="headerlink" href="#openobserve_use_unified_otlp_endpoint" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: Boolean</li>
+<li><strong>Default</strong>: <code>false</code></li>
+<li><strong>Description</strong>: Use OpenObserve unified OTLP endpoint</li>
+<li><strong>Values</strong>: <code>true</code>, <code>false</code></li>
+</ul>
+<h2 id="logging-configuration">Logging Configuration<a class="headerlink" href="#logging-configuration" title="Permanent link">&para;</a></h2>
+<h3 id="ivcap_log_level">IVCAP_LOG_LEVEL<a class="headerlink" href="#ivcap_log_level" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: String</li>
+<li><strong>Default</strong>: <code>INFO</code></li>
+<li><strong>Description</strong>: Global log level</li>
+<li><strong>Values</strong>: <code>DEBUG</code>, <code>INFO</code>, <code>WARNING</code>, <code>ERROR</code>, <code>CRITICAL</code></li>
+<li><strong>Example</strong>: <code>DEBUG</code></li>
+</ul>
+<h3 id="ivcap_log_format">IVCAP_LOG_FORMAT<a class="headerlink" href="#ivcap_log_format" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: String</li>
+<li><strong>Description</strong>: Log format specification</li>
+<li><strong>Example</strong>: <code>%(asctime)s - %(name)s - %(levelname)s - %(message)s</code></li>
+</ul>
+<h2 id="custom-application-variables">Custom Application Variables<a class="headerlink" href="#custom-application-variables" title="Permanent link">&para;</a></h2>
+<p>You can use any environment variables in your service:</p>
+<pre><code class="language-python">import os
+
+def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    api_url = os.getenv(&quot;API_URL&quot;, &quot;http://localhost:8000&quot;)
+    api_key = os.getenv(&quot;API_KEY&quot;)
+    timeout = int(os.getenv(&quot;API_TIMEOUT&quot;, &quot;30&quot;))
+
+    return Result(url=api_url)
+</code></pre>
+<h2 id="setting-variables">Setting Variables<a class="headerlink" href="#setting-variables" title="Permanent link">&para;</a></h2>
+<h3 id="docker">Docker<a class="headerlink" href="#docker" title="Permanent link">&para;</a></h3>
+<pre><code class="language-dockerfile">ENV OPENOBSERVE_URL=&quot;https://observe.example.com&quot;
+ENV OPENOBSERVE_ORG=&quot;production&quot;
+</code></pre>
+<h3 id="docker-compose">Docker Compose<a class="headerlink" href="#docker-compose" title="Permanent link">&para;</a></h3>
+<pre><code class="language-yaml">services:
+  my-service:
+    environment:
+      OPENOBSERVE_URL: https://observe.example.com
+      OPENOBSERVE_ORG: production
+</code></pre>
+<h3 id="kubernetes">Kubernetes<a class="headerlink" href="#kubernetes" title="Permanent link">&para;</a></h3>
+<pre><code class="language-yaml">containers:
+- name: my-service
+  env:
+  - name: OPENOBSERVE_URL
+    value: &quot;https://observe.example.com&quot;
+  - name: OPENOBSERVE_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: observability
+        key: token
+</code></pre>
+<h3 id="command-line">Command Line<a class="headerlink" href="#command-line" title="Permanent link">&para;</a></h3>
+<pre><code class="language-bash">export OPENOBSERVE_URL=&quot;https://observe.example.com&quot;
+export OPENOBSERVE_ORG=&quot;production&quot;
+python my_service.py
+</code></pre>
+<h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../../guides/observability/">Observability Guide</a></li>
+<li><a href="../../guides/deployment/">Deployment Guide</a></li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../../examples/advanced-patterns/" class="btn btn-neutral float-left" title="Advanced Patterns"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../service-definition/" class="btn btn-neutral float-right" title="Service Definition Schema">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>Copyright &copy; 2022-2026 CSIRO</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/ivcap-works/ivcap-service-sdk-python" class="fa fa-code-fork" style="color: #fcfcfc"> ivcap-service-sdk-python</a>
+        </span>
+    
+    
+      <span><a href="../../examples/advanced-patterns/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../service-definition/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

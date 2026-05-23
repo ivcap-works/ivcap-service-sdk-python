@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="CSIRO" /><link rel="canonical" href="https://ivcap-works.github.io/ivcap-service-sdk-python/guides/best-practices/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Best Practices - IVCAP Service SDK (Python)</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Best Practices";
+        var mkdocs_page_input_path = "guides/best-practices.md";
+        var mkdocs_page_url = "/ivcap-service-sdk-python/guides/best-practices/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> IVCAP Service SDK (Python)
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/quick-start/">Quick Start</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/first-service/">Your First Service</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Guides</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../job-processing/">Job Processing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../artifacts/">Working with Artifacts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../service-composition/">Service Composition</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../observability/">Observability & Logging</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error-handling/">Error Handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../deployment/">Deployment</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Best Practices</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#code-organization">Code Organization</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#structure-your-service">Structure Your Service</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#separate-concerns">Separate Concerns</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#testing">Testing</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#unit-tests">Unit Tests</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#integration-tests">Integration Tests</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#performance-optimization">Performance Optimization</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#caching">Caching</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#batch-processing">Batch Processing</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#memory-management">Memory Management</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#error-handling-best-practices">Error Handling Best Practices</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#documentation-best-practices">Documentation Best Practices</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#docstring-standards">Docstring Standards</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#service-documentation">Service Documentation</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#monitoring-best-practices">Monitoring Best Practices</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#log-at-appropriate-levels">Log at Appropriate Levels</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#include-context-in-events">Include Context in Events</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#configuration-best-practices">Configuration Best Practices</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#use-environment-variables">Use Environment Variables</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#validate-configuration">Validate Configuration</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#security-best-practices">Security Best Practices</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#common-pitfalls">Common Pitfalls</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#dont-store-state-between-jobs">❌ Don't: Store State Between Jobs</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#do-keep-jobs-stateless">✅ Do: Keep Jobs Stateless</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#dont-ignore-exceptions">❌ Don't: Ignore Exceptions</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#do-handle-and-report-errors">✅ Do: Handle and Report Errors</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/service/">Service</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/job-context/">JobContext</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/events/">Events & Reporting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/types/">Types</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/utilities/">Utilities</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../examples/batch-service/">Batch Service</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../examples/advanced-patterns/">Advanced Patterns</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/environment-variables/">Environment Variables</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/service-definition/">Service Definition Schema</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Community</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../community/contributing/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../community/conduct/">Code of Conduct</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">IVCAP Service SDK (Python)</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Guides</li>
+      <li class="breadcrumb-item active">Best Practices</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/ivcap-works/ivcap-service-sdk-python/edit/main/docs/docs/guides/best-practices.md">Edit on ivcap-service-sdk-python</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="best-practices-guide">Best Practices Guide<a class="headerlink" href="#best-practices-guide" title="Permanent link">&para;</a></h1>
+<p>Build production-quality IVCAP services with these patterns.</p>
+<h2 id="code-organization">Code Organization<a class="headerlink" href="#code-organization" title="Permanent link">&para;</a></h2>
+<h3 id="structure-your-service">Structure Your Service<a class="headerlink" href="#structure-your-service" title="Permanent link">&para;</a></h3>
+<pre><code>my-service/
+├── src/
+│   ├── __init__.py
+│   ├── service.py          # Service definition &amp; entry point
+│   ├── processor.py        # Job processing logic
+│   ├── models/
+│   │   ├── request.py      # Request schemas
+│   │   └── result.py       # Result schemas
+│   └── utils/
+│       ├── __init__.py
+│       ├── artifacts.py    # Artifact utilities
+│       ├── logger.py       # Logging setup
+│       └── validators.py   # Custom validators
+├── tests/
+│   ├── test_processor.py
+│   └── test_models.py
+├── pyproject.toml
+├── Dockerfile
+└── README.md
+</code></pre>
+<h3 id="separate-concerns">Separate Concerns<a class="headerlink" href="#separate-concerns" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python"># service.py
+from src.processor import process_job
+from src.models import RequestSchema, ResultSchema
+
+service = Service(name=&quot;My Service&quot;, ...)
+
+if __name__ == &quot;__main__&quot;:
+    start_batch_service(service, process_job)
+
+# processor.py
+from src.models import RequestSchema, ResultSchema
+from src.utils import validate_input, process_data
+
+def process_job(req: RequestSchema, ctx: JobContext) -&gt; ResultSchema:
+    validate_input(req)
+    result = process_data(req.data)
+    return ResultSchema(result=result)
+</code></pre>
+<h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h2>
+<h3 id="unit-tests">Unit Tests<a class="headerlink" href="#unit-tests" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python"># tests/test_processor.py
+from src.processor import process_job
+from src.models import RequestSchema, ResultSchema
+import pytest
+
+def test_process_job_basic():
+    req = RequestSchema(data=&quot;test&quot;)
+    # Mock the context
+    result = process_job(req, mock_context)
+    assert isinstance(result, ResultSchema)
+    assert result.result == &quot;TEST&quot;
+
+def test_process_job_invalid_input():
+    with pytest.raises(ValueError):
+        req = RequestSchema(data=&quot;&quot;)
+        result = process_job(req, mock_context)
+</code></pre>
+<h3 id="integration-tests">Integration Tests<a class="headerlink" href="#integration-tests" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python"># tests/test_integration.py
+def test_service_with_local_file():
+    &quot;&quot;&quot;Test service with actual test data.&quot;&quot;&quot;
+    import json
+    with open(&quot;tests/test_request.json&quot;) as f:
+        req_data = json.load(f)
+
+    # Create context
+    ctx = create_test_context()
+
+    # Process
+    result = process_job_from_dict(req_data, ctx)
+
+    # Verify
+    assert result[&quot;status&quot;] == &quot;success&quot;
+</code></pre>
+<h2 id="performance-optimization">Performance Optimization<a class="headerlink" href="#performance-optimization" title="Permanent link">&para;</a></h2>
+<h3 id="caching">Caching<a class="headerlink" href="#caching" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">from functools import lru_cache
+
+@lru_cache(maxsize=100)
+def load_model(model_path: str):
+    &quot;&quot;&quot;Load ML model once, reuse.&quot;&quot;&quot;
+    return torch.load(model_path)
+
+def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    model = load_model(&quot;/path/to/model&quot;)
+    prediction = model.predict(req.data)
+    return Result(prediction=prediction)
+</code></pre>
+<h3 id="batch-processing">Batch Processing<a class="headerlink" href="#batch-processing" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    items = req.items
+    batch_size = 32
+    results = []
+
+    with ctx.report.step(&quot;processing&quot;) as step:
+        for i in range(0, len(items), batch_size):
+            batch = items[i:i+batch_size]
+            batch_results = process_batch(batch)
+            results.extend(batch_results)
+
+    return Result(results=results)
+</code></pre>
+<h3 id="memory-management">Memory Management<a class="headerlink" href="#memory-management" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    # Process in chunks instead of loading all
+    results = []
+
+    with ctx.report.step(&quot;processing&quot;) as step:
+        for chunk in iter_chunks(req.data, chunk_size=10_000):
+            result = process_chunk(chunk)
+            results.append(result)
+            # Chunk is garbage collected automatically
+
+    return Result(results=results)
+</code></pre>
+<h2 id="error-handling-best-practices">Error Handling Best Practices<a class="headerlink" href="#error-handling-best-practices" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Fail fast</strong> — Detect invalid input early</li>
+<li><strong>Log context</strong> — Include relevant information</li>
+<li><strong>Graceful degradation</strong> — Use fallbacks when possible</li>
+<li><strong>Report progress</strong> — Even if failing, report where</li>
+</ol>
+<pre><code class="language-python">def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    # 1. Validate early
+    if not validate(req):
+        raise ValueError(&quot;Invalid input&quot;)
+
+    try:
+        with ctx.report.step(&quot;processing&quot;) as step:
+            # 2. Include context in logs
+            logger = getLogger(f&quot;job-{ctx.job_id}&quot;)
+            logger.info(&quot;Starting processing&quot;)
+
+            result = process(req)
+            step.finished()
+    except Exception as e:
+        # 3. Report where we failed
+        logger.error(f&quot;Processing failed: {e}&quot;, exc_info=True)
+        raise
+
+    return Result(result=result)
+</code></pre>
+<h2 id="documentation-best-practices">Documentation Best Practices<a class="headerlink" href="#documentation-best-practices" title="Permanent link">&para;</a></h2>
+<h3 id="docstring-standards">Docstring Standards<a class="headerlink" href="#docstring-standards" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    &quot;&quot;&quot;
+    Process a batch of data items.
+
+    This service:
+    - Validates input format
+    - Applies transformation
+    - Returns results
+
+    Args:
+        req: Request containing items to process
+        ctx: Job context for progress and platform access
+
+    Returns:
+        Result with processed items
+
+    Raises:
+        ValueError: If input validation fails
+    &quot;&quot;&quot;
+    # Implementation...
+</code></pre>
+<h3 id="service-documentation">Service Documentation<a class="headerlink" href="#service-documentation" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">service = Service(
+    name=&quot;Data Processor&quot;,
+    description=&quot;Transforms and validates data items. &quot;
+                &quot;Supports CSV and JSON input formats.&quot;,
+    contact={&quot;name&quot;: &quot;Support Team&quot;, &quot;email&quot;: &quot;support@example.com&quot;},
+    license_info={&quot;name&quot;: &quot;MIT&quot;, &quot;url&quot;: &quot;https://opensource.org/license/MIT&quot;},
+    documentation=&quot;https://docs.example.com/data-processor&quot;
+)
+</code></pre>
+<h2 id="monitoring-best-practices">Monitoring Best Practices<a class="headerlink" href="#monitoring-best-practices" title="Permanent link">&para;</a></h2>
+<h3 id="log-at-appropriate-levels">Log at Appropriate Levels<a class="headerlink" href="#log-at-appropriate-levels" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">logger.debug(&quot;Variable x = 5&quot;)  # Development
+logger.info(&quot;Job started&quot;)       # Important milestones
+logger.warning(&quot;Falling back&quot;)   # Unexpected but recoverable
+logger.error(&quot;Processing failed&quot;) # Errors
+</code></pre>
+<h3 id="include-context-in-events">Include Context in Events<a class="headerlink" href="#include-context-in-events" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">with ctx.report.step(&quot;processing&quot;) as step:
+    step.info(event={
+        &quot;job_id&quot;: ctx.job_id,
+        &quot;stage&quot;: &quot;validation&quot;,
+        &quot;items_count&quot;: len(items),
+        &quot;timestamp&quot;: datetime.now().isoformat()
+    })
+</code></pre>
+<h2 id="configuration-best-practices">Configuration Best Practices<a class="headerlink" href="#configuration-best-practices" title="Permanent link">&para;</a></h2>
+<h3 id="use-environment-variables">Use Environment Variables<a class="headerlink" href="#use-environment-variables" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">import os
+
+# Good: Use environment variables
+api_url = os.getenv(&quot;API_URL&quot;, &quot;http://localhost:8000&quot;)
+timeout = int(os.getenv(&quot;API_TIMEOUT&quot;, &quot;30&quot;))
+
+# Bad: Hardcode values
+api_url = &quot;http://production.example.com&quot;
+</code></pre>
+<h3 id="validate-configuration">Validate Configuration<a class="headerlink" href="#validate-configuration" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">def get_config():
+    config = {
+        &quot;api_url&quot;: os.getenv(&quot;API_URL&quot;),
+        &quot;api_key&quot;: os.getenv(&quot;API_KEY&quot;),
+    }
+
+    # Validate required settings
+    if not config[&quot;api_key&quot;]:
+        raise ValueError(&quot;API_KEY environment variable not set&quot;)
+
+    return config
+</code></pre>
+<h2 id="security-best-practices">Security Best Practices<a class="headerlink" href="#security-best-practices" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>Never hardcode secrets</strong> — Use environment variables or secret manager</li>
+<li><strong>Validate input</strong> — Use Pydantic validation</li>
+<li><strong>Sanitize output</strong> — Don't leak sensitive information</li>
+<li><strong>Use HTTPS</strong> — For all external communication</li>
+</ol>
+<pre><code class="language-python">from ivcap_service import get_secret
+
+def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    # Good: Get from secret manager
+    api_key = get_secret(&quot;external_api_key&quot;)
+
+    # Good: Validate input with Pydantic
+    # Automatically validates req type
+
+    # Bad: Don't log secrets
+    logger.info(f&quot;Using API key: {api_key}&quot;)
+
+    # Good: Log masked version
+    logger.info(&quot;Using API key: ****&quot;)
+</code></pre>
+<h2 id="common-pitfalls">Common Pitfalls<a class="headerlink" href="#common-pitfalls" title="Permanent link">&para;</a></h2>
+<h3 id="dont-store-state-between-jobs">❌ Don't: Store State Between Jobs<a class="headerlink" href="#dont-store-state-between-jobs" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python"># BAD - State persists between jobs
+shared_state = {}
+
+def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    shared_state[&quot;count&quot;] = shared_state.get(&quot;count&quot;, 0) + 1
+</code></pre>
+<h3 id="do-keep-jobs-stateless">✅ Do: Keep Jobs Stateless<a class="headerlink" href="#do-keep-jobs-stateless" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python"># GOOD - Each job is independent
+def process_job(req: Request, ctx: JobContext) -&gt; Result:
+    count = len(req.items)
+    return Result(count=count)
+</code></pre>
+<h3 id="dont-ignore-exceptions">❌ Don't: Ignore Exceptions<a class="headerlink" href="#dont-ignore-exceptions" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python"># BAD
+try:
+    result = process(req)
+except:
+    pass  # Silent failure
+</code></pre>
+<h3 id="do-handle-and-report-errors">✅ Do: Handle and Report Errors<a class="headerlink" href="#do-handle-and-report-errors" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python"># GOOD
+try:
+    result = process(req)
+except Exception as e:
+    logger.error(f&quot;Processing failed: {e}&quot;)
+    raise
+</code></pre>
+<h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../job-processing/">Job Processing</a> — Core patterns</li>
+<li><a href="../deployment/">Deployment</a> — Production setup</li>
+<li><a href="../error-handling/">Error Handling</a> — Robust error handling</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../deployment/" class="btn btn-neutral float-left" title="Deployment"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../../api/overview/" class="btn btn-neutral float-right" title="Overview">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>Copyright &copy; 2022-2026 CSIRO</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/ivcap-works/ivcap-service-sdk-python" class="fa fa-code-fork" style="color: #fcfcfc"> ivcap-service-sdk-python</a>
+        </span>
+    
+    
+      <span><a href="../deployment/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../../api/overview/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

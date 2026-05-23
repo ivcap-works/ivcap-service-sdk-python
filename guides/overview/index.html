@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="CSIRO" /><link rel="canonical" href="https://ivcap-works.github.io/ivcap-service-sdk-python/guides/overview/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Overview - IVCAP Service SDK (Python)</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Overview";
+        var mkdocs_page_input_path = "guides/overview.md";
+        var mkdocs_page_url = "/ivcap-service-sdk-python/guides/overview/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> IVCAP Service SDK (Python)
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/quick-start/">Quick Start</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/first-service/">Your First Service</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Guides</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Overview</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#getting-started">Getting Started</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#core-concepts">Core Concepts</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#job-processing">Job Processing</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#working-with-artifacts">Working with Artifacts</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#service-composition">Service Composition</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#advanced-topics">Advanced Topics</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#observability-logging">Observability &amp; Logging</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#error-handling">Error Handling</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#deployment">Deployment</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#best-practices">Best Practices</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#learning-path">Learning Path</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#choose-your-own-path">Choose Your Own Path</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../job-processing/">Job Processing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../artifacts/">Working with Artifacts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../service-composition/">Service Composition</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../observability/">Observability & Logging</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../error-handling/">Error Handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../deployment/">Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../best-practices/">Best Practices</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/service/">Service</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/job-context/">JobContext</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/events/">Events & Reporting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/types/">Types</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/utilities/">Utilities</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../examples/batch-service/">Batch Service</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../examples/advanced-patterns/">Advanced Patterns</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/environment-variables/">Environment Variables</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/service-definition/">Service Definition Schema</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Community</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../community/contributing/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../community/conduct/">Code of Conduct</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">IVCAP Service SDK (Python)</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Guides</li>
+      <li class="breadcrumb-item active">Overview</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/ivcap-works/ivcap-service-sdk-python/edit/main/docs/docs/guides/overview.md">Edit on ivcap-service-sdk-python</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="guides-overview">Guides Overview<a class="headerlink" href="#guides-overview" title="Permanent link">&para;</a></h1>
+<p>These guides provide deep dives into specific features and patterns for building IVCAP services.</p>
+<h2 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h2>
+<p>If you're new to the SDK, start here:</p>
+<ol>
+<li><strong><a href="../../getting-started/installation/">Installation</a></strong> — Set up the SDK</li>
+<li><strong><a href="../../getting-started/quick-start/">Quick Start</a></strong> — 5-minute introduction</li>
+<li><strong><a href="../../getting-started/first-service/">Your First Service</a></strong> — Build a real service</li>
+</ol>
+<h2 id="core-concepts">Core Concepts<a class="headerlink" href="#core-concepts" title="Permanent link">&para;</a></h2>
+<h3 id="job-processing"><a href="../job-processing/">Job Processing</a><a class="headerlink" href="#job-processing" title="Permanent link">&para;</a></h3>
+<p>Learn how to define and process jobs:
+- Request/Result schemas with Pydantic
+- Accessing job context
+- Progress tracking and reporting
+- Common patterns</p>
+<p><strong>Read this if:</strong> You want to understand the fundamentals of building service handlers.</p>
+<h3 id="working-with-artifacts"><a href="../artifacts/">Working with Artifacts</a><a class="headerlink" href="#working-with-artifacts" title="Permanent link">&para;</a></h3>
+<p>Upload and download files:
+- Downloading input artifacts
+- Uploading results
+- Handling file streams
+- Working with collections</p>
+<p><strong>Read this if:</strong> Your service processes or generates files.</p>
+<h3 id="service-composition"><a href="../service-composition/">Service Composition</a><a class="headerlink" href="#service-composition" title="Permanent link">&para;</a></h3>
+<p>Call other IVCAP services:
+- Service discovery
+- Dynamic invocation
+- Parameter passing
+- Handling results</p>
+<p><strong>Read this if:</strong> You need to compose multiple services together.</p>
+<h2 id="advanced-topics">Advanced Topics<a class="headerlink" href="#advanced-topics" title="Permanent link">&para;</a></h2>
+<h3 id="observability-logging"><a href="../observability/">Observability &amp; Logging</a><a class="headerlink" href="#observability-logging" title="Permanent link">&para;</a></h3>
+<p>Monitor your services:
+- Structured logging
+- OpenObserve integration
+- Progress events
+- OpenTelemetry tracing</p>
+<p><strong>Read this if:</strong> You want comprehensive monitoring and debugging.</p>
+<h3 id="error-handling"><a href="../error-handling/">Error Handling</a><a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h3>
+<p>Build robust services:
+- Exception handling patterns
+- Reporting errors
+- Retry strategies
+- Graceful degradation</p>
+<p><strong>Read this if:</strong> You need production-grade error handling.</p>
+<h3 id="deployment"><a href="../deployment/">Deployment</a><a class="headerlink" href="#deployment" title="Permanent link">&para;</a></h3>
+<p>Deploy to production:
+- Docker containerization
+- Environment configuration
+- Service registration
+- Scalability patterns</p>
+<p><strong>Read this if:</strong> You're ready to deploy your service.</p>
+<h3 id="best-practices"><a href="../best-practices/">Best Practices</a><a class="headerlink" href="#best-practices" title="Permanent link">&para;</a></h3>
+<p>Pro tips and patterns:
+- Code organization
+- Testing strategies
+- Performance optimization
+- Common pitfalls</p>
+<p><strong>Read this if:</strong> You want to write production-quality code.</p>
+<h2 id="learning-path">Learning Path<a class="headerlink" href="#learning-path" title="Permanent link">&para;</a></h2>
+<pre><code>Installation
+    ↓
+Quick Start
+    ↓
+Your First Service
+    ↓
+Job Processing
+    ├→ Artifacts (if needed)
+    ├→ Service Composition (if needed)
+    └→ Observability (if needed)
+    ↓
+Error Handling
+    ↓
+Deployment
+    ↓
+Best Practices
+</code></pre>
+<h2 id="choose-your-own-path">Choose Your Own Path<a class="headerlink" href="#choose-your-own-path" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>I want to process data:</strong> <a href="../job-processing/">Job Processing</a> → <a href="../error-handling/">Error Handling</a></li>
+<li><strong>I need to work with files:</strong> <a href="../artifacts/">Artifacts</a></li>
+<li><strong>I need to call other services:</strong> <a href="../service-composition/">Service Composition</a></li>
+<li><strong>I want to monitor my service:</strong> <a href="../observability/">Observability</a></li>
+<li><strong>I'm ready for production:</strong> <a href="../deployment/">Deployment</a> → <a href="../best-practices/">Best Practices</a></li>
+</ul>
+<h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong><a href="../../api/overview/">API Reference</a></strong> — Complete API documentation</li>
+<li><strong><a href="../../examples/batch-service/">Examples</a></strong> — Working code samples</li>
+<li><strong><a href="../../reference/environment-variables/">Reference</a></strong> — Configuration and schemas</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../../getting-started/first-service/" class="btn btn-neutral float-left" title="Your First Service"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../job-processing/" class="btn btn-neutral float-right" title="Job Processing">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>Copyright &copy; 2022-2026 CSIRO</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/ivcap-works/ivcap-service-sdk-python" class="fa fa-code-fork" style="color: #fcfcfc"> ivcap-service-sdk-python</a>
+        </span>
+    
+    
+      <span><a href="../../getting-started/first-service/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../job-processing/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

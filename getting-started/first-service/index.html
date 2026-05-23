@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="author" content="CSIRO" /><link rel="canonical" href="https://ivcap-works.github.io/ivcap-service-sdk-python/getting-started/first-service/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Your First Service - IVCAP Service SDK (Python)</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Your First Service";
+        var mkdocs_page_input_path = "getting-started/first-service.md";
+        var mkdocs_page_url = "/ivcap-service-sdk-python/getting-started/first-service/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> IVCAP Service SDK (Python)
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../quick-start/">Quick Start</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Your First Service</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#project-setup">Project Setup</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#step-1-define-your-service">Step 1: Define Your Service</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#step-2-create-test-data">Step 2: Create Test Data</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#step-3-test-locally">Step 3: Test Locally</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#step-4-dockerize-your-service">Step 4: Dockerize Your Service</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#step-5-register-with-ivcap">Step 5: Register with IVCAP</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#next-steps">Next Steps</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#common-extensions">Common Extensions</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#add-more-parameters">Add More Parameters</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#parallel-processing">Parallel Processing</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#caching">Caching</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#troubleshooting">Troubleshooting</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#no-module-named-pil">"No module named 'PIL'"</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#ivcap-client-not-available">"IVCAP client not available"</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#docker-build-fails">Docker build fails</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/job-processing/">Job Processing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/artifacts/">Working with Artifacts</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/service-composition/">Service Composition</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/observability/">Observability & Logging</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/error-handling/">Error Handling</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/deployment/">Deployment</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../guides/best-practices/">Best Practices</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">API Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/overview/">Overview</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/service/">Service</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/job-context/">JobContext</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/events/">Events & Reporting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/types/">Types</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../api/utilities/">Utilities</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Examples</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../examples/batch-service/">Batch Service</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../examples/advanced-patterns/">Advanced Patterns</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/environment-variables/">Environment Variables</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/service-definition/">Service Definition Schema</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/glossary/">Glossary</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Community</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../community/contributing/">Contributing</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../community/conduct/">Code of Conduct</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">IVCAP Service SDK (Python)</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Getting Started</li>
+      <li class="breadcrumb-item active">Your First Service</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/ivcap-works/ivcap-service-sdk-python/edit/main/docs/docs/getting-started/first-service.md">Edit on ivcap-service-sdk-python</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="your-first-service">Your First Service<a class="headerlink" href="#your-first-service" title="Permanent link">&para;</a></h1>
+<p>In this guide, we'll build a complete, production-ready service that processes images.</p>
+<h2 id="project-setup">Project Setup<a class="headerlink" href="#project-setup" title="Permanent link">&para;</a></h2>
+<p>Create a new directory for your service:</p>
+<pre><code class="language-bash">mkdir image-processor
+cd image-processor
+</code></pre>
+<p>Create a <code>pyproject.toml</code>:</p>
+<pre><code class="language-toml">[tool.poetry]
+name = &quot;image-processor&quot;
+version = &quot;0.1.0&quot;
+description = &quot;IVCAP service for processing images&quot;
+
+[tool.poetry.dependencies]
+python = &quot;^3.10&quot;
+ivcap_service = &quot;^0.6.0&quot;
+pillow = &quot;^10.0.0&quot;
+pydantic = &quot;^2.0&quot;
+
+[build-system]
+requires = [&quot;poetry-core&quot;]
+build-backend = &quot;poetry.core.masonry.api&quot;
+</code></pre>
+<p>Install dependencies:</p>
+<pre><code class="language-bash">poetry install
+</code></pre>
+<h2 id="step-1-define-your-service">Step 1: Define Your Service<a class="headerlink" href="#step-1-define-your-service" title="Permanent link">&para;</a></h2>
+<p>Create <code>image_processor.py</code>:</p>
+<pre><code class="language-python">from pydantic import BaseModel, Field
+from ivcap_service import Service, JobContext, start_batch_service, getLogger, logging_init
+
+# Initialize logging
+logging_init()
+logger = getLogger(&quot;image_processor&quot;)
+
+# Define your service
+service = Service(
+    name=&quot;Image Processor&quot;,
+    description=&quot;Resize and optimize images&quot;,
+    contact={&quot;name&quot;: &quot;Your Name&quot;, &quot;email&quot;: &quot;you@example.com&quot;},
+    license_info={&quot;name&quot;: &quot;MIT&quot;, &quot;url&quot;: &quot;https://opensource.org/license/MIT&quot;},
+)
+
+# Define request schema
+class ImageRequest(BaseModel):
+    &quot;&quot;&quot;Request to process an image.&quot;&quot;&quot;
+    image_artifact_id: str = Field(description=&quot;ID of artifact containing image&quot;)
+    width: int = Field(default=800, description=&quot;Target width in pixels&quot;)
+    height: int = Field(default=600, description=&quot;Target height in pixels&quot;)
+
+# Define result schema
+class ImageResult(BaseModel):
+    &quot;&quot;&quot;Result after processing.&quot;&quot;&quot;
+    processed_image_id: str = Field(description=&quot;ID of processed image artifact&quot;)
+    original_size: dict = Field(description=&quot;Original image dimensions&quot;)
+    final_size: dict = Field(description=&quot;Final image dimensions&quot;)
+
+# Process a job
+def process_job(request: ImageRequest, context: JobContext) -&gt; ImageResult:
+    &quot;&quot;&quot;Process an image by resizing.&quot;&quot;&quot;
+    logger.info(f&quot;Processing job {context.job_id}&quot;)
+
+    ivcap = context.ivcap()
+    if not ivcap:
+        raise RuntimeError(&quot;IVCAP client not available&quot;)
+
+    # Step 1: Download the image
+    with context.report.step(&quot;download&quot;, msg=&quot;Downloading image&quot;) as step:
+        logger.info(f&quot;Downloading artifact {request.image_artifact_id}&quot;)
+        image_data = ivcap.artifact(request.image_artifact_id).read()
+        step.finished(msg=f&quot;Downloaded {len(image_data)} bytes&quot;)
+
+    # Step 2: Process the image
+    with context.report.step(&quot;process&quot;, msg=&quot;Resizing image&quot;) as step:
+        from PIL import Image
+        import io
+
+        # Load image
+        original_image = Image.open(io.BytesIO(image_data))
+        original_size = original_image.size
+        logger.info(f&quot;Original size: {original_size}&quot;)
+
+        # Resize
+        final_image = original_image.resize((request.width, request.height))
+        final_size = final_image.size
+        logger.info(f&quot;Resized to: {final_size}&quot;)
+
+        # Convert to bytes
+        output_buffer = io.BytesIO()
+        final_image.save(output_buffer, format=&quot;JPEG&quot;, quality=85)
+        processed_data = output_buffer.getvalue()
+
+        step.info(event={
+            &quot;original_dimensions&quot;: original_size,
+            &quot;final_dimensions&quot;: final_size,
+            &quot;bytes&quot;: len(processed_data)
+        })
+        step.finished(msg=&quot;Image resized&quot;)
+
+    # Step 3: Upload the result
+    with context.report.step(&quot;upload&quot;, msg=&quot;Uploading result&quot;) as step:
+        result_id = ivcap.artifact_new(
+            data=processed_data,
+            collection_id=None,
+            tags=[&quot;processed&quot;, &quot;image&quot;]
+        )
+        logger.info(f&quot;Uploaded result: {result_id}&quot;)
+        step.finished(msg=f&quot;Uploaded: {result_id}&quot;)
+
+    return ImageResult(
+        processed_image_id=result_id,
+        original_size={&quot;width&quot;: original_size[0], &quot;height&quot;: original_size[1]},
+        final_size={&quot;width&quot;: final_size[0], &quot;height&quot;: final_size[1]}
+    )
+
+if __name__ == &quot;__main__&quot;:
+    start_batch_service(service, process_job)
+</code></pre>
+<h2 id="step-2-create-test-data">Step 2: Create Test Data<a class="headerlink" href="#step-2-create-test-data" title="Permanent link">&para;</a></h2>
+<p>Create <code>test_request.json</code>:</p>
+<pre><code class="language-json">{
+    &quot;image_artifact_id&quot;: &quot;urn:ivcap:artifact:test&quot;,
+    &quot;width&quot;: 400,
+    &quot;height&quot;: 300
+}
+</code></pre>
+<h2 id="step-3-test-locally">Step 3: Test Locally<a class="headerlink" href="#step-3-test-locally" title="Permanent link">&para;</a></h2>
+<p>Print the service metadata:</p>
+<pre><code class="language-bash">poetry run python image_processor.py --print-service-description
+</code></pre>
+<p>You should see:</p>
+<pre><code class="language-json">{
+  &quot;name&quot;: &quot;Image Processor&quot;,
+  &quot;description&quot;: &quot;Resize and optimize images&quot;,
+  ...
+}
+</code></pre>
+<h2 id="step-4-dockerize-your-service">Step 4: Dockerize Your Service<a class="headerlink" href="#step-4-dockerize-your-service" title="Permanent link">&para;</a></h2>
+<p>Create a <code>Dockerfile</code>:</p>
+<pre><code class="language-dockerfile">FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY pyproject.toml poetry.lock* ./
+RUN pip install poetry &amp;&amp; \
+    poetry install --no-dev --no-root
+
+# Copy service code
+COPY image_processor.py .
+
+# Run the service
+ENTRYPOINT [&quot;poetry&quot;, &quot;run&quot;, &quot;python&quot;, &quot;image_processor.py&quot;]
+</code></pre>
+<p>Build the image:</p>
+<pre><code class="language-bash">docker build -t image-processor:latest .
+</code></pre>
+<h2 id="step-5-register-with-ivcap">Step 5: Register with IVCAP<a class="headerlink" href="#step-5-register-with-ivcap" title="Permanent link">&para;</a></h2>
+<pre><code class="language-bash"># Get the service definition
+docker run image-processor:latest --print-service-description &gt; service.json
+
+# Register with IVCAP
+ivcap service register service.json
+</code></pre>
+<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong><a href="../../guides/job-processing/">Job Processing Guide</a></strong> — Learn advanced patterns</li>
+<li><strong><a href="../../guides/artifacts/">Artifact Management</a></strong> — Work with files</li>
+<li><strong><a href="../../guides/error-handling/">Error Handling</a></strong> — Robust services</li>
+<li><strong><a href="../../guides/deployment/">Deployment</a></strong> — Production setup</li>
+<li><strong><a href="../../guides/best-practices/">Best Practices</a></strong> — Pro tips</li>
+</ul>
+<h2 id="common-extensions">Common Extensions<a class="headerlink" href="#common-extensions" title="Permanent link">&para;</a></h2>
+<h3 id="add-more-parameters">Add More Parameters<a class="headerlink" href="#add-more-parameters" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">class ImageRequest(BaseModel):
+    image_artifact_id: str
+    width: int = 800
+    height: int = 600
+    quality: int = Field(default=85, ge=1, le=100)
+    format: str = Field(default=&quot;JPEG&quot;, description=&quot;Output format: JPEG, PNG, etc&quot;)
+</code></pre>
+<h3 id="parallel-processing">Parallel Processing<a class="headerlink" href="#parallel-processing" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">import concurrent.futures
+
+def process_batch(requests, context):
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = [executor.submit(process_single, req) for req in requests]
+        results = [f.result() for f in futures]
+    return results
+</code></pre>
+<h3 id="caching">Caching<a class="headerlink" href="#caching" title="Permanent link">&para;</a></h3>
+<pre><code class="language-python">from functools import lru_cache
+
+@lru_cache(maxsize=100)
+def get_model(model_path):
+    # Load model once, reuse for multiple jobs
+    return load_model(model_path)
+</code></pre>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<h3 id="no-module-named-pil">"No module named 'PIL'"<a class="headerlink" href="#no-module-named-pil" title="Permanent link">&para;</a></h3>
+<p>The Pillow package provides PIL:</p>
+<pre><code class="language-bash">poetry add pillow
+</code></pre>
+<h3 id="ivcap-client-not-available">"IVCAP client not available"<a class="headerlink" href="#ivcap-client-not-available" title="Permanent link">&para;</a></h3>
+<p>The client is only available in the IVCAP environment. Locally, it returns None.</p>
+<h3 id="docker-build-fails">Docker build fails<a class="headerlink" href="#docker-build-fails" title="Permanent link">&para;</a></h3>
+<p>Ensure <code>poetry.lock</code> exists or let pip install handle dependencies:</p>
+<pre><code class="language-dockerfile">RUN pip install poetry &amp;&amp; \
+    poetry config virtualenvs.create false &amp;&amp; \
+    poetry install --no-dev
+</code></pre>
+<h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../../api/overview/">API Reference</a> — All classes and functions</li>
+<li><a href="../../examples/batch-service/">Examples</a> — More complete examples</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../quick-start/" class="btn btn-neutral float-left" title="Quick Start"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../../guides/overview/" class="btn btn-neutral float-right" title="Overview">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+      <p>Copyright &copy; 2022-2026 CSIRO</p>
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/ivcap-works/ivcap-service-sdk-python" class="fa fa-code-fork" style="color: #fcfcfc"> ivcap-service-sdk-python</a>
+        </span>
+    
+    
+      <span><a href="../quick-start/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../../guides/overview/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
