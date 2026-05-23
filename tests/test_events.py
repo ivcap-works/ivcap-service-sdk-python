@@ -135,9 +135,8 @@ class TestEventReporter:
     def test_event_reporter_step_context_manager_exit(self):
         """Test EventReporter.step() context manager cleanup."""
         reporter = EventReporter(job_id="job-123", job_authorization=None)
-        step_context = None
-        with reporter.step("test_step") as ctx:
-            step_context = ctx
+        with reporter.step("test_step"):
+            pass
         # After exiting the context, finished should have been called
         # We can't directly verify this without mocking, but we ensure no exception
 
@@ -162,7 +161,7 @@ class TestEventFactory:
     def test_set_event_reporter_factory_invalid(self):
         """Test setting non-callable as factory."""
         with pytest.raises(ValueError, match="Factory must be a callable"):
-            set_event_reporter_factory("not a callable")
+            set_event_reporter_factory("not a callable")  # type: ignore[arg-type]
 
     def test_create_event_reporter_default(self):
         """Test create_event_reporter with default factory."""

@@ -23,6 +23,12 @@ jobs:
       - name: Install package
         run: poetry install
 
+      - name: Lint with ruff
+        run: poetry run poe lint
+
+      - name: Type check with pyright
+        run: poetry run poe typecheck
+
       - name: Check for tests directory
         id: check_tests
         run: |

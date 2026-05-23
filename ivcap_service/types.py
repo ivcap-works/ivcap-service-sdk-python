@@ -62,7 +62,7 @@ class ExecutionError(BaseModel):
     )
     error: str = Field(description="Error message")
     type: str = Field(description="Error type")
-    traceback: str | None = Field(None, description="traceback")
+    traceback: str | None = Field(default=None, description="traceback")
 
     model_config = {
         "populate_by_name": True,

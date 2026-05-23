@@ -76,12 +76,12 @@ event_reporter_factory = None
 EventFactoryF = Callable[[str, str | None], "EventReporter"]
 
 
-def set_event_reporter_factory(factory: EventFactoryF):
+def set_event_reporter_factory(factory: EventFactoryF | None):
     """
-    Set afactory function for creating specialised EventReporter instances.
+    Set a factory function for creating specialised EventReporter instances.
 
     Args:
-        factory (EventFactoryF): A factory function that takes a job ID and an optional job authorization token,
+        factory (EventFactoryF | None): A factory function that takes a job ID and an optional job authorization token,
         and returns an instance of EventReporter. If None, the default EventReporter will be used.
     """
     global event_reporter_factory
