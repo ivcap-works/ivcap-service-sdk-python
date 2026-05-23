@@ -13,9 +13,9 @@ include = ["ivcap_service/py.typed"]
 lint = "ruff check ."
 format = "ruff format ."
 typecheck = "pyright"
-docs = { help = "Build documentation", cmd = "cd docs && mkdocs build" }
-docs-serve = { help = "Serve documentation locally", cmd = "cd docs && mkdocs serve" }
-docs-clean = { help = "Clean built documentation", cmd = "cd docs && rm -rf site .mkdocs_cache" }
+docs = { help = "Build documentation", shell = "cd docs && mkdocs build" }
+docs-serve = { help = "Serve documentation locally", shell = "cd docs && mkdocs serve" }
+docs-clean = { help = "Clean built documentation", shell = "cd docs && rm -rf site .mkdocs_cache" }
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
