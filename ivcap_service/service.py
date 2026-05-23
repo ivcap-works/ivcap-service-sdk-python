@@ -10,6 +10,7 @@ import sys
 import time
 import traceback
 from collections.abc import Callable
+from contextlib import contextmanager
 from logging import Logger
 from typing import Any
 
@@ -21,10 +22,64 @@ from .context import JobContext, otel_instrument, set_context
 from .events import create_event_reporter, set_event_reporter_factory
 from .ivcap import SidecarReporter, get_ivcap_url, push_result, verify_result
 from .logger import getLogger
+from .openobserve import init_openobserve_from_env, maybe_create_runtime_metrics
 from .tool_definition import print_tool_definition  # Import the requests library
 from .types import ExecutionError
 from .utils import get_function_return_type, get_input_type
 from .version import get_version
+
+
+@contextmanager
+def _job_span(job_id: str):
+    """Create a best-effort OpenTelemetry span for a job execution.
+
+    This SDK is usable without telemetry enabled/configured, so span creation
+    must never break job execution.
+    """
+
+    try:
+        from opentelemetry import trace
+
+        tracer = trace.get_tracer("ivcap_service.service")
+        with tracer.start_as_current_span("ivcap.job") as span:
+            span.set_attribute("ivcap.job_id", job_id)
+            yield span
+    except Exception:
+        # No OTEL installed/configured (or other OTEL issue) => proceed without a span.
+        yield None
+
+
+def _span_set_outcome(
+    span: Any,
+    *,
+    ok: bool,
+    error_type: str | None = None,
+    error: str | None = None,
+):
+    """Attach a success/error outcome to a span (best-effort)."""
+
+    if span is None:
+        return
+
+    try:
+        span.set_attribute("ivcap.ok", ok)
+        if error_type is not None:
+            span.set_attribute("ivcap.error_type", error_type)
+        if error is not None:
+            span.set_attribute("ivcap.error", error)
+    except Exception:
+        # Span implementations should not break job execution.
+        return
+
+    try:
+        from opentelemetry.trace import Status, StatusCode
+
+        if ok:
+            span.set_status(Status(StatusCode.OK))
+        else:
+            span.set_status(Status(StatusCode.ERROR, description=error or "error"))
+    except Exception:
+        pass
 
 
 class ServiceContact(BaseModel):
@@ -52,7 +107,7 @@ MAX_REQUEST_JOB_ATTEMPTS = 4
 
 
 class ServiceContext(BaseModel):
-    worker_fn: Callable
+    worker_fn: Callable[..., Any]
     input_model: type[BaseModel]
     output_model: type[BaseModel]
     fn_add_job_context: str | None
@@ -70,10 +125,13 @@ def wait_for_work(svc_ctxt: ServiceContext):
     url = f"{ivcap_url}/next_job"
     logger = svc_ctxt.logger
     logger.info(f"... checking for work at '{url}'")
+    runtime_metrics = maybe_create_runtime_metrics()
     try:
         while True:
             result = None
+            job_id = "unknown_job_id"
             try:
+                job_start = time.time()
                 (response, job_authorization) = fetch_job(url, logger)
                 job = response.json()
                 schema = job.get("$schema", "")
@@ -81,22 +139,73 @@ def wait_for_work(svc_ctxt: ServiceContext):
                     logger.info("no more jobs - we are done")
                     sys.exit(0)
 
-                job_id = job.get(
-                    "id", "unknown_job_id"
-                )  # Provide a default value if "id" is missing
-                raw_result = do_job(job, svc_ctxt, job_authorization)
-                result = verify_result(raw_result, job_id, logger)
+                job_id = job.get("id", "unknown_job_id")
+                with _job_span(job_id) as span:
+                    try:
+                        raw_result = do_job(job, svc_ctxt, job_authorization)
+                        result = verify_result(raw_result, job_id, logger)
+
+                        if isinstance(result, ExecutionError):
+                            _span_set_outcome(
+                                span,
+                                ok=False,
+                                error_type=result.type,
+                                error=result.error,
+                            )
+                        else:
+                            _span_set_outcome(span, ok=True)
+                    except Exception as e:
+                        # Convert unexpected exceptions into an ExecutionError,
+                        # but also record them on the span.
+                        try:
+                            if span is not None:
+                                span.record_exception(e)
+                        except Exception:
+                            pass
+                        _span_set_outcome(
+                            span,
+                            ok=False,
+                            error_type=type(e).__name__,
+                            error=str(e),
+                        )
+                        result = ExecutionError(
+                            error=str(e),
+                            type=type(e).__name__,
+                            traceback=traceback.format_exc(),
+                        )
+
+                    # Record metrics + push result as part of the job span
+                    # (so traces include the full job lifecycle).
+                    ok = not isinstance(result, ExecutionError)
+                    if runtime_metrics is not None:
+                        runtime_metrics.record_job(
+                            duration_seconds=time.time() - job_start,
+                            ok=ok,
+                            error_type=result.type
+                            if isinstance(result, ExecutionError)
+                            else None,
+                        )
+
+                    if result is not None:
+                        logger.info(f"job {job_id} finished, sending result message")
+                        push_result(result, job_id, None)
             except Exception as e:
+                # This only captures failures *outside* the per-job span, such as
+                # networking/parse errors while fetching the job.
                 result = ExecutionError(
                     error=str(e),
                     type=type(e).__name__,
                     traceback=traceback.format_exc(),
                 )
                 logger.warning(f"job {job_id} failed - {result.error}")
-            finally:
-                if result is not None:
-                    logger.info(f"job {job_id} finished, sending result message")
-                    push_result(result, job_id, None)
+                if runtime_metrics is not None:
+                    runtime_metrics.record_job(
+                        duration_seconds=time.time() - job_start,
+                        ok=False,
+                        error_type=type(e).__name__,
+                    )
+                logger.info(f"job {job_id} finished, sending result message")
+                push_result(result, job_id, None)
 
     except requests.exceptions.RequestException as e:
         logger.warning(f"Error during request: {e}")
@@ -163,7 +272,7 @@ def do_job(job: Any, svc_ctxt: ServiceContext, job_authorization: str | None = N
 
 def start_batch_service(
     service_description: Service,
-    worker_fn: Callable,
+    worker_fn: Callable[..., Any],
     *,
     custom_args: Callable[[argparse.ArgumentParser], argparse.Namespace] | None = None,
     run_opts: dict[str, Any] | None = None,
@@ -218,6 +327,17 @@ def start_batch_service(
         f"{service_description.name} - {os.getenv('VERSION')} - v{get_version()}"
     )
 
+    # Optional OpenObserve reporting (logs + metrics) via OTLP/HTTP.
+    # This is env-driven and non-breaking if not configured.
+    try:
+        init_openobserve_from_env(
+            logger=logger,
+            service_name=service_description.name,
+            service_version=service_description.version,
+        )
+    except Exception as e:
+        logger.warning("OpenObserve init failed: %s", e)
+
     set_event_reporter_factory(
         lambda job_id, job_authorization: SidecarReporter(
             job_id, job_authorization or ""
@@ -228,7 +348,9 @@ def start_batch_service(
         from .utils import file_to_json
 
         job = file_to_json(args.test_file)
-        res = do_job(job, svc_ctxt)
+        job_id = job.get("id", "unknown_job_id")
+        with _job_span(job_id):
+            res = do_job(job, svc_ctxt)
         if get_ivcap_url() is not None:
             result = verify_result(res, job["id"], logger)
             push_result(result, job["id"], None)
@@ -240,16 +362,20 @@ def start_batch_service(
         wait_for_work(svc_ctxt)
 
 
-def create_service_context(worker_fn: Callable, logger: Logger) -> ServiceContext:
+def create_service_context(
+    worker_fn: Callable[..., Any], logger: Logger
+) -> ServiceContext:
     input_model, extras = get_input_type(worker_fn)
     if input_model is None:
         logger.warning(
-            f"worker function '{worker_fn.__name__}' must declare a Pydantic input model as its first argument"
+            "worker function '%s' must declare a Pydantic input model as its first argument",
+            getattr(worker_fn, "__name__", str(worker_fn)),
         )
         sys.exit(1)
     if len(extras) > 1:
         logger.warning(
-            f"worker function '{worker_fn.__name__}' has more than one extra paramter - only JobContext is allowed"
+            "worker function '%s' has more than one extra paramter - only JobContext is allowed",
+            getattr(worker_fn, "__name__", str(worker_fn)),
         )
         sys.exit(1)
     fn_job_context_p = None
@@ -257,14 +383,16 @@ def create_service_context(worker_fn: Callable, logger: Logger) -> ServiceContex
         fn_job_context_p = list(extras.keys())[0]
         if extras[fn_job_context_p] != JobContext:
             logger.warning(
-                f"worker function '{worker_fn.__name__}' can only have 'JobContext' as additional parameter"
+                "worker function '%s' can only have 'JobContext' as additional parameter",
+                getattr(worker_fn, "__name__", str(worker_fn)),
             )
             sys.exit(1)
 
     output_model = get_function_return_type(worker_fn)
     if output_model is None:
         logger.warning(
-            f"worker function '{worker_fn.__name__}' must declare a Pydantic output model as its return type"
+            "worker function '%s' must declare a Pydantic output model as its return type",
+            getattr(worker_fn, "__name__", str(worker_fn)),
         )
         sys.exit(1)
 

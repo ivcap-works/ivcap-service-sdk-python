@@ -125,6 +125,26 @@ class EventContext:
         self._errorEventClass = errorEventClass
         self._finished_sent = False
 
+        # Best-effort OpenTelemetry child span for the event scope.
+        # This should never break services that don't use OTEL.
+        self._otel_span_cm = None
+        self._otel_span = None
+        try:
+            from opentelemetry import trace
+
+            tracer = trace.get_tracer("ivcap_service.events")
+            self._otel_span_cm = tracer.start_as_current_span(
+                f"ivcap.event:{event_name}"
+            )
+            self._otel_span = self._otel_span_cm.__enter__()
+            try:
+                self._otel_span.set_attribute("ivcap.job_id", reporter.job_id)
+                self._otel_span.set_attribute("ivcap.event_name", event_name)
+            except Exception:
+                pass
+        except Exception:
+            pass
+
     @property
     def name(self):
         return self._event_name
@@ -139,6 +159,14 @@ class EventContext:
             event = GenericEvent(name=self._event_name, options=options)
         self._reporter.emit(event)
         self._finished_sent = True
+
+        if self._otel_span is not None:
+            try:
+                from opentelemetry.trace import Status, StatusCode
+
+                self._otel_span.set_status(Status(StatusCode.OK))
+            except Exception:
+                pass
 
     def info(self, event: BaseEvent | dict):
         # We keep this ergonomic for callers: if they pass a raw dict,
@@ -159,6 +187,39 @@ class EventContext:
             context = self._event_name
         event = evc(error=str(err), stacktrace=stacktrace, context=context)
         self._reporter.emit(event)
+
+        if self._otel_span is not None:
+            try:
+                self._otel_span.record_exception(err)
+            except Exception:
+                pass
+            try:
+                from opentelemetry.trace import Status, StatusCode
+
+                self._otel_span.set_status(
+                    Status(StatusCode.ERROR, description=str(err))
+                )
+            except Exception:
+                pass
+
+    def close(self):
+        """Close the underlying OTEL span if one was created."""
+
+        if self._otel_span_cm is not None:
+            try:
+                self._otel_span_cm.__exit__(None, None, None)
+            except Exception:
+                pass
+            finally:
+                self._otel_span_cm = None
+                self._otel_span = None
+
+    def __del__(self):
+        # Best-effort cleanup in case callers forget to exit the context.
+        try:
+            self.close()
+        except Exception:
+            pass
 
 
 EventCtxtGenerator = Generator[EventContext, None, None]
@@ -210,6 +271,8 @@ class EventReporter:
             yield ctxt
         except Exception as e:
             ctxt.error(e, event_name)
+            ctxt.close()
             raise e
         if not ctxt._finished_sent and defaultFinishEvent is not None:
             self.emit(defaultFinishEvent)
+        ctxt.close()

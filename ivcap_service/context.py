@@ -16,11 +16,49 @@ from urllib.parse import urlparse
 
 from httpx import URL as URLx
 
-from ivcap_service import getLogger
-
+from .logger import getLogger
 from .types import JobContext
 
 ExecContextF = Callable[[], JobContext | None]
+
+
+def _build_excluded_urls(otel_endpoint: str | None = None) -> str | None:
+    """Build a list of URLs that should not be traced.
+
+    This prevents self-referential tracing where HTTP calls to export traces/logs/metrics
+    to the OTEL collector are themselves traced, creating circular dependencies.
+
+    Returns a comma-separated string of URL patterns, or None if no exclusions.
+
+    Excludes:
+    - OTEL collector endpoints (if provided)
+    - User-specified exclusions via OTEL_EXPORTER_SKIP_URLS environment variable
+    """
+    excluded = []
+
+    # Add OTEL collector endpoint if provided
+    if otel_endpoint:
+        try:
+            parsed = urlparse(otel_endpoint)
+            if parsed.hostname:
+                # Add the base hostname with wildcard to catch all paths
+                excluded.append(f"{parsed.scheme}://{parsed.hostname}*")
+        except Exception:
+            pass
+
+    # Add user-specified exclusions from environment variable
+    user_exclusions = os.environ.get("OTEL_EXPORTER_SKIP_URLS")
+    if user_exclusions:
+        # Support comma or semicolon separators
+        for pattern in user_exclusions.replace(";", ",").split(","):
+            pattern = pattern.strip()
+            if pattern:
+                excluded.append(pattern)
+
+    if not excluded:
+        return None
+
+    return ",".join(excluded)
 
 
 def otel_instrument(
@@ -42,17 +80,23 @@ def otel_instrument(
     logger.info(f"instrumenting for endpoint {endpoint}")
     if extension is not None:
         extension(endpoint)
-    # Also instrumemt
+
+    # Build the list of URLs to exclude from tracing
+    excluded_urls = _build_excluded_urls(endpoint)
+    if excluded_urls:
+        logger.debug(f"excluding URLs from tracing: {excluded_urls}")
+
+    # Also instrument HTTP libraries with URL exclusions
     try:
         from opentelemetry.instrumentation.requests import RequestsInstrumentor
 
-        RequestsInstrumentor().instrument()
+        RequestsInstrumentor().instrument(excluded_urls=excluded_urls)
     except ImportError:
         pass
     try:
         from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
 
-        HTTPXClientInstrumentor().instrument()
+        HTTPXClientInstrumentor().instrument(excluded_urls=excluded_urls)
     except ImportError:
         pass
 
@@ -76,7 +120,27 @@ def extend_requests(context_f: ExecContextF):
         return wrapped_send(self, request, **kwargs)
 
     # Apply wrapper
-    Session.send = _send
+    Session.send = cast(Any, _send)
+
+
+def _is_otel_endpoint(url: URLx | str) -> bool:
+    """Check if a URL is an OTEL collector endpoint.
+
+    Returns True if the URL matches the OTEL_EXPORTER_OTLP_ENDPOINT.
+    """
+    otel_endpoint = os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT")
+    if not otel_endpoint:
+        return False
+
+    try:
+        url_str = str(url)
+        otel_parsed = urlparse(otel_endpoint)
+        url_parsed = urlparse(url_str)
+
+        # Check if the hostnames match
+        return otel_parsed.hostname == url_parsed.hostname
+    except Exception:
+        return False
 
 
 def _modify_request(request: Any, ctxt: JobContext | None, logger: Logger):
@@ -94,20 +158,19 @@ def _modify_request(request: Any, ctxt: JobContext | None, logger: Logger):
     if job_id is not None:  # OTEL messages won't have a jobID
         headers["Ivcap-Job-Id"] = job_id
     auth = ctxt.job_authorization if ctxt is not None else None
-    if auth is not None and is_local_url:
+    # Don't add authorization to OTEL collector endpoints
+    if auth is not None and is_local_url and not _is_otel_endpoint(url):
         logger.debug(f"Adding 'Authorization' header to `{request.url}'")
         headers["Authorization"] = auth
 
 
 def _get_hostname(url: URLx | str) -> str:
     try:
-        if isinstance(url, URLx):
-            return url.host or ""
-        if isinstance(url, str):
-            return urlparse(url).hostname or ""
+        # We intentionally avoid accessing `httpx.URL.host` here to keep static
+        # type checkers happy across httpx versions / stubs.
+        return urlparse(str(url)).hostname or ""
     except Exception:
         return ""
-    return ""
 
 
 ivcap_proxy_url = os.getenv("IVCAP_PROXY_URL")

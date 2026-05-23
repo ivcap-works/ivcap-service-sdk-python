@@ -24,6 +24,7 @@ from .ivcap import (
     verify_result,
 )
 from .logger import getLogger, logging_init, service_log_config, set_service_log_config
+from .openobserve import init_openobserve_from_env, load_openobserve_config_from_env
 from .secret import get_secret
 from .service import Service, start_batch_service
 from .service_definition import (
@@ -82,5 +83,7 @@ __all__ = [
     "set_result_callback",
     "set_service_log_config",
     "start_batch_service",
+    "init_openobserve_from_env",
+    "load_openobserve_config_from_env",
     "verify_result",
 ]

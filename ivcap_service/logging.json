@@ -29,6 +29,55 @@
     },
     "ivcap": {
       "level": "DEBUG"
+    },
+    "opentelemetry": {
+      "handlers": [
+        "default"
+      ],
+      "level": "WARNING",
+      "propagate": false
+    },
+    "opentelemetry.instrumentation": {
+      "handlers": [
+        "default"
+      ],
+      "level": "WARNING",
+      "propagate": false
+    },
+    "opentelemetry.exporter": {
+      "handlers": [
+        "default"
+      ],
+      "level": "WARNING",
+      "propagate": false
+    },
+    "opentelemetry.sdk": {
+      "handlers": [
+        "default"
+      ],
+      "level": "WARNING",
+      "propagate": false
+    },
+    "opentelemetry.sdk.trace.export": {
+      "handlers": [
+        "default"
+      ],
+      "level": "ERROR",
+      "propagate": false
+    },
+    "opentelemetry.sdk._logs": {
+      "handlers": [
+        "default"
+      ],
+      "level": "ERROR",
+      "propagate": false
+    },
+    "opentelemetry.sdk.metrics": {
+      "handlers": [
+        "default"
+      ],
+      "level": "WARNING",
+      "propagate": false
     }
   },
   "disable_existing_loggers": false
