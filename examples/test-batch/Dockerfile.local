@@ -1,0 +1,26 @@
+FROM python:3.10-slim-buster
+
+RUN pip install poetry
+
+WORKDIR /app
+
+# Copy and install the local ivcap_service source from the repository root
+COPY ivcap_service /tmp/ivcap_sdk/ivcap_service
+COPY pyproject.toml poetry.lock README.md /tmp/ivcap_sdk/
+RUN cd /tmp/ivcap_sdk && \
+  poetry config virtualenvs.create false && \
+  poetry install --only main && \
+  rm -rf /tmp/ivcap_sdk
+
+# Install remaining service dependencies (ivcap_service already installed from local source)
+# We only need pydantic, which is already satisfied by ivcap_service dependencies
+# Just copy the service file
+COPY examples/test-batch/batch_service.py .
+
+# VERSION INFORMATION
+ARG VERSION=dev-local
+ENV VERSION=$VERSION
+ENV PORT=80
+
+# Command to run
+ENTRYPOINT ["python",  "/app/batch_service.py"]

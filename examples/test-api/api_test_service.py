@@ -1,8 +1,9 @@
 import os
-from typing import Optional
+
 import httpx
 from pydantic import BaseModel, Field
-from ivcap_service import getLogger, logging_init, JobContext
+
+from ivcap_service import JobContext, getLogger, logging_init
 from ivcap_service.service import Service
 
 logging_init()
@@ -23,8 +24,8 @@ service = Service(
 
 class Request(BaseModel):
     jschema: str = Field("urn:sd:schema:batch-tester.request.1", alias="$schema")
-    get: Optional[str] = Field(None, description="perform a GET on this url and return result")
-    artifact: Optional[str] = Field(None, description="download artifact 'as_local_file' and return local path")
+    get: str | None = Field(None, description="perform a GET on this url and return result")
+    artifact: str | None = Field(None, description="download artifact 'as_local_file' and return local path")
 
 class Result(BaseModel):
     jschema: str = Field("urn:sd:schema:batch-tester.1", alias="$schema")
@@ -35,7 +36,7 @@ def api_tester(req: Request, ctxt: JobContext) -> Result:
     Run some API tests from inside a batch process
     """
     if req.get:
-        with ctxt.report.step("get", msg=f"Run 'GET' command"):
+        with ctxt.report.step("get", msg="Run 'GET' command"):
             response = httpx.get(req.get)
             response.raise_for_status()
             logger.info(f"Status Code: {response.status_code}")
@@ -43,7 +44,8 @@ def api_tester(req: Request, ctxt: JobContext) -> Result:
 
     if req.artifact:
         art = ctxt.ivcap.get_artifact(req.artifact)
-        return art.as_local_file()
+        path = art.as_local_file()
+        return Result(result=str(path))
     else:
         raise "Missing command"
 

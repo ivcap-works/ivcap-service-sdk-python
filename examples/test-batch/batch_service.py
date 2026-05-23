@@ -1,10 +1,11 @@
+import math
 import os
 import sys
-import math
-from time import time
-from typing import Optional
+import time
+
 from pydantic import BaseModel, Field
-from ivcap_service import getLogger, logging_init, JobContext
+
+from ivcap_service import JobContext, getLogger, logging_init
 from ivcap_service.service import Service
 
 this_dir = os.path.dirname(__file__)
@@ -27,21 +28,27 @@ service = Service(
     },
 )
 
+
 class Request(BaseModel):
     jschema: str = Field("urn:sd:schema:batch-tester.request.1", alias="$schema")
-    duration_seconds: Optional[int] = Field(10, description="seconds this job should run")
-    target_cpu_percent: Optional[int] = Field(80, description="percentage load on CPU")
-    throw_exception_at_end: Optional[bool] = Field(False, description="if True, throw an exception at the end of the job")
-    exit_code_at_end: Optional[int] = Field(None, description="if set, exit with this code after the job is done")
-    create_oom_error_at_end: Optional[bool] = Field(False, description="force an OOM error at end of run")
+    duration_seconds: int | None = Field(10, description="seconds this job should run")
+    target_cpu_percent: int | None = Field(80, description="percentage load on CPU")
+    throw_exception_at_end: bool | None = Field(
+        False, description="if True, throw an exception at the end of the job"
+    )
+    exit_code_at_end: int | None = Field(
+        None, description="if set, exit with this code after the job is done"
+    )
+    create_oom_error_at_end: bool | None = Field(
+        False, description="force an OOM error at end of run"
+    )
+
 
 class Result(BaseModel):
     jschema: str = Field("urn:sd:schema:batch-tester.1", alias="$schema")
     msg: str = Field(None, description="some message")
     run_time: float = Field(description="time in seconds this job took")
 
-import time
-import math
 
 def consume_compute(req: Request, ctxt: JobContext) -> Result:
     """
@@ -66,10 +73,15 @@ def consume_compute(req: Request, ctxt: JobContext) -> Result:
     if not 0 <= target_cpu_percent <= 100:
         raise ValueError("target_cpu_percent must be between 0 and 100")
 
-    with ctxt.report.step("consume_compute", msg=f"Consuming CPU for {duration_seconds} seconds at {target_cpu_percent}%") as ectxt:
+    with ctxt.report.step(
+        "consume_compute",
+        msg=f"Consuming CPU for {duration_seconds} seconds at {target_cpu_percent}%",
+    ) as ectxt:
         start_time = time.time()
         end_time = start_time + duration_seconds
-        logger.debug(f"Consuming CPU for {duration_seconds} seconds, targeting {target_cpu_percent}% per core...")
+        logger.debug(
+            f"Consuming CPU for {duration_seconds} seconds, targeting {target_cpu_percent}% per core..."
+        )
 
         # Constants to control the workload.  These may need adjustment.
         base_iterations = 10000  # A starting point for the loop iterations.
@@ -85,7 +97,7 @@ def consume_compute(req: Request, ctxt: JobContext) -> Result:
                 x = math.sqrt(i * 1.234)
                 y = math.log(x + 1)
                 z = math.pow(y, 2.345)
-                w = math.sin(z)
+                math.sin(z)
 
             # A small sleep to prevent the loop from running *too* fast and
             # potentially starving other processes or causing issues.  The
@@ -113,14 +125,13 @@ def consume_compute(req: Request, ctxt: JobContext) -> Result:
             data = []
             while True:
                 # Allocate 10MB chunks repeatedly
-                data.append(' ' * 10_000_000)
+                data.append(" " * 10_000_000)
 
         ectxt.finished(msg=msg)
         return Result(msg="CPU consumption finished.", run_time=run_time)
 
-# add_tool_api_route(app, "/", tester, opts=ToolOptions(tags=["Test Tool"], service_id="/"), context=ExecCtxt(msg="Boo!"))
-# add_tool_api_route(app, "/async", async_tester, opts=ToolOptions(tags=["Test Tool"]))
 
 if __name__ == "__main__":
     from ivcap_service import start_batch_service
+
     start_batch_service(service, consume_compute)

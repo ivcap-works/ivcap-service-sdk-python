@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ivcap_service"
-version = "0.6.16"
+version = "0.6.17"
 description = "SDK library for building services for the IVCAP platform"
 
 authors = ["Max Ott <max.ott@csiro.au>"]
@@ -8,6 +8,14 @@ authors = ["Max Ott <max.ott@csiro.au>"]
 readme = "README.md"
 
 include = ["ivcap_service/py.typed"]
+
+[tool.poe.tasks]    # using poethepoet
+lint = "ruff check ."
+format = "ruff format ."
+typecheck = "pyright"
+docs = { help = "Build documentation", shell = "cd docs && mkdocs build" }
+docs-serve = { help = "Serve documentation locally", shell = "cd docs && mkdocs serve" }
+docs-clean = { help = "Clean built documentation", shell = "cd docs && rm -rf site .mkdocs_cache" }
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
@@ -30,6 +38,13 @@ sphinx-autoapi = "^2.0.0"
 sphinx-rtd-theme = "^1.0.0"
 licenseheaders = "^0.8.8"
 toml = "^0.10.2"
+ruff = "^0.15.4"
+poethepoet = "^0.42.1"
+pyright = "^1.1.396"
+mkdocs = "^1.5.0"
+mkdocstrings = {version = "^0.24.0", extras = ["python"]}
+mkdocs-autorefs = "^0.5.0"
+griffe = "^0.42.0"
 
 [tool.semantic_release]
 version_variable = "pyproject.toml:version" # version location
@@ -40,6 +55,17 @@ upload_to_release = true                    # auto-create GitHub release
 upload_to_pypi = false                      # don't auto-upload to PyPI
 remove_dist = false                         # don't remove dists
 patch_without_tag = true                    # patch release by default
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]   # pycodestyle, pyflakes, isort, pyupgrade
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

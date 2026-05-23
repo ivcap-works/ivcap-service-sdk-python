@@ -6,11 +6,15 @@
 import inspect
 import json
 import os
-from typing import Optional, Type, Callable, Any, get_type_hints, Dict, Tuple
+from collections.abc import Callable
+from typing import Any, get_type_hints
 
 from pydantic import BaseModel
 
-def get_input_type(func: Callable) -> Tuple[Optional[Type[BaseModel]], Dict[str, Any]]:
+
+def get_input_type(
+    func: Callable,
+) -> tuple[type[BaseModel] | None, dict[str, Any]]:
     """Gets the input type of a function.
 
     Args:
@@ -22,13 +26,16 @@ def get_input_type(func: Callable) -> Tuple[Optional[Type[BaseModel]], Dict[str,
         - A dictionary of all additional parameters, where the key is the parameter name and the value is the type.
     """
     signature = inspect.signature(func)
-    type_hints = get_type_hints(func)
+    type_hints: dict[str, Any] = get_type_hints(func)
 
     # Get the Pydantic model class
     pydantic_model_class = None
     pydantic_param_name = None
     for param_name, param in signature.parameters.items():
-        if hasattr(param.annotation, '__mro__') and BaseModel in param.annotation.__mro__:
+        if (
+            hasattr(param.annotation, "__mro__")
+            and BaseModel in param.annotation.__mro__
+        ):
             pydantic_model_class = param.annotation
             pydantic_param_name = param_name
             break
@@ -42,15 +49,17 @@ def get_input_type(func: Callable) -> Tuple[Optional[Type[BaseModel]], Dict[str,
 
     return pydantic_model_class, additional_params
 
-def get_function_return_type(func):
+
+def get_function_return_type(func: Callable) -> Any | None:
     """Extracts the return type from a function."""
-    type_hints = get_type_hints(func)
+    type_hints: dict[str, Any] = get_type_hints(func)
     # param_types = {k: v for k, v in type_hints.items() if k != 'return'}
-    return_type = type_hints.get('return')
+    return_type = type_hints.get("return")
     # return param_types, return_type
     return return_type
 
-def file_to_json(file_path: str) -> Dict[str, Any]:
+
+def file_to_json(file_path: str) -> dict[str, Any]:
     """
     Reads a file, attempts to parse it as JSON, and returns the content.
 
@@ -69,14 +78,15 @@ def file_to_json(file_path: str) -> Dict[str, Any]:
         raise FileNotFoundError(f"File not found: {file_path}")
 
     try:
-        with open(file_path, "r") as f:
+        with open(file_path) as f:
             return json.load(f)
     except FileNotFoundError as e:
         raise FileNotFoundError(f"Error finding file: {file_path}: {e}")
     except json.JSONDecodeError as e:
         raise ValueError(f"Error decoding JSON from file: {file_path}: {e}")
     except Exception as e:
-        raise IOError(f"Error reading file: {file_path}: {e}")
+        raise OSError(f"Error reading file: {file_path}: {e}")
+
 
 def clean_description(text: str) -> str:
     """

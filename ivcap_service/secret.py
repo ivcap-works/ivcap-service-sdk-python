@@ -4,8 +4,9 @@
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
 import os
-from typing import Optional
+
 import requests
+
 from .logger import getLogger
 
 logger = getLogger("secret")
@@ -30,7 +31,7 @@ class SecretMgrClient:
 - Service side car
 """
     def __init__(self,
-        secret_url: Optional[str] = None
+        secret_url: str | None = None
     ) -> None:
         if not secret_url:
             secret_url = os.getenv("SECRETMGR_PROXY", "http://secretmgr.local")

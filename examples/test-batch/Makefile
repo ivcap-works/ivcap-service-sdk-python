@@ -38,7 +38,7 @@ test-ivcap:
 		-H "content-type: application/json" \
 		-H "Authorization: Bearer $(shell ivcap context get access-token --refresh-token)" \
 		-H "Timeout: ${TIMEOUT}" \
-		--data REQUEST_FILE} \
+		--data @${REQUEST_FILE} \
 		${IVCAP_URL}/1/services2/${SERVICE_ID}/jobs
 
 service-description:
@@ -75,3 +75,25 @@ docker-debug: #docker-build
 		--platform=${TARGET_PLATFORM} \
 		--entrypoint bash \
 		${DOCKER_TAG_LOCAL}
+
+# Build using local ivcap_service source code instead of published version
+DOCKER_TAG_LOCAL_SRC=test-batch:local-src
+docker-build-local:
+	@echo "Building Docker image with local ivcap_service source..."
+	docker build -f Dockerfile.local -t ${DOCKER_TAG_LOCAL_SRC} \
+		--build-arg VERSION=${VERSION} \
+		../../
+
+docker-run-local: docker-build-local
+	docker run -it \
+		-p ${PORT}:${PORT} \
+		-e IVCAP_BASE_URL="http://ivcap.local" \
+		--rm \
+		${DOCKER_TAG_LOCAL_SRC} --test-file /app/tests/load_1.json
+
+# For reference: build using published version (standard Dockerfile)
+docker-build-published:
+	@echo "Building Docker image with published ivcap_service..."
+	docker build -f Dockerfile -t test-batch:published \
+		--build-arg VERSION=${VERSION} \
+		.

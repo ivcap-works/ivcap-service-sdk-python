@@ -3,51 +3,67 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
-import io
-from typing import Any, Optional, Union
 from dataclasses import dataclass
-from pydantic import ConfigDict, Field, BaseModel, PrivateAttr
+from typing import Any, BinaryIO
 
-from ivcap_client import IVCAP
+from ivcap_client.ivcap import IVCAP
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
 
 from .events import EventReporter
+
 
 class ExecutionContext:
     pass
 
-class JobContext(BaseModel):
-    job_id: Optional[str] = None
-    report: Optional[EventReporter] = None
-    job_authorization: Optional[str] = None
 
-    _ivcap: Optional[IVCAP] = PrivateAttr(None)
+class JobContext(BaseModel):
+    job_id: str | None = None
+    report: EventReporter | None = None
+    job_authorization: str | None = None
+
+    _ivcap: IVCAP | None = PrivateAttr(None)
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @property
-    def ivcap(self) -> Optional[IVCAP]:
+    def ivcap(self) -> IVCAP | None:
         if self._ivcap is None:
             self._ivcap = IVCAP()
         return self._ivcap
 
+
 @dataclass
-class BinaryResult():
+class BinaryResult:
     """If the result of the tool is a non json serialisable object, return an
     instance of this class indicating the content-type and the actual
     result either as a byte array or a file handle to a binary content (`open(..., "rb")`)"""
+
     content_type: str = Field(description="Content type of result serialised")
-    content: Union[bytes, str, io.BufferedReader] = Field(description="Content to send, either as byte array or file handle")
+    content: bytes | str | BinaryIO = Field(
+        description="Content to send, either as byte array or file handle"
+    )
+
 
 @dataclass
 class IvcapResult(BinaryResult):
     isError: bool = False
     raw: Any = None
 
+
 class ExecutionError(BaseModel):
     """
     Pydantic model for execution errors.
     """
-    jschema: str = Field("urn:ivcap:schema.service.error.1", alias="$schema")
+
+    jschema: str = Field(
+        default="urn:ivcap:schema.service.error.1",
+        validation_alias="$schema",
+        serialization_alias="$schema",
+    )
     error: str = Field(description="Error message")
     type: str = Field(description="Error type")
-    traceback: Optional[str] = Field(None, description="traceback")
+    traceback: str | None = Field(default=None, description="traceback")
+
+    model_config = {
+        "populate_by_name": True,
+    }

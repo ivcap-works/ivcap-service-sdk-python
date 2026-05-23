@@ -3,74 +3,98 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
-from contextlib import contextmanager
-import traceback
-from typing import Any, Callable, ClassVar, Generator, Optional, Type
-from pydantic import BaseModel, Field
 import json
+import traceback
+from collections.abc import Callable, Generator
+from contextlib import contextmanager
+from typing import Any, ClassVar
+
+from pydantic import BaseModel, Field
 
 from .logger import getLogger
 
+
 class BaseEvent(BaseModel):
+    SCHEMA: ClassVar[str]
+
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
-        if 'SCHEMA' not in getattr(cls, '__annotations__', {}):
+        if "SCHEMA" not in getattr(cls, "__annotations__", {}):
             raise TypeError(f"{cls.__name__} must annotate SCHEMA as 'ClassVar[str]'")
-        if not hasattr(cls, 'SCHEMA'):
+        if not hasattr(cls, "SCHEMA"):
             raise TypeError(f"{cls.__name__} must define a class constant 'SCHEMA'")
 
     def model_dump(self, *args, **kwargs):
         d = super().model_dump(*args, **kwargs)
-        d["$schema"] = self.__class__.SCHEMA
+        d["$schema"] = self.__class__.SCHEMA  # ty:ignore[unresolved-attribute]
         return d
 
     def model_dump_json(self, *args, **kwargs):
         # Only pass *args, **kwargs to model_dump, not to json.dumps
         return json.dumps(self.model_dump(*args, **kwargs))
 
+
 class GenericEvent(BaseEvent):
     SCHEMA: ClassVar[str] = "urn:ivcap:schema:service.event.generic.1"
     name: str = Field(description="Name of event")
-    options: Optional[dict[str, Any]] = Field(None, description="Optional list of options")
+    options: dict[str, Any] | None = Field(
+        default=None, description="Optional list of options"
+    )
+
 
 class GenericErrorEvent(BaseEvent):
-    SCHEMA: ClassVar[str]= "urn:ivcap:schema:service.event.error.1"
+    SCHEMA: ClassVar[str] = "urn:ivcap:schema:service.event.error.1"
     error: str = Field(description="Error description")
-    context: Optional[str] = Field(None, description="Optional description of context")
-    stacktrace:  Optional[list[str]] = Field(None, description="Optional stacktrace")
+    context: str | None = Field(
+        default=None, description="Optional description of context"
+    )
+    stacktrace: list[str] | None = Field(
+        default=None, description="Optional stacktrace"
+    )
 
 
 class StepStartEvent(GenericEvent):
     SCHEMA: ClassVar[str] = "urn:ivcap:schema:service.event.step.start.1"
 
+
 class StepInfoEvent(GenericEvent):
     SCHEMA: ClassVar[str] = "urn:ivcap:schema:service.event.step.info.1"
+
 
 class StepErrorEvent(GenericErrorEvent):
     SCHEMA: ClassVar[str] = "urn:ivcap:schema:service.event.step.error.1"
 
+
 class StepFinishEvent(GenericEvent):
     SCHEMA: ClassVar[str] = "urn:ivcap:schema:service.event.step.finish.1"
+
 
 logger = getLogger("event")
 
 event_reporter_factory = None
 
-EventFactoryF = Callable[[str, Optional[str]], 'EventReporter']
-def set_event_reporter_factory(factory: EventFactoryF):
+EventFactoryF = Callable[[str, str | None], "EventReporter"]
+
+
+def set_event_reporter_factory(factory: EventFactoryF | None):
     """
-    Set afactory function for creating specialised EventReporter instances.
+    Set a factory function for creating specialised EventReporter instances.
 
     Args:
-        factory (EventFactoryF): A factory function that takes a job ID and an optional job authorization token,
+        factory (EventFactoryF | None): A factory function that takes a job ID and an optional job authorization token,
         and returns an instance of EventReporter. If None, the default EventReporter will be used.
     """
     global event_reporter_factory
     if factory is not None and not callable(factory):
-        raise ValueError("Factory must be a callable that returns an EventReporter instance.")
+        raise ValueError(
+            "Factory must be a callable that returns an EventReporter instance."
+        )
     event_reporter_factory = factory
 
-def create_event_reporter(job_id: str, job_authorization: Optional[str] = None) -> 'EventReporter':
+
+def create_event_reporter(
+    job_id: str, job_authorization: str | None = None
+) -> "EventReporter":
     """
     Create an EventReporter instance for the given job ID.
 
@@ -86,25 +110,47 @@ def create_event_reporter(job_id: str, job_authorization: Optional[str] = None) 
         return event_reporter_factory(job_id, job_authorization)
     return EventReporter(job_id, job_authorization)
 
+
 class EventContext:
-    def __init__(self,
-                 event_name:str,
-                 reporter:'EventReporter',
-                 finishEventClass: Optional[Type[BaseEvent]],
-                 errorEventClass: Optional[Type[GenericErrorEvent]]
-        ):
+    def __init__(
+        self,
+        event_name: str,
+        reporter: "EventReporter",
+        finishEventClass: type[GenericEvent] | None,
+        errorEventClass: type[GenericErrorEvent] | None,
+    ):
         self._event_name = event_name
         self._reporter = reporter
         self._finishEventClass = finishEventClass
         self._errorEventClass = errorEventClass
         self._finished_sent = False
 
+        # Best-effort OpenTelemetry child span for the event scope.
+        # This should never break services that don't use OTEL.
+        self._otel_span_cm = None
+        self._otel_span = None
+        try:
+            from opentelemetry import trace
+
+            tracer = trace.get_tracer("ivcap_service.events")
+            self._otel_span_cm = tracer.start_as_current_span(
+                f"ivcap.event:{event_name}"
+            )
+            self._otel_span = self._otel_span_cm.__enter__()
+            try:
+                self._otel_span.set_attribute("ivcap.job_id", reporter.job_id)
+                self._otel_span.set_attribute("ivcap.event_name", event_name)
+            except Exception:
+                pass
+        except Exception:
+            pass
+
     @property
     def name(self):
         return self._event_name
 
     def finished(self, message=None, **kwargs):
-        options=kwargs
+        options = kwargs
         if message:
             options["message"] = message
         if self._finishEventClass:
@@ -114,21 +160,73 @@ class EventContext:
         self._reporter.emit(event)
         self._finished_sent = True
 
-    def info(self, event: BaseEvent | dict):
-        self._reporter.emit(event)
+        if self._otel_span is not None:
+            try:
+                from opentelemetry.trace import Status, StatusCode
 
-    def error(self, err: Exception, context: Optional[str]=None):
-        evc = self._errorEventClass if self._errorEventClass is not None else GenericErrorEvent
+                self._otel_span.set_status(Status(StatusCode.OK))
+            except Exception:
+                pass
+
+    def info(self, event: BaseEvent | dict):
+        # We keep this ergonomic for callers: if they pass a raw dict,
+        # wrap it into a generic event.
+        if isinstance(event, BaseEvent):
+            self._reporter.emit(event)
+        else:
+            self._reporter.emit(GenericEvent(name=self._event_name, options=event))
+
+    def error(self, err: Exception, context: str | None = None):
+        evc = (
+            self._errorEventClass
+            if self._errorEventClass is not None
+            else GenericErrorEvent
+        )
         stacktrace = traceback.format_tb(err.__traceback__)
         if not context:
             context = self._event_name
         event = evc(error=str(err), stacktrace=stacktrace, context=context)
         self._reporter.emit(event)
 
+        if self._otel_span is not None:
+            try:
+                self._otel_span.record_exception(err)
+            except Exception:
+                pass
+            try:
+                from opentelemetry.trace import Status, StatusCode
+
+                self._otel_span.set_status(
+                    Status(StatusCode.ERROR, description=str(err))
+                )
+            except Exception:
+                pass
+
+    def close(self):
+        """Close the underlying OTEL span if one was created."""
+
+        if self._otel_span_cm is not None:
+            try:
+                self._otel_span_cm.__exit__(None, None, None)
+            except Exception:
+                pass
+            finally:
+                self._otel_span_cm = None
+                self._otel_span = None
+
+    def __del__(self):
+        # Best-effort cleanup in case callers forget to exit the context.
+        try:
+            self.close()
+        except Exception:
+            pass
+
+
 EventCtxtGenerator = Generator[EventContext, None, None]
 
+
 class EventReporter:
-    def __init__(self, job_id: str, job_authorization: str):
+    def __init__(self, job_id: str, job_authorization: str | None):
         self.job_id = job_id
         self.job_authorization = job_authorization
 
@@ -139,34 +237,42 @@ class EventReporter:
         self._send(event)
 
     def step_started(self, step_name: str, message=None, **kwargs):
-        options=kwargs
+        options = kwargs
         if message:
             options["message"] = message
         self.emit(StepStartEvent(name=step_name, options=options))
 
     def step_finished(self, step_name: str, message=None, **kwargs):
-        options=kwargs
+        options = kwargs
         if message:
             options["message"] = message
         self.emit(StepFinishEvent(name=step_name, options=options))
 
     def step(self, step_name, message=None, **kwargs):
         self.step_started(step_name, message, **kwargs)
-        return self._event_scope(step_name, StepFinishEvent(name=step_name), StepErrorEvent)
+        return self._event_scope(
+            step_name, StepFinishEvent(name=step_name, options=None), StepErrorEvent
+        )
 
     @contextmanager
     def _event_scope(
         self,
         event_name: str,
-        defaultFinishEvent: Optional[BaseEvent] = None,
-        errorEventClass: Optional[Type[GenericErrorEvent]] = None,
+        defaultFinishEvent: BaseEvent | None = None,
+        errorEventClass: type[GenericErrorEvent] | None = None,
     ) -> EventCtxtGenerator:
-        fevc = defaultFinishEvent.__class__ if defaultFinishEvent else None
+        fevc = (
+            defaultFinishEvent.__class__
+            if isinstance(defaultFinishEvent, GenericEvent)
+            else None
+        )
         ctxt = EventContext(event_name, self, fevc, errorEventClass)
         try:
             yield ctxt
         except Exception as e:
             ctxt.error(e, event_name)
+            ctxt.close()
             raise e
-        if not ctxt._finished_sent:
+        if not ctxt._finished_sent and defaultFinishEvent is not None:
             self.emit(defaultFinishEvent)
+        ctxt.close()
