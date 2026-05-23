@@ -1,0 +1,74 @@
+site_name: IVCAP Service SDK (Python)
+site_description: SDK for building batch services on the IVCAP platform
+site_author: CSIRO
+site_url: https://ivcap-works.github.io/ivcap-service-sdk-python/
+repo_url: https://github.com/ivcap-works/ivcap-service-sdk-python
+repo_name: ivcap-service-sdk-python
+edit_uri: edit/main/docs/docs/
+docs_dir: docs
+site_dir: site
+copyright: Copyright &copy; 2022-2026 CSIRO
+
+theme:
+  name: readthedocs
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            docstring_options:
+              returns_multiple_items: false
+            show_source: true
+            show_root_heading: true
+            show_root_full_path: false
+            members_order: source
+            filters:
+              - "!^_"
+            show_if_no_docstring: false
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quick-start.md
+    - Your First Service: getting-started/first-service.md
+  - Guides:
+    - Overview: guides/overview.md
+    - Job Processing: guides/job-processing.md
+    - Working with Artifacts: guides/artifacts.md
+    - Service Composition: guides/service-composition.md
+    - Observability & Logging: guides/observability.md
+    - Error Handling: guides/error-handling.md
+    - Deployment: guides/deployment.md
+    - Best Practices: guides/best-practices.md
+  - API Reference:
+    - Overview: api/overview.md
+    - Service: api/service.md
+    - JobContext: api/job-context.md
+    - Events & Reporting: api/events.md
+    - Types: api/types.md
+    - Utilities: api/utilities.md
+  - Examples:
+    - Batch Service: examples/batch-service.md
+    - Advanced Patterns: examples/advanced-patterns.md
+  - Reference:
+    - Environment Variables: reference/environment-variables.md
+    - Service Definition Schema: reference/service-definition.md
+    - Glossary: reference/glossary.md
+  - Community:
+    - Contributing: community/contributing.md
+    - Code of Conduct: community/conduct.md
