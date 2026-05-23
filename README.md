@@ -217,6 +217,124 @@ my-service/
 
 See `examples/test-batch/` for a complete working example.
 
+## Maintenance & Development Guide
+
+This section is for maintainers and developers working on the SDK itself.
+
+### Setup Development Environment
+
+```bash
+# Install the SDK and all development dependencies
+make setup
+
+# Or manually with Poetry
+poetry config virtualenvs.in-project true --local
+poetry install
+```
+
+### Testing
+
+Run the test suite:
+
+```bash
+# Run all tests with coverage
+make test
+
+# Or with Poetry directly
+poetry run pytest tests/ --cov=ivcap_service --cov-report=xml
+```
+
+### Code Quality
+
+Maintain code quality standards:
+
+```bash
+# Run linting checks
+make lint
+
+# Run type checking
+make typecheck
+
+# Format code
+make fmt
+
+# Or run all checks together
+make check    # Runs: lint + typecheck + test
+```
+
+### Building
+
+Build distribution packages:
+
+```bash
+# Build wheel and source distribution
+make build
+
+# Publish to PyPI (requires credentials configured in Poetry)
+make publish
+```
+
+### Documentation
+
+The SDK includes comprehensive documentation built with MkDocs:
+
+```bash
+# Serve documentation locally (http://localhost:8000)
+make docs-serve
+
+# Build documentation static site
+make docs
+
+# Clean generated documentation
+make docs-clean
+```
+
+**Documentation Structure:**
+- `docs/docs/` - Source Markdown files organized by topic
+- `docs/mkdocs.yml` - MkDocs configuration
+- `docs/site/` - Generated HTML (created when building)
+
+**Documentation includes:**
+- Getting Started guides
+- Comprehensive feature guides
+- API reference
+- Working examples
+- Best practices and patterns
+- Environment variable reference
+
+See `docs/docs/community/contributing.md` for documentation contribution guidelines.
+
+### Common Maintenance Tasks
+
+**Make targets for quick access:**
+
+```bash
+make setup           # Initial setup
+make check           # Validate code (lint + typecheck + test)
+make fmt             # Format code
+make docs-serve      # Preview documentation
+make clean           # Remove build artifacts
+```
+
+**Poetry tasks (via poethepoet):**
+
+```bash
+poetry run poe lint        # Run ruff linting
+poetry run poe format      # Run ruff formatting
+poetry run poe typecheck   # Run pyright type checking
+poetry run poe docs        # Build documentation
+poetry run poe docs-serve  # Serve documentation
+poetry run poe docs-clean  # Clean documentation
+```
+
+### Release Process
+
+1. Update version in `pyproject.toml`
+2. Run `make check` to verify all tests pass
+3. Build: `make build`
+4. Publish: `make publish` (requires PyPI credentials)
+5. Update documentation if needed: `make docs`
+
 ## Contributing
 
 We welcome contributions! Please check [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.

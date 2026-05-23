@@ -13,6 +13,9 @@ include = ["ivcap_service/py.typed"]
 lint = "ruff check ."
 format = "ruff format ."
 typecheck = "pyright"
+docs = { help = "Build documentation", cmd = "cd docs && mkdocs build" }
+docs-serve = { help = "Serve documentation locally", cmd = "cd docs && mkdocs serve" }
+docs-clean = { help = "Clean built documentation", cmd = "cd docs && rm -rf site .mkdocs_cache" }
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
@@ -38,6 +41,10 @@ toml = "^0.10.2"
 ruff = "^0.15.4"
 poethepoet = "^0.42.1"
 pyright = "^1.1.396"
+mkdocs = "^1.5.0"
+mkdocstrings = {version = "^0.24.0", extras = ["python"]}
+mkdocs-autorefs = "^0.5.0"
+griffe = "^0.42.0"
 
 [tool.semantic_release]
 version_variable = "pyproject.toml:version" # version location
