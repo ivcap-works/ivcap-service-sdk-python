@@ -15,7 +15,12 @@ from pydantic import BaseModel, Field
 from .logger import getLogger
 from .service import Service, ServiceContact, ServiceLicense
 from .tool_definition import SERVICE_ID_PLACEHOLDER
-from .utils import clean_description, file_to_json
+from .utils import (
+    clean_description,
+    file_to_json,
+    get_function_return_type,
+    get_input_type,
+)
 
 SERVICE_SCHEMA = "urn:ivcap:schema.service.2"
 BATCH_CONTROLLER_SCHEMA = "urn:ivcap:schema.service.batch.1"
@@ -23,6 +28,7 @@ DEF_POLICY = "urn:ivcap:policy:ivcap.open.service"
 DEF_RESOURCE_FILE = "resources.json"
 
 IMAGE_PLACEHOLDER = "#DOCKER_IMG#"
+COMMAND_PLACEHOLDER = ["#ENTRYPOINT#"]
 
 logger = getLogger("service-defintion")
 
@@ -50,7 +56,6 @@ class ServiceDefinition(BaseModel):
     id: str = Field(alias="$id")
     name: str
     description: str
-    parameters: list[Any] = []
     contact: ServiceContact = Field(description="contact details of the service")
     license: ServiceLicense | None = Field(
         None, description="license details of the service"
@@ -61,6 +66,16 @@ class ServiceDefinition(BaseModel):
         alias="controller-schema",
     )
     controller: Any
+    request_schema: dict | None = Field(
+        None,
+        description="JSON schema of the worker function's request (input) parameter",
+        alias="request-schema",
+    )
+    result_schema: dict | None = Field(
+        None,
+        description="JSON schema of the worker function's result (return) type",
+        alias="result-schema",
+    )
 
     model_config = {
         "populate_by_name": True,
@@ -112,6 +127,14 @@ def create_service_definition(
     license = service_description.license
     policy = os.getenv("IVCAP_POLICY_URN", DEF_POLICY)
 
+    input_type, _ = get_input_type(fn)
+    request_schema = input_type.model_json_schema() if input_type is not None else None
+
+    return_type = get_function_return_type(fn)
+    result_schema = None
+    if return_type is not None and hasattr(return_type, "model_json_schema"):
+        result_schema = return_type.model_json_schema()
+
     sd_data = {
         "$id": service_id,
         "name": name,
@@ -121,6 +144,8 @@ def create_service_definition(
         "license": license,
         "controller_schema": controller_schema,
         "controller": controller,
+        "request_schema": request_schema,
+        "result_schema": result_schema,
     }
 
     sd = ServiceDefinition(**sd_data)
@@ -155,15 +180,32 @@ def find_resources_file() -> Resources:
 
 
 def find_command() -> list[str]:
+    # Check ENTRYPOINT env var first
+    entrypoint_env = os.getenv("ENTRYPOINT")
+    if entrypoint_env is not None:
+        try:
+            cmd = ast.literal_eval(entrypoint_env)
+            if isinstance(cmd, list):
+                return cmd
+            return [entrypoint_env]
+        except (ValueError, SyntaxError):
+            return [entrypoint_env]
+
     docker_file = os.getenv("DOCKERFILE", "Dockerfile")
     if not (os.path.exists(docker_file) and os.access(docker_file, os.R_OK)):
-        print(f"FATAL: Cannot find Dockerfile '{docker_file}'", file=sys.stderr)
-        sys.exit(-1)
+        print(
+            f"WARNING: Cannot find Dockerfile '{docker_file}' - using command placeholder",
+            file=sys.stderr,
+        )
+        return COMMAND_PLACEHOLDER
 
     entry = extract_line(docker_file, "ENTRYPOINT")
     if not entry:
-        print(f"FATAL: Cannot find 'ENTRYPOINT' in '{docker_file}'", file=sys.stderr)
-        sys.exit(-1)
+        print(
+            f"WARNING: Cannot find 'ENTRYPOINT' in '{docker_file}' - using command placeholder",
+            file=sys.stderr,
+        )
+        return COMMAND_PLACEHOLDER
     cs = entry[len("ENTRYPOINT") :].strip()
     cmd = ast.literal_eval(cs)
     return cmd
