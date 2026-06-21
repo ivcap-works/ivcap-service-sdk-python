@@ -26,7 +26,7 @@ from .ivcap import (
 from .logger import getLogger, logging_init, service_log_config, set_service_log_config
 from .openobserve import init_openobserve_from_env, load_openobserve_config_from_env
 from .secret import get_secret
-from .service import Service, start_batch_service
+from .service import Service, ServiceContact, ServiceLicense, start_batch_service
 from .service_definition import (
     IMAGE_PLACEHOLDER,
     Resources,
@@ -40,7 +40,7 @@ from .tool_definition import (
     create_tool_definition,
     print_tool_definition,
 )
-from .types import BinaryResult, ExecutionError, IvcapResult, JobContext
+from .types import BinaryResult, ExecutionError, IvcapResult, JobContext, with_schema
 from .utils import get_function_return_type, get_input_type
 from .version import __version__, get_version
 
@@ -58,7 +58,9 @@ __all__ = [
     "OnResultF",
     "Resources",
     "Service",
+    "ServiceContact",
     "ServiceDefinition",
+    "ServiceLicense",
     "SidecarReporter",
     "ToolDefinition",
     "__version__",
@@ -86,4 +88,5 @@ __all__ = [
     "init_openobserve_from_env",
     "load_openobserve_config_from_env",
     "verify_result",
+    "with_schema",
 ]

@@ -5,8 +5,15 @@ import time
 
 from pydantic import BaseModel, Field
 
-from ivcap_service import JobContext, getLogger, logging_init
-from ivcap_service.service import Service
+from ivcap_service import (
+    JobContext,
+    Service,
+    ServiceContact,
+    ServiceLicense,
+    getLogger,
+    logging_init,
+    with_schema,
+)
 
 this_dir = os.path.dirname(__file__)
 src_dir = os.path.abspath(os.path.join(this_dir, "../../src"))
@@ -18,19 +25,19 @@ logger = getLogger("app")
 service = Service(
     name="Batch service example",
     version=os.environ.get("VERSION", "???"),
-    contact={
-        "name": "Mary Doe",
-        "email": "mary.doe@acme.au",
-    },
-    license_info={
-        "name": "MIT",
-        "url": "https://opensource.org/license/MIT",
-    },
+    contact=ServiceContact(
+        name="Mary Doe",
+        email="mary.doe@acme.au",
+    ),
+    license=ServiceLicense(
+        name="MIT",
+        url="https://opensource.org/license/MIT",
+    ),
 )
 
 
+@with_schema("urn:sd:schema:batch-tester.request.1")
 class Request(BaseModel):
-    jschema: str = Field("urn:sd:schema:batch-tester.request.1", alias="$schema")
     duration_seconds: int | None = Field(10, description="seconds this job should run")
     target_cpu_percent: int | None = Field(80, description="percentage load on CPU")
     throw_exception_at_end: bool | None = Field(
@@ -44,9 +51,9 @@ class Request(BaseModel):
     )
 
 
+@with_schema("urn:sd:schema:batch-tester.1")
 class Result(BaseModel):
-    jschema: str = Field("urn:sd:schema:batch-tester.1", alias="$schema")
-    msg: str = Field(None, description="some message")
+    msg: str | None = Field(None, description="some message")
     run_time: float = Field(description="time in seconds this job took")
 
 

@@ -41,23 +41,26 @@ This SDK simplifies development of long-running, queue-based worker services tha
 
 ```python
 from pydantic import BaseModel, Field
-from ivcap_service import Service, JobContext, start_batch_service, getLogger, logging_init
+from ivcap_service import (
+    Service, ServiceContact, ServiceLicense,
+    JobContext, start_batch_service, getLogger, logging_init, with_schema,
+)
 
 logging_init()
 logger = getLogger("app")
 
 service = Service(
     name="My Batch Service",
-    contact={"name": "Your Name", "email": "you@example.com"},
-    license_info={"name": "MIT", "url": "https://opensource.org/license/MIT"},
+    contact=ServiceContact(name="Your Name", email="you@example.com"),
+    license=ServiceLicense(name="MIT", url="https://opensource.org/license/MIT"),
 )
 
+@with_schema("urn:sd:schema:my_service.request.1")
 class Request(BaseModel):
-    jschema: str = Field("urn:sd:schema:my_service.request.1", alias="$schema")
     input_data: str = Field(description="The data to process")
 
+@with_schema("urn:sd:schema:my_service.1")
 class Result(BaseModel):
-    jschema: str = Field("urn:sd:schema:my_service.1", alias="$schema")
     output_data: str = Field(description="The processed result")
 
 def process_job(req: Request, ctxt: JobContext) -> Result:
@@ -126,7 +129,7 @@ python batch_service.py --test-file tests/req_1.json
 
 ## Comprehensive Documentation
 
-**This README provides a quick overview. For in-depth guidance, see [`SKILLS.md`](./SKILLS.md)**, which covers:
+**This README provides a quick overview. For in-depth guidance, see [`AGENTS.md`](./AGENTS.md)**, which covers:
 
 - **Step-by-step guide** to building batch services
 - **JobContext API** - progress reporting, artifact upload/download, service composition
@@ -136,7 +139,7 @@ python batch_service.py --test-file tests/req_1.json
 - **Best practices** - code organization, documentation, testing
 - **Troubleshooting** - common issues and solutions
 
-**`SKILLS.md` is designed for:**
+**`AGENTS.md` is designed for:**
 - Developers wanting deep technical understanding
 - Agents/LLMs needing detailed implementation guidance
 - Anyone building complex, multi-service workflows
@@ -178,7 +181,7 @@ export OPENOBSERVE_ENABLE_METRICS=true
 export OPENOBSERVE_METRICS_INTERVAL=30
 ```
 
-See [`SKILLS.md`](./SKILLS.md) for more configuration options.
+See [`AGENTS.md`](./AGENTS.md) for more configuration options.
 
 ## Template Repository
 

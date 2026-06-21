@@ -14,7 +14,10 @@ Save this as `my_service.py`:
 
 ```python
 from pydantic import BaseModel, Field
-from ivcap_service import Service, JobContext, start_batch_service, getLogger, logging_init
+from ivcap_service import (
+    Service, ServiceContact, ServiceLicense,
+    JobContext, start_batch_service, getLogger, logging_init, with_schema,
+)
 
 # Initialize logging
 logging_init()
@@ -23,19 +26,18 @@ logger = getLogger("my_service")
 # Define your service
 service = Service(
     name="My First Service",
-    description="A simple service that converts text to uppercase",
-    contact={"name": "Your Name", "email": "you@example.com"},
-    license_info={"name": "MIT", "url": "https://opensource.org/license/MIT"},
+    contact=ServiceContact(name="Your Name", email="you@example.com"),
+    license=ServiceLicense(name="MIT", url="https://opensource.org/license/MIT"),
 )
 
 # Define request schema
+@with_schema("urn:sd:schema:my_service.request.1")
 class TextRequest(BaseModel):
-    jschema: str = Field("urn:sd:schema:my_service.request.1", alias="$schema")
     text: str = Field(description="Text to convert to uppercase")
 
 # Define result schema
+@with_schema("urn:sd:schema:my_service.result.1")
 class TextResult(BaseModel):
-    jschema: str = Field("urn:sd:schema:my_service.result.1", alias="$schema")
     uppercase_text: str = Field(description="Converted text")
 
 # Process a job

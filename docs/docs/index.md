@@ -15,11 +15,11 @@ This SDK simplifies development of long-running, queue-based worker services wit
 
 ```python
 from pydantic import BaseModel, Field
-from ivcap_service import Service, JobContext, start_batch_service
+from ivcap_service import Service, ServiceContact, JobContext, start_batch_service
 
 service = Service(
     name="My Service",
-    contact={"name": "Your Name", "email": "you@example.com"},
+    contact=ServiceContact(name="Your Name", email="you@example.com"),
 )
 
 class Request(BaseModel):

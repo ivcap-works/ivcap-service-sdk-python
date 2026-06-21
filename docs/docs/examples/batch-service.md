@@ -11,8 +11,9 @@ This service processes batches of text items with validation, transformation, an
 ```python
 from pydantic import BaseModel, Field, field_validator
 from ivcap_service import (
-    Service, JobContext, start_batch_service,
-    getLogger, logging_init
+    Service, ServiceContact, ServiceLicense,
+    JobContext, start_batch_service,
+    getLogger, logging_init,
 )
 import time
 
@@ -23,9 +24,8 @@ logger = getLogger("batch_service")
 # Define service
 service = Service(
     name="Batch Text Processor",
-    description="Processes batches of text with validation and transformation",
-    contact={"name": "Developer", "email": "dev@example.com"},
-    license_info={"name": "MIT", "url": "https://opensource.org/license/MIT"},
+    contact=ServiceContact(name="Developer", email="dev@example.com"),
+    license=ServiceLicense(name="MIT", url="https://opensource.org/license/MIT"),
 )
 
 # Request schema

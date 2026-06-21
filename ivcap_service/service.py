@@ -85,12 +85,12 @@ def _span_set_outcome(
 class ServiceContact(BaseModel):
     name: str = Field(description="name of the contact person")
     email: str = Field(description="email address of the contact person")
-    url: str | None = Field(None, description="url of the contact person")
+    url: str | None = Field(default=None, description="url of the contact person")
 
 
 class ServiceLicense(BaseModel):
     name: str = Field(description="name of the license")
-    url: str = Field(description="url to the license text")
+    url: str | None = Field(default=None, description="url to the license text")
 
 
 class Service(BaseModel):

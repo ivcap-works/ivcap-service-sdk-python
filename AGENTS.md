@@ -1,6 +1,6 @@
-# SKILLS.md: Building IVCAP Batch Services
+# AGENTS.md: Building IVCAP Batch Services
 
-This document provides comprehensive instructions for agents (skills) on how to use the ivcap-service library to build IVCAP batch services.
+This document provides comprehensive instructions for agents (AGENTS) on how to use the ivcap-service library to build IVCAP batch services.
 
 ## Overview
 
@@ -71,19 +71,25 @@ Repeat (wait for next job)
 from pydantic import BaseModel, Field
 from ivcap_service import (
     Service,
+    ServiceContact,
+    ServiceLicense,
     JobContext,
     getLogger,
     logging_init,
     start_batch_service,
+    with_schema,
 )
 ```
 
 Key imports:
 - `Service` - Service descriptor class
+- `ServiceContact` - Typed contact details model (name, email, optional url)
+- `ServiceLicense` - Typed license model (name, optional url)
 - `JobContext` - Context object passed to worker function (optional)
 - `getLogger` - Structured logging
 - `logging_init` - Initialize logging system
 - `start_batch_service` - Bootstrap function to start the service
+- `with_schema` - Decorator to attach a `$schema` URN to a Pydantic model
 
 ### 2. Initialize Logging
 
@@ -102,30 +108,30 @@ Create a `Service` object describing your service:
 service = Service(
     name="My Batch Service",
     version=os.environ.get("VERSION", "1.0.0"),
-    contact={
-        "name": "Your Name",
-        "email": "your.email@example.com",
-    },
-    license_info={
-        "name": "MIT",
-        "url": "https://opensource.org/license/MIT",
-    },
+    contact=ServiceContact(
+        name="Your Name",
+        email="your.email@example.com",
+    ),
+    license=ServiceLicense(
+        name="MIT",
+        url="https://opensource.org/license/MIT",
+    ),
 )
 ```
 
 **Fields:**
 - `name` (required) - Human-readable service name
 - `version` - Service version (commonly read from `VERSION` environment variable)
-- `contact` (required) - Dict with `name` and `email` of service contact
-- `license_info` - Dict with `name` and `url` of license
+- `contact` (required) - `ServiceContact` instance with `name` (str) and `email` (str) fields; optionally `url` (str)
+- `license` (optional) - `ServiceLicense` instance with `name` (str) and an optional `url` (str) pointing to the license text
 
 ### 4. Define the Request Model
 
 Define a Pydantic model for job input parameters:
 
 ```python
+@with_schema("urn:sd:schema:my_service.request.1")
 class Request(BaseModel):
-    jschema: str = Field("urn:sd:schema:my_service.request.1", alias="$schema")
     param1: str = Field(description="First parameter")
     param2: int = Field(default=10, description="Optional second parameter")
     param3: bool | None = Field(False, description="Optional boolean flag")
@@ -133,7 +139,8 @@ class Request(BaseModel):
 
 **Requirements:**
 - Must inherit from `pydantic.BaseModel`
-- Must include a `jschema` field with `alias="$schema"` (IVCAP uses `$schema` for data type identification)
+- Must be decorated with `@with_schema("urn:sd:schema:...")` — this injects the `$schema` field that IVCAP uses for data type identification
+- Do **not** manually add a `jschema` / `$schema` field; the decorator handles it
 - Every field should have a descriptive `description` for agent clarity
 - Use `Field()` to specify defaults and type information
 - Use type hints for all fields
@@ -147,8 +154,8 @@ class Request(BaseModel):
 Define a Pydantic model for job output/results:
 
 ```python
+@with_schema("urn:sd:schema:my_service.1")
 class Result(BaseModel):
-    jschema: str = Field("urn:sd:schema:my_service.1", alias="$schema")
     result_field: str = Field(description="Main result")
     status: str = Field(description="Job status")
     execution_time: float = Field(description="Time in seconds")
@@ -156,7 +163,8 @@ class Result(BaseModel):
 
 **Requirements:**
 - Must inherit from `pydantic.BaseModel`
-- Must include a `jschema` field with `alias="$schema"`
+- Must be decorated with `@with_schema("urn:sd:schema:...")` — this injects the `$schema` field
+- Do **not** manually add a `jschema` / `$schema` field; the decorator handles it
 - All fields should have descriptions
 - Should mirror the actual output your worker function produces
 
@@ -504,7 +512,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
 | **Result aggregation** | Combine outputs from multiple jobs |
 | **Metadata enrichment** | Add classifications, tags, provenance info |
 
-For more details on IVCAP client capabilities, refer to the [ivcap-client SDK documentation](../ivcap-client-sdk-python/SKILLS.md).
+For more details on IVCAP client capabilities, refer to the [ivcap-client SDK documentation](../ivcap-client-sdk-python/AGENTS.md).
 
 ### 9. Error Handling
 
@@ -772,6 +780,7 @@ Key patterns used:
 
 ### 1. Request and Result Models
 
+- **Use `@with_schema(...)` decorator** - Always decorate models with `@with_schema("urn:sd:schema:...")` instead of adding a manual `jschema` field
 - **Use descriptive field names** - Make it clear what each field represents
 - **Provide comprehensive descriptions** - Agents use these to understand inputs/outputs
 - **Use appropriate types** - `int`, `str`, `bool`, `list`, `dict`, etc.

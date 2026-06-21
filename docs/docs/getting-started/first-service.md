@@ -42,7 +42,10 @@ Create `image_processor.py`:
 
 ```python
 from pydantic import BaseModel, Field
-from ivcap_service import Service, JobContext, start_batch_service, getLogger, logging_init
+from ivcap_service import (
+    Service, ServiceContact, ServiceLicense,
+    JobContext, start_batch_service, getLogger, logging_init,
+)
 
 # Initialize logging
 logging_init()
@@ -51,9 +54,8 @@ logger = getLogger("image_processor")
 # Define your service
 service = Service(
     name="Image Processor",
-    description="Resize and optimize images",
-    contact={"name": "Your Name", "email": "you@example.com"},
-    license_info={"name": "MIT", "url": "https://opensource.org/license/MIT"},
+    contact=ServiceContact(name="Your Name", email="you@example.com"),
+    license=ServiceLicense(name="MIT", url="https://opensource.org/license/MIT"),
 )
 
 # Define request schema

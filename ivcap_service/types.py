@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from typing import Any, BinaryIO
 
 from ivcap_client.ivcap import IVCAP
-from pydantic import BaseModel, ConfigDict, Field, PrivateAttr
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, field_validator
 
 from .events import EventReporter
 
@@ -17,8 +17,8 @@ class ExecutionContext:
 
 
 class JobContext(BaseModel):
-    job_id: str | None = None
-    report: EventReporter | None = None
+    job_id: str
+    report: EventReporter
     job_authorization: str | None = None
 
     _ivcap: IVCAP | None = PrivateAttr(None)
@@ -26,7 +26,7 @@ class JobContext(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     @property
-    def ivcap(self) -> IVCAP | None:
+    def ivcap(self) -> IVCAP:
         if self._ivcap is None:
             self._ivcap = IVCAP()
         return self._ivcap
@@ -67,3 +67,25 @@ class ExecutionError(BaseModel):
     model_config = {
         "populate_by_name": True,
     }
+
+
+def with_schema(schema_uri: str):
+    def decorator(cls):
+        class _SchemaField(BaseModel):
+            schema_: str = Field(default=schema_uri, alias="$schema")
+            model_config = {"populate_by_name": True, "serialize_by_alias": True}
+
+            @field_validator("schema_")
+            @classmethod
+            def _check_schema(cls, v):
+                if v != schema_uri:
+                    raise ValueError(f"$schema must be {schema_uri!r}, got {v!r}")
+                return v
+
+        Wrapped = type(
+            cls.__name__, (cls, _SchemaField), {"__module__": cls.__module__}
+        )
+        Wrapped.__qualname__ = getattr(cls, "__qualname__", cls.__name__)
+        return Wrapped
+
+    return decorator

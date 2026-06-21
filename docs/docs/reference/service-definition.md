@@ -4,52 +4,91 @@ Reference for the service definition structure.
 
 ## Service Class
 
-The `Service` class defines your service metadata:
+The `Service` class defines your service metadata. The `contact` and `license`
+fields use dedicated typed models (`ServiceContact` and `ServiceLicense`) for
+clarity and type safety.
 
 ```python
-from ivcap_service import Service
+from ivcap_service import Service, ServiceContact, ServiceLicense
 
 service = Service(
     name="My Service",
-    description="What my service does",
-    contact={"name": "John Doe", "email": "john@example.com"},
-    license_info={"name": "MIT", "url": "https://opensource.org/license/MIT"},
+    contact=ServiceContact(name="John Doe", email="john@example.com"),
+    license=ServiceLicense(name="MIT", url="https://opensource.org/license/MIT"),
 )
 ```
 
-## Properties
+## ServiceContact Class
+
+Typed model describing the service contact person.
+
+```python
+from ivcap_service import ServiceContact
+
+contact = ServiceContact(
+    name="Jane Smith",
+    email="jane@example.com",
+    url="https://example.com/jane",   # optional
+)
+```
+
+### Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | `str` | ✅ | Full name of the contact person |
+| `email` | `str` | ✅ | Email address of the contact person |
+| `url` | `str \| None` | ❌ | Optional URL for the contact (e.g. profile page) |
+
+## ServiceLicense Class
+
+Typed model describing the service license.
+
+```python
+from ivcap_service import ServiceLicense
+
+license = ServiceLicense(
+    name="MIT",
+    url="https://opensource.org/license/MIT",   # optional
+)
+```
+
+### Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | `str` | ✅ | License name (e.g. MIT, Apache-2.0, proprietary) |
+| `url` | `str \| None` | ❌ | Optional URL pointing to the full license text |
+
+## Service Class Fields
 
 ### Required
 
-- **name** (str) — Service name
-- **contact** (dict) — Contact information
-  - **name** (str) — Contact person name
-  - **email** (str) — Contact email
+- **name** (`str`) — Human-readable service name
+- **contact** (`ServiceContact`) — Typed contact details (see above)
 
 ### Optional
 
-- **description** (str) — Service description
-- **license_info** (dict) — License information
-  - **name** (str) — License name (MIT, Apache, etc.)
-  - **url** (str) — License URL
-- **documentation** (str) — URL to service documentation
-- **resources** (ResourceRequirements) — Resource requirements
+- **version** (`str | None`) — Service version; defaults to the `VERSION` environment variable if not provided
+- **license** (`ServiceLicense | None`) — Typed license information (see above)
 
-## Example
+## Complete Example
 
 ```python
+import os
+from ivcap_service import Service, ServiceContact, ServiceLicense
+
 service = Service(
     name="Image Processor",
-    description="Resizes and optimizes images for web",
-    contact={
-        "name": "Image Team",
-        "email": "images@example.com"
-    },
-    license_info={
-        "name": "MIT",
-        "url": "https://opensource.org/license/MIT"
-    },
-    documentation="https://docs.example.com/image-processor"
+    version=os.environ.get("VERSION", "1.0.0"),
+    contact=ServiceContact(
+        name="Image Team",
+        email="images@example.com",
+    ),
+    license=ServiceLicense(
+        name="MIT",
+        url="https://opensource.org/license/MIT",
+    ),
 )
 ```
 
@@ -66,7 +105,6 @@ The SDK generates a JSON schema like:
 ```json
 {
   "name": "Image Processor",
-  "description": "Resizes and optimizes images for web",
   "contact": {
     "name": "Image Team",
     "email": "images@example.com"

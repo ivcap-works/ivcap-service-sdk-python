@@ -203,13 +203,12 @@ def process_job(req: Request, ctx: JobContext) -> Result:
 ### Service Documentation
 
 ```python
+from ivcap_service import Service, ServiceContact, ServiceLicense
+
 service = Service(
     name="Data Processor",
-    description="Transforms and validates data items. "
-                "Supports CSV and JSON input formats.",
-    contact={"name": "Support Team", "email": "support@example.com"},
-    license_info={"name": "MIT", "url": "https://opensource.org/license/MIT"},
-    documentation="https://docs.example.com/data-processor"
+    contact=ServiceContact(name="Support Team", email="support@example.com"),
+    license=ServiceLicense(name="MIT", url="https://opensource.org/license/MIT"),
 )
 ```
 

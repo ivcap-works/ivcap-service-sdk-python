@@ -55,13 +55,12 @@ It is used to:
 Example (from `README.md` and `examples/test-batch/batch_service.py`):
 
 ```py
-from ivcap_service.service import Service
+from ivcap_service.service import Service, ServiceContact, ServiceLicense
 
 service = Service(
     name="Batch service example",
-    contact={"name": "Mary Doe", "email": "mary.doe@acme.au"},
-    # Note: the field on the Service model is called `license`
-    license={"name": "MIT", "url": "https://opensource.org/license/MIT"},
+    contact=ServiceContact(name="Mary Doe", email="mary.doe@acme.au"),
+    license=ServiceLicense(name="MIT", url="https://opensource.org/license/MIT"),
 )
 ```
 
@@ -78,15 +77,17 @@ The SDK uses these models for:
 * serialising successful results
 * generating a machine-readable **tool definition** (`--print-tool-description`)
 
-In many examples you’ll see a `$schema` field using an alias:
+Use the `@with_schema` decorator to attach a `$schema` URN to a Pydantic model:
 
 ```py
+from ivcap_service import with_schema
+
+@with_schema("urn:sd:schema:batch-tester.request.1")
 class Request(BaseModel):
-    jschema: str = Field("urn:sd:schema:batch-tester.request.1", alias="$schema")
     ...
 ```
 
-This is optional for local execution, but is useful/expected in IVCAP deployments.
+This injects the `$schema` field automatically and is required for IVCAP deployments. Do **not** add a manual `jschema` field with `alias="$schema"`.
 
 ### 3) Worker function (single entry point)
 
