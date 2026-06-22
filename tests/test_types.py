@@ -79,10 +79,11 @@ def test_execution_error_serialization():
 
 
 def test_job_context_defaults():
-    """Test JobContext initialization with defaults."""
-    ctx = JobContext()
-    assert ctx.job_id is None
-    assert ctx.report is None
+    """Test JobContext initialization with only required fields; job_authorization defaults to None."""
+    report = EventReporter("job-123", "")
+    ctx = JobContext(job_id="job-123", report=report)
+    assert ctx.job_id == "job-123"
+    assert ctx.report is report
     assert ctx.job_authorization is None
 
 
@@ -97,6 +98,7 @@ def test_job_context_with_values():
 
 def test_job_context_ivcap_private_attr():
     """Test JobContext has _ivcap private attribute initialized to None."""
-    ctx = JobContext(job_id="job-123")
+    report = EventReporter("job-123", "")
+    ctx = JobContext(job_id="job-123", report=report)
     # The private attribute should be initialized to None
     assert ctx._ivcap is None

@@ -4,7 +4,7 @@
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
 from dataclasses import dataclass
-from typing import Any, BinaryIO
+from typing import Any, BinaryIO, cast
 
 from ivcap_client.ivcap import IVCAP
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, field_validator
@@ -28,7 +28,7 @@ class JobContext(BaseModel):
     @property
     def ivcap(self) -> IVCAP:
         if self._ivcap is None:
-            self._ivcap = IVCAP()
+            self._ivcap = cast(IVCAP, IVCAP())
         return self._ivcap
 
 

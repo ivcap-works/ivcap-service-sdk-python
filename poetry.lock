@@ -896,14 +896,14 @@ files = [
 
 [[package]]
 name = "ivcap-client"
-version = "0.47.17"
+version = "0.47.18"
 description = "A client library for accessing an IVCAP cluster"
 optional = false
 python-versions = "<4.0,>=3.11"
 groups = ["main"]
 files = [
-    {file = "ivcap_client-0.47.17-py3-none-any.whl", hash = "sha256:944ca1696180c7d70455bbd46829d5a517120d03933317fcc3ca5a61f201dc00"},
-    {file = "ivcap_client-0.47.17.tar.gz", hash = "sha256:8d7cd764e2806993fc77e888f649e30f073b2b469f4758c3198ef332e5090f51"},
+    {file = "ivcap_client-0.47.18-py3-none-any.whl", hash = "sha256:2993dbffaa32f0da2b125a95cb2a27859371255deacbe0ee2ebad36e64ebd663"},
+    {file = "ivcap_client-0.47.18.tar.gz", hash = "sha256:c4c1a3ee9b3035a011914e44562def2dd6c7f815b23dc94fb2a158fd905c2602"},
 ]
 
 [package.dependencies]
@@ -2812,4 +2812,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4.0"
-content-hash = "25880cca80755bebd0abb1d0375e814e874c9a655dce29fc1616fb1f8df80f08"
+content-hash = "0181e0a79d24fdc7827381cda06e0ff754590092b1618b66904ee8c1b594ddf2"
