@@ -44,7 +44,7 @@ Create `image_processor.py`:
 from pydantic import BaseModel, Field
 from ivcap_service import (
     Service, ServiceContact, ServiceLicense,
-    JobContext, start_batch_service, getLogger, logging_init,
+    JobContext, start_batch_service, getLogger, logging_init, with_schema,
 )
 
 # Initialize logging
@@ -59,6 +59,7 @@ service = Service(
 )
 
 # Define request schema
+@with_schema("urn:sd:schema:image-processor.request.1")
 class ImageRequest(BaseModel):
     """Request to process an image."""
     image_artifact_id: str = Field(description="ID of artifact containing image")
@@ -66,6 +67,7 @@ class ImageRequest(BaseModel):
     height: int = Field(default=600, description="Target height in pixels")
 
 # Define result schema
+@with_schema("urn:sd:schema:image-processor.1")
 class ImageResult(BaseModel):
     """Result after processing."""
     processed_image_id: str = Field(description="ID of processed image artifact")
@@ -77,15 +79,16 @@ def process_job(request: ImageRequest, context: JobContext) -> ImageResult:
     """Process an image by resizing."""
     logger.info(f"Processing job {context.job_id}")
 
-    ivcap = context.ivcap()
-    if not ivcap:
-        raise RuntimeError("IVCAP client not available")
+    ivcap = context.ivcap  # property — no parentheses; always available in platform jobs
 
     # Step 1: Download the image
     with context.report.step("download", msg="Downloading image") as step:
         logger.info(f"Downloading artifact {request.image_artifact_id}")
-        image_data = ivcap.artifact(request.image_artifact_id).read()
-        step.finished(msg=f"Downloaded {len(image_data)} bytes")
+        artifact = ivcap.get_artifact(request.image_artifact_id)
+        # as_local_file() streams to a temp file and auto-deletes on exit
+        with artifact.as_local_file() as path:
+            image_bytes = path.read_bytes()
+        step.finished(msg=f"Downloaded {len(image_bytes)} bytes")
 
     # Step 2: Process the image
     with context.report.step("process", msg="Resizing image") as step:
@@ -93,7 +96,7 @@ def process_job(request: ImageRequest, context: JobContext) -> ImageResult:
         import io
 
         # Load image
-        original_image = Image.open(io.BytesIO(image_data))
+        original_image = Image.open(io.BytesIO(image_bytes))
         original_size = original_image.size
         logger.info(f"Original size: {original_size}")
 
@@ -116,16 +119,17 @@ def process_job(request: ImageRequest, context: JobContext) -> ImageResult:
 
     # Step 3: Upload the result
     with context.report.step("upload", msg="Uploading result") as step:
-        result_id = ivcap.artifact_new(
-            data=processed_data,
-            collection_id=None,
-            tags=["processed", "image"]
+        result_artifact = ivcap.upload_artifact(
+            name="resized-image.jpg",
+            io_stream=io.BytesIO(processed_data),
+            content_type="image/jpeg",
+            content_size=len(processed_data),
         )
-        logger.info(f"Uploaded result: {result_id}")
-        step.finished(msg=f"Uploaded: {result_id}")
+        logger.info(f"Uploaded result: {result_artifact.id}")
+        step.finished(msg=f"Uploaded: {result_artifact.id}")
 
     return ImageResult(
-        processed_image_id=result_id,
+        processed_image_id=result_artifact.id,
         original_size={"width": original_size[0], "height": original_size[1]},
         final_size={"width": final_size[0], "height": final_size[1]}
     )
@@ -214,6 +218,7 @@ ivcap service register service.json
 ### Add More Parameters
 
 ```python
+@with_schema("urn:sd:schema:image-processor.request.1")
 class ImageRequest(BaseModel):
     image_artifact_id: str
     width: int = 800
@@ -255,9 +260,18 @@ The Pillow package provides PIL:
 poetry add pillow
 ```
 
-### "IVCAP client not available"
+### Testing artifact download/upload locally
 
-The client is only available in the IVCAP environment. Locally, it returns None.
+When testing with `--test-file`, the `ctxt.ivcap` client connects to a real
+IVCAP deployment (via `IVCAP_BASE_URL`).  If you are testing offline, the
+`as_local_file()` call will fail because there is no platform to download from.
+For local integration testing, use `LocalIVCAP` from `ivcap_client`:
+
+```python
+from ivcap_client import IVCAP
+ivcap = IVCAP.local(base_dir="./test-artifacts")
+artifact = ivcap.get_artifact("file:///path/to/local-image.jpg")
+```
 
 ### Docker build fails
 

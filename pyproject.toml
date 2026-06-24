@@ -14,7 +14,7 @@ lint = "ruff check ."
 format = "ruff format ."
 typecheck = "pyright"
 docs = { help = "Build documentation", shell = "cd docs && mkdocs build" }
-docs-serve = { help = "Serve documentation locally", shell = "cd docs && mkdocs serve" }
+docs-serve = { help = "Serve documentation locally", shell = "cd docs && PORT=$(python3 -c \"import socket; s=socket.socket(); s.bind(('',0)); p=s.getsockname()[1]; s.close(); print(p)\") && echo \"Serving docs at http://localhost:$PORT\" && mkdocs serve --dev-addr localhost:$PORT" }
 docs-clean = { help = "Clean built documentation", shell = "cd docs && rm -rf site .mkdocs_cache" }
 
 [tool.poetry.dependencies]
@@ -42,9 +42,12 @@ ruff = "^0.15.4"
 poethepoet = "^0.42.1"
 pyright = "^1.1.396"
 mkdocs = "^1.5.0"
-mkdocstrings = {version = "^0.24.0", extras = ["python"]}
+mkdocs-material = "^9.5.0"
+pymdown-extensions = "^10.0"
+mkdocs-llmstxt-md = ">=0.1.0"
+mkdocstrings = {version = "^0.25.0", extras = ["python"]}
 mkdocs-autorefs = "^0.5.0"
-griffe = "^0.42.0"
+griffe = "^0.45.0"
 
 [tool.semantic_release]
 version_variable = "pyproject.toml:version" # version location

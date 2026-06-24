@@ -512,7 +512,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
 | **Result aggregation** | Combine outputs from multiple jobs |
 | **Metadata enrichment** | Add classifications, tags, provenance info |
 
-For more details on IVCAP client capabilities, refer to the [ivcap-client SDK documentation](../ivcap-client-sdk-python/AGENTS.md).
+For more details on IVCAP client capabilities, refer to the [ivcap-client SDK documentation](https://github.com/ivcap-works/ivcap-client-sdk-python/blob/main/AGENTS.md).
 
 ### 9. Error Handling
 

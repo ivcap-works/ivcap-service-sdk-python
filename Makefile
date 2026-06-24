@@ -16,7 +16,7 @@ help:
 	@echo "  make check       - Lint + tests"
 	@echo "  make add-license - Ensure license headers are present"
 	@echo "  make docs        - Build documentation"
-	@echo "  make docs-serve  - Serve documentation locally (http://localhost:8000)"
+	@echo "  make docs-serve  - Serve documentation locally (auto-selects free port)"
 	@echo "  make docs-clean  - Clean built documentation"
 	@echo "  make clean       - Remove build artifacts + caches"
 
@@ -60,8 +60,9 @@ docs:
 	poetry run poe docs
 
 docs-serve:
-	@echo "Serving documentation at http://localhost:8000"
-	cd docs && poetry run mkdocs serve
+	@$(eval PORT := $(shell python3 -c "import socket; s=socket.socket(); s.bind(('',0)); p=s.getsockname()[1]; s.close(); print(p)"))
+	@echo "Serving documentation at http://localhost:$(PORT)"
+	cd docs && poetry run mkdocs serve --dev-addr localhost:$(PORT)
 
 docs-clean:
 	@echo "Cleaning documentation..."

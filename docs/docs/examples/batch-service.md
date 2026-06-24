@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field, field_validator
 from ivcap_service import (
     Service, ServiceContact, ServiceLicense,
     JobContext, start_batch_service,
-    getLogger, logging_init,
+    getLogger, logging_init, with_schema,
 )
 import time
 
@@ -28,22 +28,26 @@ service = Service(
     license=ServiceLicense(name="MIT", url="https://opensource.org/license/MIT"),
 )
 
-# Request schema
+# Helper item type (no schema needed — embedded in BatchRequest)
 class Item(BaseModel):
     id: str
     text: str = Field(min_length=1, max_length=1000)
 
+# Request schema
+@with_schema("urn:sd:schema:batch-text-processor.request.1")
 class BatchRequest(BaseModel):
     items: list[Item] = Field(min_items=1)
     uppercase: bool = Field(default=False)
 
-# Result schema
+# Helper result item type
 class ProcessedItem(BaseModel):
     id: str
     original: str
     processed: str
     word_count: int
 
+# Result schema
+@with_schema("urn:sd:schema:batch-text-processor.1")
 class BatchResult(BaseModel):
     items: list[ProcessedItem]
     total_processed: int

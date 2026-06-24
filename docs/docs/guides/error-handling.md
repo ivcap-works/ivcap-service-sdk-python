@@ -7,27 +7,25 @@ Build robust services with comprehensive error handling.
 Exceptions are automatically caught and reported:
 
 ```python
-def process_job(req: Request, ctx: JobContext) -> Result:
-    # Any exception here is automatically reported
-    result = process(req)  # If this raises, it's reported
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    # Any exception here is automatically reported to the platform
+    result = process(req)  # If this raises, it's reported as a job failure
     return Result(result=result)
 ```
 
 ## Manual Error Reporting
 
-Explicitly report errors to the event system:
+Explicitly report errors within named steps:
 
 ```python
-def process_job(req: Request, ctx: JobContext) -> Result:
-    with ctx.report.step("processing") as step:
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    with ctxt.report.step("processing", msg="Processing") as step:
         try:
             result = process(req)
         except ValueError as e:
-            step.error(e)
             logger.error(f"Invalid input: {e}")
             raise
         except Exception as e:
-            step.error(e)
             logger.error(f"Unexpected error: {e}", exc_info=True)
             raise
 
@@ -38,19 +36,26 @@ def process_job(req: Request, ctx: JobContext) -> Result:
 
 ### Recover from Specific Errors
 
-```python
-def process_job(req: Request, ctx: JobContext) -> Result:
-    ivcap = ctx.ivcap()
+Use typed exceptions from `ivcap_client.exception` for platform-specific errors:
 
-    with ctx.report.step("download") as step:
+```python
+from ivcap_client.exception import ResourceNotFound, IvcapApiError
+
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    with ctxt.report.step("download", msg="Downloading artifact") as step:
         try:
-            data = ivcap.artifact(req.artifact_id).read()
-        except FileNotFoundError:
-            logger.warning(f"Artifact not found: {req.artifact_id}")
+            artifact = ivcap.get_artifact(req.artifact_urn)
+            with artifact.as_local_file() as path:
+                data = path.read_bytes()
+            step.finished(msg=f"Downloaded {len(data)} bytes")
+        except ResourceNotFound:
+            logger.warning(f"Artifact not found: {req.artifact_urn}, using default data")
             step.finished(msg="Using default data")
             data = DEFAULT_DATA
-        except Exception as e:
-            step.error(e)
+        except IvcapApiError as e:
+            logger.error(f"Platform API error [{e.status_code}]: {e}")
             raise
 
     return Result(result=process(data))
@@ -61,20 +66,23 @@ def process_job(req: Request, ctx: JobContext) -> Result:
 ```python
 import time
 
-def process_job(req: Request, ctx: JobContext) -> Result:
-    ivcap = ctx.ivcap()
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
     max_retries = 3
+
+    downstream = ivcap.get_service_by_name("my-downstream-service")
+    DownstreamReq = downstream.request_model
 
     for attempt in range(max_retries):
         try:
-            with ctx.report.step(f"attempt-{attempt+1}") as step:
-                result = ivcap.service(service_id).run(req)
-                step.finished()
-                return Result(result=result)
+            with ctxt.report.step(f"attempt-{attempt+1}", msg=f"Attempt {attempt+1}") as step:
+                job = downstream.request_job(DownstreamReq(data=req.data), timeout=120)
+                step.finished(msg="Succeeded")
+                return Result(result=job.result)
         except Exception as e:
             if attempt < max_retries - 1:
                 wait_time = 2 ** attempt
-                logger.warning(f"Attempt {attempt+1} failed, retrying in {wait_time}s")
+                logger.warning(f"Attempt {attempt+1} failed, retrying in {wait_time}s: {e}")
                 time.sleep(wait_time)
             else:
                 logger.error(f"All {max_retries} attempts failed")
@@ -83,23 +91,32 @@ def process_job(req: Request, ctx: JobContext) -> Result:
 
 ### Graceful Degradation
 
+Try a high-quality service and fall back gracefully if it's unavailable:
+
 ```python
-def process_job(req: Request, ctx: JobContext) -> Result:
-    ivcap = ctx.ivcap()
+from ivcap_client.exception import ResourceNotFound, IvcapApiError
 
-    # Try to use high-quality service
-    with ctx.report.step("process") as step:
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    with ctxt.report.step("process", msg="Processing") as step:
         try:
-            result = ivcap.service(hq_service_id).run(req)
-            step.finished(msg="High-quality processing")
-        except Exception as e:
-            logger.warning(f"HQ service failed, using fallback: {e}")
+            hq_svc = ivcap.get_service_by_name("hq-processor")
+            HqReq = hq_svc.request_model
+            job = hq_svc.request_job(HqReq(data=req.data), timeout=120)
+            result = job.result
+            step.finished(msg="High-quality processing complete")
+        except (ResourceNotFound, IvcapApiError) as e:
+            logger.warning(f"HQ service unavailable ({e}), using fallback")
             step.info(event={"fallback": True})
-            # Use lower-quality fallback
-            result = ivcap.service(fallback_service_id).run(req)
-            step.finished(msg="Fallback processing")
 
-    return Result(result=result, degraded=True)
+            fallback_svc = ivcap.get_service_by_name("fallback-processor")
+            FallbackReq = fallback_svc.request_model
+            job = fallback_svc.request_job(FallbackReq(data=req.data), timeout=60)
+            result = job.result
+            step.finished(msg="Fallback processing complete")
+
+    return Result(result=result)
 ```
 
 ## Validation Errors
@@ -108,7 +125,9 @@ Pydantic validates request models automatically:
 
 ```python
 from pydantic import BaseModel, Field, field_validator
+from ivcap_service import with_schema
 
+@with_schema("urn:sd:schema:my-service.request.1")
 class Request(BaseModel):
     email: str
     age: int = Field(ge=0, le=150)
@@ -120,35 +139,48 @@ class Request(BaseModel):
             raise ValueError("Invalid email format")
         return v
 
-def process_job(req: Request, ctx: JobContext) -> Result:
-    # Request is guaranteed to be valid
-    # Invalid requests cause job to fail before this is called
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    # Request is guaranteed to be valid here
+    # Invalid requests cause the job to fail before this function is called
     return Result(result=f"Processing {req.email}")
 ```
 
 ## Cleanup on Error
 
-Use try-finally for cleanup:
+Use `as_local_file()` as a context manager — temporary files are cleaned up
+automatically on context exit.  For other resources, use `try/finally`:
 
 ```python
-import tempfile
-import os
+import io
 
-def process_job(req: Request, ctx: JobContext) -> Result:
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    artifact = ivcap.get_artifact(req.input_urn)
+
+    # as_local_file() auto-deletes the temp file on exit, even on exception
+    with artifact.as_local_file() as path:
+        result = process_file(path)
+
+    return Result(result=result)
+```
+
+For non-artifact temporary resources:
+
+```python
+import tempfile, os
+
+def process_job(req: Request, ctxt: JobContext) -> Result:
     tmp_file = None
-
     try:
-        # Create temporary file
-        with tempfile.NamedTemporaryFile(delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".tmp") as tmp:
             tmp_file = tmp.name
-            # Use temp file...
-            result = process_file(tmp_file)
-
+            tmp.write(generate_data(req))
+        result = process_file(tmp_file)
     except Exception as e:
         logger.error(f"Processing failed: {e}", exc_info=True)
         raise
     finally:
-        # Always clean up
         if tmp_file and os.path.exists(tmp_file):
             os.unlink(tmp_file)
 
@@ -157,12 +189,14 @@ def process_job(req: Request, ctx: JobContext) -> Result:
 
 ## Partial Success Handling
 
+Continue processing items even when individual ones fail:
+
 ```python
-def process_job(req: Request, ctx: JobContext) -> Result:
+def process_job(req: Request, ctxt: JobContext) -> Result:
     results = []
     errors = []
 
-    with ctx.report.step("batch_processing") as step:
+    with ctxt.report.step("batch_processing", msg="Processing batch") as step:
         for i, item in enumerate(req.items):
             try:
                 result = process_item(item)
@@ -170,17 +204,17 @@ def process_job(req: Request, ctx: JobContext) -> Result:
             except Exception as e:
                 errors.append({
                     "index": i,
-                    "item": item,
+                    "item": str(item),
                     "error": str(e)
                 })
                 logger.warning(f"Failed to process item {i}: {e}")
 
-        step.finished(msg=f"Processed {len(results)}/{len(req.items)} items")
+        step.finished(msg=f"Processed {len(results)}/{len(req.items)} items successfully")
 
     return Result(
         results=results,
         errors=errors,
-        success=len(errors) == 0
+        success=len(errors) == 0,
     )
 ```
 
@@ -196,17 +230,13 @@ class ValidationError(ProcessingError):
     pass
 
 class ResourceError(ProcessingError):
-    """Resource not available."""
+    """Required resource not available."""
     pass
 
-def process_job(req: Request, ctx: JobContext) -> Result:
+def process_job(req: Request, ctxt: JobContext) -> Result:
     try:
         if not validate(req):
-            raise ValidationError("Invalid input")
-
-        ivcap = ctx.ivcap()
-        if not ivcap:
-            raise ResourceError("IVCAP not available")
+            raise ValidationError("Invalid input data")
 
         return Result(result=process(req))
 
@@ -226,3 +256,4 @@ def process_job(req: Request, ctx: JobContext) -> Result:
 - [Job Processing](job-processing.md) — Core patterns
 - [Observability](observability.md) — Logging and monitoring
 - [Best Practices](best-practices.md) — Production patterns
+- [ivcap-client SDK — Error Handling](https://ivcap-works.github.io/ivcap-client-sdk-python/guides/error-handling/) — Client exception reference

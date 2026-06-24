@@ -28,12 +28,15 @@ Use Pydantic models for type safety:
 
 ```python
 from pydantic import BaseModel, Field
+from ivcap_service import with_schema
 
+@with_schema("urn:sd:schema:my-service.request.1")
 class ProcessRequest(BaseModel):
     """Request to process data."""
     input_data: str = Field(description="Input to process")
     options: dict = Field(default_factory=dict, description="Options")
 
+@with_schema("urn:sd:schema:my-service.1")
 class ProcessResult(BaseModel):
     """Result after processing."""
     output_data: str = Field(description="Processed output")
@@ -61,10 +64,11 @@ def process_job(req: Request, ctx: JobContext) -> Result:
         result = do_work()
         step.finished()
 
-    # IVCAP platform access
-    ivcap = ctx.ivcap()  # May be None outside IVCAP environment
-    if ivcap:
-        artifact = ivcap.artifact(artifact_id).read()
+    # IVCAP platform access (property — no parentheses; always available in platform jobs)
+    ivcap = ctxt.ivcap
+    artifact = ivcap.get_artifact(artifact_id)
+    with artifact.as_local_file() as path:
+        data = path.read_bytes()
 
     return Result(result=result)
 ```
@@ -223,7 +227,9 @@ Pydantic automatically validates request models:
 
 ```python
 from pydantic import BaseModel, Field, field_validator
+from ivcap_service import with_schema
 
+@with_schema("urn:sd:schema:my-service.request.1")
 class Request(BaseModel):
     email: str = Field(description="User email")
     count: int = Field(ge=1, le=1000, description="Items to process")
