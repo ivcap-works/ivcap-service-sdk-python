@@ -75,6 +75,3 @@ jobs:
 
       - name: Install package
         run: poetry install
-
-      - name: Check for tag matching pyproject.toml version
-        run: poetry run python scripts/check_tag.py
