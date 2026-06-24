@@ -1,0 +1,3092 @@
+# IVCAP Service SDK (Python)
+
+> Python SDK for building batch services on the IVCAP platform — define services, process jobs, manage artifacts, report progress, and compose workflows
+
+ivcap_service is a Python SDK for building batch services on the IVCAP
+(Intelligent Visual Computing and Analytics Platform). Use it to define
+services with typed Pydantic request/result models, process jobs from a
+platform queue, report progress via named steps, upload and download
+artifacts, compose workflows by calling other IVCAP services, and export
+logs and metrics to OpenObserve and OpenTelemetry.
+
+
+# Getting Started
+
+## Installation
+
+# Installation
+
+## Prerequisites
+
+- Python 3.10 or higher
+- pip or poetry package manager
+
+## From PyPI
+
+The easiest way to install the IVCAP Service SDK:
+
+```bash
+pip install ivcap_service
+```
+
+Or with poetry:
+
+```bash
+poetry add ivcap_service
+```
+
+## From Source
+
+For development or to use the latest unreleased features:
+
+```bash
+git clone https://github.com/ivcap-works/ivcap-service-sdk-python.git
+cd ivcap-service-sdk-python
+poetry install
+```
+
+## Verify Installation
+
+Test your installation:
+
+```bash
+python -c "import ivcap_service; print(ivcap_service.__version__)"
+```
+
+You should see the version number printed.
+
+## Optional: Development Dependencies
+
+If you plan to contribute or build documentation locally:
+
+```bash
+# Development tools
+poetry install --with dev
+
+# Documentation tools
+pip install -r docs/requirements-docs.txt
+```
+
+## Next Steps
+
+- Read the [Quick Start](quick-start.md) guide
+- Build your [First Service](first-service.md)
+- Check out [Examples](../examples/batch-service.md)
+
+## Troubleshooting
+
+### ImportError: No module named 'ivcap_service'
+
+Make sure you've installed the package:
+```bash
+pip install ivcap_service
+```
+
+If using a virtual environment, ensure it's activated.
+
+### Python Version Error
+
+Check your Python version:
+```bash
+python --version
+```
+
+The SDK requires Python 3.10+. If you have multiple Python versions installed, use:
+```bash
+python3.10 -m pip install ivcap_service
+```
+
+### Permission Denied
+
+If you get permission errors during installation, use:
+```bash
+pip install --user ivcap_service
+```
+
+## Getting Help
+
+- Check [Common Issues](../guides/best-practices.md#troubleshooting)
+- [Open an issue](https://github.com/ivcap-works/ivcap-service-sdk-python/issues)
+- See [Contributing](../community/contributing.md)
+
+
+## Quick Start
+
+# Quick Start
+
+Get a working IVCAP service running in 5 minutes.
+
+## 1. Install the SDK
+
+```bash
+pip install ivcap_service
+```
+
+## 2. Create Your Service
+
+Save this as `my_service.py`:
+
+```python
+from pydantic import BaseModel, Field
+from ivcap_service import (
+    Service, ServiceContact, ServiceLicense,
+    JobContext, start_batch_service, getLogger, logging_init, with_schema,
+)
+
+# Initialize logging
+logging_init()
+logger = getLogger("my_service")
+
+# Define your service
+service = Service(
+    name="My First Service",
+    contact=ServiceContact(name="Your Name", email="you@example.com"),
+    license=ServiceLicense(name="MIT", url="https://opensource.org/license/MIT"),
+)
+
+# Define request schema
+@with_schema("urn:sd:schema:my_service.request.1")
+class TextRequest(BaseModel):
+    text: str = Field(description="Text to convert to uppercase")
+
+# Define result schema
+@with_schema("urn:sd:schema:my_service.result.1")
+class TextResult(BaseModel):
+    uppercase_text: str = Field(description="Converted text")
+
+# Process a job
+def process_job(request: TextRequest, context: JobContext) -> TextResult:
+    """Convert input text to uppercase."""
+    logger.info(f"Processing job {context.job_id}")
+
+    with context.report.step("converting", msg="Converting text...") as step:
+        result = request.text.upper()
+        step.finished(msg=f"Converted: {request.text}")
+
+    return TextResult(uppercase_text=result)
+
+# Run the service
+if __name__ == "__main__":
+    start_batch_service(service, process_job)
+```
+
+## 3. Test Your Service
+
+Test it locally with a JSON file. Create `test_request.json`:
+
+```json
+{
+    "$schema": "urn:sd:schema:my_service.request.1",
+    "text": "hello world"
+}
+```
+
+Run the test:
+
+```bash
+python my_service.py --test-file test_request.json
+```
+
+You should see:
+```
+Processing job test-job-id
+...
+Converted: hello world
+uppercase_text: HELLO WORLD
+```
+
+## 4. Print Service Metadata
+
+View the service definition that will be registered with IVCAP:
+
+```bash
+python my_service.py --print-service-description
+```
+
+## 5. Run the Service
+
+To run the service (waiting for jobs from IVCAP):
+
+```bash
+python my_service.py
+```
+
+The service will start and wait for jobs. In production, this runs in a container orchestrated by IVCAP.
+
+## Next Steps
+
+- **[Your First Service](first-service.md)** — Build a more complete example
+- **[Job Processing Guide](../guides/job-processing.md)** — Learn advanced patterns
+- **[Examples](../examples/batch-service.md)** — See production-ready code
+- **[API Reference](../api/overview.md)** — Complete class/function documentation
+
+## Common Patterns
+
+### Accessing Job Metadata
+
+```python
+def process_job(request: TextRequest, context: JobContext) -> TextResult:
+    print(f"Job ID: {context.job_id}")
+    print(f"Request ID: {context.request_id}")
+    # More in JobContext API...
+```
+
+### Reporting Progress
+
+```python
+with context.report.step("step1") as step:
+    # Do work...
+    step.finished(msg="Completed step 1")
+
+with context.report.step("step2") as step:
+    # Do more work...
+    step.info(event={"key": "value"})  # Send info event
+    step.finished()
+```
+
+### Error Handling
+
+```python
+def process_job(request: TextRequest, context: JobContext) -> TextResult:
+    try:
+        # Process...
+        pass
+    except Exception as e:
+        context.report.step("error").error(e)
+        raise
+```
+
+## Troubleshooting
+
+### "No module named 'ivcap_service'"
+See [Installation](installation.md#troubleshooting)
+
+### Service won't run
+Check that you have the `process_job` function signature correct:
+- Takes `(request_type, JobContext)`
+- Returns `result_type`
+
+### Test file not found
+Make sure the test file exists and is in the correct location.
+
+For more help, see [Best Practices](../guides/best-practices.md).
+
+
+## Your First Service
+
+# Your First Service
+
+In this guide, we'll build a complete, production-ready service that processes images.
+
+## Project Setup
+
+Create a new directory for your service:
+
+```bash
+mkdir image-processor
+cd image-processor
+```
+
+Create a `pyproject.toml`:
+
+```toml
+[tool.poetry]
+name = "image-processor"
+version = "0.1.0"
+description = "IVCAP service for processing images"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+ivcap_service = "^0.6.0"
+pillow = "^10.0.0"
+pydantic = "^2.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+```
+
+Install dependencies:
+
+```bash
+poetry install
+```
+
+## Step 1: Define Your Service
+
+Create `image_processor.py`:
+
+```python
+from pydantic import BaseModel, Field
+from ivcap_service import (
+    Service, ServiceContact, ServiceLicense,
+    JobContext, start_batch_service, getLogger, logging_init, with_schema,
+)
+
+# Initialize logging
+logging_init()
+logger = getLogger("image_processor")
+
+# Define your service
+service = Service(
+    name="Image Processor",
+    contact=ServiceContact(name="Your Name", email="you@example.com"),
+    license=ServiceLicense(name="MIT", url="https://opensource.org/license/MIT"),
+)
+
+# Define request schema
+@with_schema("urn:sd:schema:image-processor.request.1")
+class ImageRequest(BaseModel):
+    """Request to process an image."""
+    image_artifact_id: str = Field(description="ID of artifact containing image")
+    width: int = Field(default=800, description="Target width in pixels")
+    height: int = Field(default=600, description="Target height in pixels")
+
+# Define result schema
+@with_schema("urn:sd:schema:image-processor.1")
+class ImageResult(BaseModel):
+    """Result after processing."""
+    processed_image_id: str = Field(description="ID of processed image artifact")
+    original_size: dict = Field(description="Original image dimensions")
+    final_size: dict = Field(description="Final image dimensions")
+
+# Process a job
+def process_job(request: ImageRequest, context: JobContext) -> ImageResult:
+    """Process an image by resizing."""
+    logger.info(f"Processing job {context.job_id}")
+
+    ivcap = context.ivcap  # property — no parentheses; always available in platform jobs
+
+    # Step 1: Download the image
+    with context.report.step("download", msg="Downloading image") as step:
+        logger.info(f"Downloading artifact {request.image_artifact_id}")
+        artifact = ivcap.get_artifact(request.image_artifact_id)
+        # as_local_file() streams to a temp file and auto-deletes on exit
+        with artifact.as_local_file() as path:
+            image_bytes = path.read_bytes()
+        step.finished(msg=f"Downloaded {len(image_bytes)} bytes")
+
+    # Step 2: Process the image
+    with context.report.step("process", msg="Resizing image") as step:
+        from PIL import Image
+        import io
+
+        # Load image
+        original_image = Image.open(io.BytesIO(image_bytes))
+        original_size = original_image.size
+        logger.info(f"Original size: {original_size}")
+
+        # Resize
+        final_image = original_image.resize((request.width, request.height))
+        final_size = final_image.size
+        logger.info(f"Resized to: {final_size}")
+
+        # Convert to bytes
+        output_buffer = io.BytesIO()
+        final_image.save(output_buffer, format="JPEG", quality=85)
+        processed_data = output_buffer.getvalue()
+
+        step.info(event={
+            "original_dimensions": original_size,
+            "final_dimensions": final_size,
+            "bytes": len(processed_data)
+        })
+        step.finished(msg="Image resized")
+
+    # Step 3: Upload the result
+    with context.report.step("upload", msg="Uploading result") as step:
+        result_artifact = ivcap.upload_artifact(
+            name="resized-image.jpg",
+            io_stream=io.BytesIO(processed_data),
+            content_type="image/jpeg",
+            content_size=len(processed_data),
+        )
+        logger.info(f"Uploaded result: {result_artifact.id}")
+        step.finished(msg=f"Uploaded: {result_artifact.id}")
+
+    return ImageResult(
+        processed_image_id=result_artifact.id,
+        original_size={"width": original_size[0], "height": original_size[1]},
+        final_size={"width": final_size[0], "height": final_size[1]}
+    )
+
+if __name__ == "__main__":
+    start_batch_service(service, process_job)
+```
+
+## Step 2: Create Test Data
+
+Create `test_request.json`:
+
+```json
+{
+    "image_artifact_id": "urn:ivcap:artifact:test",
+    "width": 400,
+    "height": 300
+}
+```
+
+## Step 3: Test Locally
+
+Print the service metadata:
+
+```bash
+poetry run python image_processor.py --print-service-description
+```
+
+You should see:
+
+```json
+{
+  "name": "Image Processor",
+  "description": "Resize and optimize images",
+  ...
+}
+```
+
+## Step 4: Dockerize Your Service
+
+Create a `Dockerfile`:
+
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY pyproject.toml poetry.lock* ./
+RUN pip install poetry && \
+    poetry install --no-dev --no-root
+
+# Copy service code
+COPY image_processor.py .
+
+# Run the service
+ENTRYPOINT ["poetry", "run", "python", "image_processor.py"]
+```
+
+Build the image:
+
+```bash
+docker build -t image-processor:latest .
+```
+
+## Step 5: Register with IVCAP
+
+```bash
+# Get the service definition
+docker run image-processor:latest --print-service-description > service.json
+
+# Register with IVCAP
+ivcap service register service.json
+```
+
+## Next Steps
+
+- **[Job Processing Guide](../guides/job-processing.md)** — Learn advanced patterns
+- **[Artifact Management](../guides/artifacts.md)** — Work with files
+- **[Error Handling](../guides/error-handling.md)** — Robust services
+- **[Deployment](../guides/deployment.md)** — Production setup
+- **[Best Practices](../guides/best-practices.md)** — Pro tips
+
+## Common Extensions
+
+### Add More Parameters
+
+```python
+@with_schema("urn:sd:schema:image-processor.request.1")
+class ImageRequest(BaseModel):
+    image_artifact_id: str
+    width: int = 800
+    height: int = 600
+    quality: int = Field(default=85, ge=1, le=100)
+    format: str = Field(default="JPEG", description="Output format: JPEG, PNG, etc")
+```
+
+### Parallel Processing
+
+```python
+import concurrent.futures
+
+def process_batch(requests, context):
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        futures = [executor.submit(process_single, req) for req in requests]
+        results = [f.result() for f in futures]
+    return results
+```
+
+### Caching
+
+```python
+from functools import lru_cache
+
+@lru_cache(maxsize=100)
+def get_model(model_path):
+    # Load model once, reuse for multiple jobs
+    return load_model(model_path)
+```
+
+## Troubleshooting
+
+### "No module named 'PIL'"
+
+The Pillow package provides PIL:
+
+```bash
+poetry add pillow
+```
+
+### Testing artifact download/upload locally
+
+When testing with `--test-file`, the `ctxt.ivcap` client connects to a real
+IVCAP deployment (via `IVCAP_BASE_URL`).  If you are testing offline, the
+`as_local_file()` call will fail because there is no platform to download from.
+For local integration testing, use `LocalIVCAP` from `ivcap_client`:
+
+```python
+from ivcap_client import IVCAP
+ivcap = IVCAP.local(base_dir="./test-artifacts")
+artifact = ivcap.get_artifact("file:///path/to/local-image.jpg")
+```
+
+### Docker build fails
+
+Ensure `poetry.lock` exists or let pip install handle dependencies:
+
+```dockerfile
+RUN pip install poetry && \
+    poetry config virtualenvs.create false && \
+    poetry install --no-dev
+```
+
+## See Also
+
+- [API Reference](../api/overview.md) — All classes and functions
+- [Examples](../examples/batch-service.md) — More complete examples
+
+
+# Guides
+
+## Job Processing
+
+# Job Processing Guide
+
+This guide covers the fundamentals of processing jobs in IVCAP services.
+
+## The Job Processor Function
+
+Every service needs a function that processes jobs:
+
+```python
+def process_job(request: MyRequest, context: JobContext) -> MyResult:
+    """Process a single job."""
+    # Your logic here
+    return MyResult(...)
+```
+
+### Function Signature
+
+The function **must**:
+1. Accept exactly 2 parameters:
+   - Request of your defined type (Pydantic BaseModel)
+   - `JobContext` for job operations
+2. Return your Result type (Pydantic BaseModel)
+3. Can raise exceptions (automatically reported)
+
+### Request & Result Types
+
+Use Pydantic models for type safety:
+
+```python
+from pydantic import BaseModel, Field
+from ivcap_service import with_schema
+
+@with_schema("urn:sd:schema:my-service.request.1")
+class ProcessRequest(BaseModel):
+    """Request to process data."""
+    input_data: str = Field(description="Input to process")
+    options: dict = Field(default_factory=dict, description="Options")
+
+@with_schema("urn:sd:schema:my-service.1")
+class ProcessResult(BaseModel):
+    """Result after processing."""
+    output_data: str = Field(description="Processed output")
+    statistics: dict = Field(default_factory=dict, description="Stats")
+
+def process_job(req: ProcessRequest, ctx: JobContext) -> ProcessResult:
+    return ProcessResult(
+        output_data=process(req.input_data),
+        statistics={"items_processed": 1}
+    )
+```
+
+## Accessing Job Context
+
+The `JobContext` provides essential information and APIs:
+
+```python
+def process_job(req: Request, ctx: JobContext) -> Result:
+    # Job identifiers
+    print(f"Job: {ctx.job_id}")
+    print(f"Request: {ctx.request_id}")
+
+    # Progress reporting
+    with ctx.report.step("processing") as step:
+        result = do_work()
+        step.finished()
+
+    # IVCAP platform access (property — no parentheses; always available in platform jobs)
+    ivcap = ctxt.ivcap
+    artifact = ivcap.get_artifact(artifact_id)
+    with artifact.as_local_file() as path:
+        data = path.read_bytes()
+
+    return Result(result=result)
+```
+
+## Progress Reporting
+
+Report multi-step workflows using the event system:
+
+```python
+def process_job(req: Request, ctx: JobContext) -> Result:
+    # Step 1: Validate
+    with ctx.report.step("validate", msg="Validating input") as step:
+        if not is_valid(req):
+            raise ValueError("Invalid input")
+        step.finished(msg="Validation passed")
+
+    # Step 2: Process
+    with ctx.report.step("process", msg="Processing") as step:
+        result = process(req)
+        step.info(event={"progress": 50})  # Send events
+        step.finished(msg="Done")
+
+    return Result(result=result)
+```
+
+### Step Lifecycle
+
+```python
+with ctx.report.step("step_name", msg="Description") as step:
+    # Step started automatically
+
+    # Send progress events
+    step.info(event={"key": "value"})
+
+    # Mark completion
+    step.finished(msg="Complete")
+
+    # Errors automatically reported on exception
+```
+
+## Error Handling
+
+Exceptions are automatically reported:
+
+```python
+def process_job(req: Request, ctx: JobContext) -> Result:
+    try:
+        result = process_data(req)
+    except Exception as e:
+        # Automatically reported to context
+        logger.error(f"Processing failed: {e}", exc_info=True)
+        raise  # Re-raise to fail the job
+
+    return Result(result=result)
+```
+
+## Common Patterns
+
+### Multi-Step Workflow
+
+```python
+def process_job(req: Request, ctx: JobContext) -> Result:
+    with ctx.report.step("load", msg="Loading data") as s:
+        data = load(req.source)
+        s.finished()
+
+    with ctx.report.step("transform", msg="Transforming") as s:
+        transformed = transform(data)
+        s.finished(msg=f"Transformed {len(data)} items")
+
+    with ctx.report.step("validate", msg="Validating") as s:
+        validate(transformed)
+        s.finished()
+
+    with ctx.report.step("save", msg="Saving") as s:
+        save(transformed)
+        s.finished()
+
+    return Result(status="success")
+```
+
+### Progress Tracking with Loops
+
+```python
+def process_job(req: Request, ctx: JobContext) -> Result:
+    items = load_items(req.source)
+    results = []
+
+    with ctx.report.step("processing", msg="Processing items") as step:
+        for i, item in enumerate(items):
+            result = process_item(item)
+            results.append(result)
+
+            # Report progress
+            if i % 100 == 0:
+                step.info(event={
+                    "processed": i,
+                    "total": len(items),
+                    "percentage": (i / len(items)) * 100
+                })
+
+        step.finished(msg=f"Processed {len(items)} items")
+
+    return Result(results=results)
+```
+
+### Batch Processing
+
+```python
+def process_job(req: Request, ctx: JobContext) -> Result:
+    items = load_items(req.source)
+    batch_size = 32
+    results = []
+
+    with ctx.report.step("batching", msg="Processing in batches") as step:
+        for batch_idx in range(0, len(items), batch_size):
+            batch = items[batch_idx:batch_idx + batch_size]
+            batch_results = process_batch(batch)
+            results.extend(batch_results)
+
+            step.info(event={
+                "batch": batch_idx // batch_size,
+                "items_processed": min(batch_idx + batch_size, len(items))
+            })
+
+        step.finished()
+
+    return Result(results=results)
+```
+
+## Accessing External Data
+
+### From Artifacts
+
+See [Artifacts Guide](artifacts.md)
+
+### From Environment Variables
+
+```python
+import os
+
+def process_job(req: Request, ctx: JobContext) -> Result:
+    # Application settings
+    api_url = os.getenv("API_URL", "http://localhost:8000")
+    api_key = os.getenv("API_KEY", "")
+
+    # Use in processing
+    result = call_api(api_url, api_key, req.data)
+
+    return Result(result=result)
+```
+
+## Validation and Error Handling
+
+Pydantic automatically validates request models:
+
+```python
+from pydantic import BaseModel, Field, field_validator
+from ivcap_service import with_schema
+
+@with_schema("urn:sd:schema:my-service.request.1")
+class Request(BaseModel):
+    email: str = Field(description="User email")
+    count: int = Field(ge=1, le=1000, description="Items to process")
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v):
+        if "@" not in v:
+            raise ValueError("Invalid email")
+        return v
+
+def process_job(req: Request, ctx: JobContext) -> Result:
+    # Request is already validated!
+    # Invalid data causes the job to fail before process_job is called
+    return Result(result=f"Processing {req.count} items for {req.email}")
+```
+
+## Performance Considerations
+
+### Caching
+
+```python
+from functools import lru_cache
+
+@lru_cache(maxsize=100)
+def load_model(model_path: str):
+    """Load model once, reuse across jobs."""
+    return load_from_disk(model_path)
+
+def process_job(req: Request, ctx: JobContext) -> Result:
+    # Model is loaded once and cached
+    model = load_model("/path/to/model")
+    return Result(result=model.predict(req.input))
+```
+
+### Memory Management
+
+```python
+def process_job(req: Request, ctx: JobContext) -> Result:
+    # Process in chunks to avoid memory issues
+    results = []
+    for chunk in iter_chunks(req.data, chunk_size=1000):
+        result = process_chunk(chunk)
+        results.extend(result)
+        # Chunk is garbage collected
+
+    return Result(results=results)
+```
+
+## See Also
+
+- [JobContext API](../api/job-context.md) — Full context documentation
+- [Artifacts](artifacts.md) — Working with files
+- [Error Handling](error-handling.md) — Exception handling patterns
+- [Examples](../examples/batch-service.md) — Complete working examples
+
+
+## Working with Artifacts
+
+# Working with Artifacts
+
+This guide covers downloading, uploading, and managing artifacts in your IVCAP services
+using the `ctxt.ivcap` client available inside every job.
+
+## Overview
+
+An **Artifact** is any binary or structured data blob consumed or produced by a job:
+an image, a CSV file, a NetCDF dataset, a trained model checkpoint, etc.
+
+Your services commonly:
+
+- Download input artifacts passed in as request parameters
+- Upload results as new artifacts
+- Organize artifacts in collections
+- Attach typed metadata (aspects) to artifacts
+
+> **`ctxt.ivcap` is always available** inside a job worker function.
+> It is pre-configured with the platform-injected credentials — no explicit
+> authentication is needed.
+
+## Accessing the IVCAP Client
+
+```python
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap  # property — no parentheses
+    ...
+```
+
+## Downloading Artifacts
+
+Three methods are available, each suited to a different use case:
+
+| Method | Best for |
+|---|---|
+| `artifact.as_local_file()` | **Recommended** — saves to disk with minimal code |
+| `artifact.open()` | Loading small artifacts entirely into memory |
+| `artifact.as_stream()` | Custom chunk processing or piping into external APIs |
+
+### Download to a local file (recommended)
+
+`as_local_file()` handles all streaming internals for you and supports two patterns:
+
+**Temporary file** (auto-deleted when the `with` block exits):
+
+```python
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    artifact = ivcap.get_artifact(req.input_artifact_urn)
+
+    with artifact.as_local_file() as path:
+        logger.info(f"Downloaded to: {path}")
+        data = path.read_bytes()
+        result = process(data)
+    # temp file deleted here
+
+    return Result(result=result)
+```
+
+**Explicit path** (file is kept after the `with` block):
+
+```python
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    artifact = ivcap.get_artifact(req.input_artifact_urn)
+    path = artifact.as_local_file("/tmp/input.csv")
+
+    logger.info(f"Saved to: {path}")
+    result = process_csv(path)
+
+    return Result(result=result)
+```
+
+**Explicit path with a suggested name** (useful when you want the SDK to choose the
+directory but control the filename):
+
+```python
+with artifact.as_local_file("my_input.jpg") as path:
+    img = Image.open(path)
+```
+
+### Open as an in-memory file object
+
+```python
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    artifact = ivcap.get_artifact(req.input_artifact_urn)
+
+    with artifact.open() as f:
+        data = f.read()           # bytes
+        text = data.decode("utf-8")
+
+    return Result(result=process(text))
+```
+
+!!! warning
+    `open()` loads the entire blob into memory.  For large artifacts
+    (hundreds of MB+) prefer `as_local_file()` or `as_stream()`.
+
+### Stream in chunks (advanced)
+
+Use `as_stream()` when you need low-level control: progress reporting, piping bytes
+into a third-party API, or incremental processing.
+
+```python
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    artifact = ivcap.get_artifact(req.input_artifact_urn)
+
+    total = 0
+    with open("/tmp/output.bin", "wb") as f:
+        for chunk in artifact.as_stream():
+            f.write(chunk)
+            total += len(chunk)
+
+    logger.info(f"Downloaded {total} bytes")
+    return Result(result=process_file("/tmp/output.bin"))
+```
+
+## Uploading Artifacts
+
+### Upload from an in-memory stream
+
+```python
+import io
+
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    result_data = process(req.data)
+
+    artifact = ivcap.upload_artifact(
+        name="my-result.json",
+        io_stream=io.BytesIO(result_data),
+        content_type="application/json",
+        content_size=len(result_data),
+    )
+
+    logger.info(f"Uploaded artifact: {artifact.id}")
+    return Result(artifact_urn=artifact.id)
+```
+
+### Upload a local file
+
+```python
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    # Write output to a temp file
+    output_path = "/tmp/result.csv"
+    with open(output_path, "w") as f:
+        f.write(generate_csv(req.data))
+
+    # Upload the file
+    artifact = ivcap.upload_artifact(
+        name="result.csv",
+        file_path=output_path,
+        content_type="text/csv",
+    )
+
+    logger.info(f"Uploaded: {artifact.id}")
+    return Result(artifact_urn=artifact.id)
+```
+
+### Upload parameters
+
+| Parameter | Type | Description |
+|---|---|---|
+| `name` | `str` | Human-readable name for the artifact |
+| `file_path` | `str` | Local path to upload |
+| `io_stream` | `IO` | In-memory stream (requires `content_type`) |
+| `content_type` | `str` | MIME type (auto-detected from `file_path` extension if omitted) |
+| `content_size` | `int` | Size in bytes (-1 = unknown) |
+| `collection` | `URN` | Add to a named collection (`urn:ivcap:collection:...`) |
+| `policy` | `URN` | Access policy (`urn:ivcap:policy:...`) |
+
+## Adding Metadata (Aspects) to Artifacts
+
+Attach structured domain metadata to any artifact in the Datafabric:
+
+```python
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    artifact = ivcap.get_artifact(req.artifact_urn)
+
+    # Attach custom metadata
+    ivcap.add_aspect(
+        entity=artifact.id,
+        aspect={
+            "$schema": "urn:my-service:schema:processing-result.1",
+            "processed_by": "my-service",
+            "processing_time_seconds": 42.5,
+            "status": "success",
+            "tags": ["important", "verified"],
+        },
+    )
+
+    return Result(artifact_urn=artifact.id)
+```
+
+## Common Patterns
+
+### Download → Process → Upload pipeline
+
+```python
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    with ctxt.report.step("load", msg="Downloading input") as s:
+        artifact = ivcap.get_artifact(req.input_urn)
+        with artifact.as_local_file() as path:
+            data = path.read_bytes()
+        s.finished(msg=f"Downloaded {len(data)} bytes")
+
+    with ctxt.report.step("transform", msg="Transforming") as s:
+        transformed = transform(data)
+        s.finished(msg=f"Transformed {len(data)} bytes")
+
+    with ctxt.report.step("validate", msg="Validating") as s:
+        validate(transformed)
+        s.finished()
+
+    with ctxt.report.step("save", msg="Uploading result") as s:
+        import io
+        output_artifact = ivcap.upload_artifact(
+            name="result.bin",
+            io_stream=io.BytesIO(transformed),
+            content_type="application/octet-stream",
+            content_size=len(transformed),
+        )
+        s.finished(msg=f"Uploaded {output_artifact.id}")
+
+    return Result(output_urn=output_artifact.id)
+```
+
+### Batch upload to a collection
+
+```python
+import io
+
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+    collection_id = "urn:ivcap:collection:batch-results"
+    artifact_urns = []
+
+    with ctxt.report.step("batch_processing", msg="Processing items") as step:
+        for i, item in enumerate(req.items):
+            processed = process(item)
+            artifact = ivcap.upload_artifact(
+                name=f"item-{i}.bin",
+                io_stream=io.BytesIO(processed),
+                content_type="application/octet-stream",
+                content_size=len(processed),
+                collection=collection_id,
+            )
+            artifact_urns.append(artifact.id)
+
+            if i % 100 == 0:
+                step.info(event={"processed": i, "total": len(req.items)})
+
+        step.finished(msg=f"Uploaded {len(artifact_urns)} artifacts")
+
+    return Result(artifact_urns=artifact_urns)
+```
+
+### Streaming large files
+
+For very large files, stream directly to disk using `as_local_file()` or process
+chunks with `as_stream()`:
+
+```python
+import io
+
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    artifact = ivcap.get_artifact(req.input_urn)
+
+    with ctxt.report.step("process", msg="Streaming large file") as step:
+        processed_chunks = []
+        bytes_read = 0
+
+        for chunk in artifact.as_stream():
+            processed = process_chunk(chunk)
+            processed_chunks.append(processed)
+            bytes_read += len(chunk)
+
+            if bytes_read % (10 * 1024 * 1024) == 0:  # every 10 MB
+                step.info(event={"bytes_read": bytes_read})
+
+        step.finished(msg=f"Processed {bytes_read} bytes")
+
+    with ctxt.report.step("upload", msg="Uploading result") as step:
+        final_data = b"".join(processed_chunks)
+        result_artifact = ivcap.upload_artifact(
+            name="processed-output.bin",
+            io_stream=io.BytesIO(final_data),
+            content_type="application/octet-stream",
+            content_size=len(final_data),
+        )
+        step.finished(msg=f"Uploaded {result_artifact.id}")
+
+    return Result(artifact_urn=result_artifact.id)
+```
+
+## Error Handling
+
+```python
+from ivcap_client.exception import ResourceNotFound, IvcapApiError
+
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    with ctxt.report.step("download", msg="Downloading") as step:
+        try:
+            artifact = ivcap.get_artifact(req.input_urn)
+            with artifact.as_local_file() as path:
+                data = path.read_bytes()
+            step.finished(msg=f"Downloaded {len(data)} bytes")
+        except ResourceNotFound:
+            logger.warning(f"Artifact not found: {req.input_urn}, using default data")
+            step.finished(msg="Using default data")
+            data = DEFAULT_DATA
+        except IvcapApiError as e:
+            logger.error(f"Platform API error [{e.status_code}]: {e}")
+            raise
+
+    with ctxt.report.step("upload", msg="Uploading") as step:
+        try:
+            import io
+            result_artifact = ivcap.upload_artifact(
+                name="result.bin",
+                io_stream=io.BytesIO(process(data)),
+                content_type="application/octet-stream",
+            )
+            step.finished(msg=f"Uploaded {result_artifact.id}")
+        except IvcapApiError as e:
+            logger.error(f"Upload failed [{e.status_code}]: {e}")
+            raise
+
+    return Result(artifact_urn=result_artifact.id)
+```
+
+## See Also
+
+- [Job Processing](job-processing.md) — Core patterns
+- [Service Composition](service-composition.md) — Calling other services
+- [Deployment](deployment.md) — Production setup
+- [ivcap-client SDK — Artifacts](https://ivcap-works.github.io/ivcap-client-sdk-python/guides/artifacts/) — Full client-side artifact reference
+
+
+## Service Composition
+
+# Service Composition Guide
+
+Compose multiple IVCAP services to build complex workflows from within your job worker.
+
+## Overview
+
+Service composition allows your service to discover and invoke other IVCAP services,
+enabling powerful patterns like pipelines, fan-out/fan-in, and conditional routing.
+
+The `ctxt.ivcap` client is pre-authenticated — no credentials are required when
+running inside a platform job container.
+
+```mermaid
+flowchart LR
+    A[Job Request] --> B[Your Service]
+    B --> C[Service A]
+    B --> D[Service B]
+    C --> E[Result]
+    D --> E
+```
+
+## Accessing the IVCAP Client
+
+```python
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap  # property — no parentheses
+    ...
+```
+
+## Service Discovery
+
+### Find a service by name
+
+```python
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    # Look up a service by its registered name
+    downstream = ivcap.get_service_by_name("image-processor")
+
+    return Result()
+```
+
+### Find a service by URN
+
+```python
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    downstream = ivcap.get_service("urn:ivcap:service:my-service-uuid")
+
+    return Result()
+```
+
+### List all available services
+
+```python
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    for svc in ivcap.list_services(limit=50):
+        logger.info(f"Available: {svc.name} ({svc.id})")
+
+    return Result()
+```
+
+## Calling Services
+
+### Simple Invocation
+
+Use `service.request_job(req_model, timeout=N)` to submit a job and wait for the
+result.  Pass a Pydantic model (or a `dict` / `IO[str]` of JSON) as the request.
+
+```python
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    downstream = ivcap.get_service_by_name("my-downstream-service")
+    DownstreamReq = downstream.request_model
+
+    job = downstream.request_job(
+        DownstreamReq(input_data=req.data, options=req.options),
+        timeout=300,  # wait up to 5 minutes
+    )
+
+    if job.succeeded:
+        logger.info(f"Downstream result: {job.result}")
+    else:
+        logger.error(f"Downstream job failed: {job.status()}")
+        raise RuntimeError("Downstream service failed")
+
+    return Result(result=job.result)
+```
+
+### With Progress Reporting
+
+```python
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    downstream = ivcap.get_service_by_name("my-service")
+    DownstreamReq = downstream.request_model
+
+    with ctxt.report.step("call_service", msg="Calling downstream service") as step:
+        try:
+            job = downstream.request_job(
+                DownstreamReq(data=req.data),
+                timeout=120,
+            )
+            step.finished(msg=f"Service completed with status: {job.status()}")
+        except Exception as e:
+            logger.error(f"Service call failed: {e}")
+            raise
+
+    return Result(result=job.result)
+```
+
+## Common Patterns
+
+### Pipeline Composition
+
+Chain services sequentially, passing results from one stage to the next:
+
+```python
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    validate_svc = ivcap.get_service_by_name("validate-service")
+    transform_svc = ivcap.get_service_by_name("transform-service")
+    enrich_svc = ivcap.get_service_by_name("enrich-service")
+
+    with ctxt.report.step("validate", msg="Validating") as s:
+        ValidateReq = validate_svc.request_model
+        validated_job = validate_svc.request_job(ValidateReq(data=req.data), timeout=60)
+        s.finished(msg="Validation complete")
+
+    with ctxt.report.step("transform", msg="Transforming") as s:
+        TransformReq = transform_svc.request_model
+        transformed_job = transform_svc.request_job(
+            TransformReq(data=validated_job.result), timeout=120
+        )
+        s.finished(msg="Transform complete")
+
+    with ctxt.report.step("enrich", msg="Enriching") as s:
+        EnrichReq = enrich_svc.request_model
+        enriched_job = enrich_svc.request_job(
+            EnrichReq(data=transformed_job.result), timeout=120
+        )
+        s.finished(msg="Enrichment complete")
+
+    return Result(result=enriched_job.result)
+```
+
+### Parallel Fan-Out
+
+Dispatch multiple downstream jobs in parallel, then aggregate results:
+
+```python
+import time
+
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    processor = ivcap.get_service_by_name("batch-processor")
+    ProcessorReq = processor.request_model
+
+    # Dispatch all jobs without waiting (timeout=0 returns immediately)
+    jobs = []
+    for item in req.items:
+        job = processor.request_job(ProcessorReq(data=item), timeout=0)
+        jobs.append(job)
+
+    logger.info(f"Dispatched {len(jobs)} parallel jobs")
+
+    # Poll until all jobs finish
+    completed = []
+    with ctxt.report.step("wait_for_jobs", msg="Waiting for results") as step:
+        while len(completed) < len(jobs):
+            for job in jobs:
+                if job not in completed:
+                    job.refresh()
+                    if job.finished:
+                        logger.info(f"Job {job.id} finished: {job.status()}")
+                        completed.append(job)
+            if len(completed) < len(jobs):
+                step.info(event={"completed": len(completed), "total": len(jobs)})
+                time.sleep(5)
+
+        step.finished(msg=f"All {len(jobs)} jobs finished")
+
+    results = [j.result for j in jobs if j.succeeded]
+    return Result(results=results, all_succeeded=all(j.succeeded for j in jobs))
+```
+
+### Conditional Routing
+
+Route to different services based on input properties:
+
+```python
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    # Choose service based on data size
+    if req.data_size_mb < 10:
+        svc_name = "fast-processor"
+    elif req.data_size_mb < 100:
+        svc_name = "standard-processor"
+    else:
+        svc_name = "heavy-processor"
+
+    svc = ivcap.get_service_by_name(svc_name)
+    SvcReq = svc.request_model
+
+    with ctxt.report.step("process", msg=f"Using {svc_name}") as step:
+        job = svc.request_job(SvcReq(data=req.data), timeout=600)
+        step.finished(msg=f"Completed via {svc_name}")
+
+    return Result(result=job.result)
+```
+
+### Graceful Degradation with Fallback
+
+Try a primary service and fall back gracefully on failure:
+
+```python
+from ivcap_client.exception import ResourceNotFound, IvcapApiError
+
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    with ctxt.report.step("process", msg="Processing") as step:
+        try:
+            hq_svc = ivcap.get_service_by_name("hq-processor")
+            HqReq = hq_svc.request_model
+            job = hq_svc.request_job(HqReq(data=req.data), timeout=120)
+            step.finished(msg="High-quality processing complete")
+        except (ResourceNotFound, IvcapApiError) as e:
+            logger.warning(f"HQ service unavailable ({e}), using fallback")
+            step.info(event={"fallback": True})
+
+            fallback_svc = ivcap.get_service_by_name("fallback-processor")
+            FallbackReq = fallback_svc.request_model
+            job = fallback_svc.request_job(FallbackReq(data=req.data), timeout=60)
+            step.finished(msg="Fallback processing complete")
+
+    return Result(result=job.result)
+```
+
+### Map-Reduce
+
+Submit a large number of jobs and aggregate their outputs:
+
+```python
+import time
+
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    mapper = ivcap.get_service_by_name("item-mapper")
+    reducer = ivcap.get_service_by_name("result-reducer")
+    MapperReq = mapper.request_model
+    ReducerReq = reducer.request_model
+
+    # Map phase: fan out
+    map_jobs = [
+        mapper.request_job(MapperReq(item=item), timeout=0)
+        for item in req.items
+    ]
+
+    # Wait for all map jobs
+    while not all(j.finished for j in map_jobs):
+        for j in map_jobs:
+            if not j.finished:
+                j.refresh()
+        time.sleep(2)
+
+    mapped_results = [j.result for j in map_jobs if j.succeeded]
+
+    # Reduce phase
+    with ctxt.report.step("reduce", msg="Reducing results") as step:
+        reduce_job = reducer.request_job(ReducerReq(items=mapped_results), timeout=120)
+        step.finished()
+
+    return Result(result=reduce_job.result)
+```
+
+## See Also
+
+- [Job Processing](job-processing.md) — Core patterns
+- [Artifacts](artifacts.md) — Passing artifact URNs between services
+- [Error Handling](error-handling.md) — Robust service calls
+- [ivcap-client SDK — Services](https://ivcap-works.github.io/ivcap-client-sdk-python/guides/services/) — Full service-discovery reference
+- [ivcap-client SDK — Jobs](https://ivcap-works.github.io/ivcap-client-sdk-python/guides/jobs/) — Job submission and monitoring
+
+
+## Observability & Logging
+
+# Observability & Logging Guide
+
+Monitor and debug your services with comprehensive logging and tracing.
+
+## Structured Logging
+
+Initialize logging at startup:
+
+```python
+from ivcap_service import logging_init, getLogger
+
+logging_init()
+logger = getLogger("my_service")
+
+logger.info("Service started")
+logger.warning("Warning message")
+logger.error("Error occurred", exc_info=True)
+```
+
+## Job-Specific Logging
+
+```python
+def process_job(req: Request, ctx: JobContext) -> Result:
+    # Get job-specific logger
+    logger = getLogger(f"job-{ctx.job_id}")
+
+    logger.info(f"Processing request {ctx.request_id}")
+
+    with ctx.report.step("processing") as step:
+        logger.debug("Starting processing step")
+        result = process(req)
+        logger.debug("Processing complete")
+        step.finished()
+
+    return Result(result=result)
+```
+
+## OpenObserve Integration
+
+Configure environment variables:
+
+```bash
+export OPENOBSERVE_URL="https://observe.example.com"
+export OPENOBSERVE_ORG="myorg"
+export OPENOBSERVE_USERNAME="service@example.com"
+export OPENOBSERVE_TOKEN="<api-token>"
+```
+
+Then logs automatically export:
+
+```python
+from ivcap_service import logging_init, getLogger
+
+logging_init()
+logger = getLogger("my_service")
+
+# Logs automatically sent to OpenObserve
+logger.info("Processing started")
+logger.error("Error occurred")
+```
+
+## Progress Events
+
+Use the event system for progress tracking:
+
+```python
+def process_job(req: Request, ctx: JobContext) -> Result:
+    with ctx.report.step("processing", msg="Processing data") as step:
+        # Send progress updates
+        for i, item in enumerate(items):
+            process_item(item)
+
+            if i % 100 == 0:
+                step.info(event={
+                    "progress_percent": (i / len(items)) * 100,
+                    "items_processed": i
+                })
+
+        step.finished(msg=f"Processed {len(items)} items")
+
+    return Result(result=result)
+```
+
+## Error Tracking
+
+Automatically report errors:
+
+```python
+def process_job(req: Request, ctx: JobContext) -> Result:
+    with ctx.report.step("processing") as step:
+        try:
+            result = process(req)
+        except Exception as e:
+            # Error automatically reported
+            step.error(e)
+            logger.error(f"Processing failed: {e}", exc_info=True)
+            raise
+
+    return Result(result=result)
+```
+
+## Metrics
+
+Export metrics to OpenObserve:
+
+```python
+def process_job(req: Request, ctx: JobContext) -> Result:
+    import time
+
+    start = time.time()
+    result = process(req)
+    duration = time.time() - start
+
+    with ctx.report.step("metrics") as step:
+        step.info(event={
+            "duration_seconds": duration,
+            "items_processed": len(req.items),
+            "bytes_processed": len(req.data)
+        })
+
+    return Result(result=result)
+```
+
+## Best Practices
+
+1. **Use job-specific loggers** for easier filtering
+2. **Log at appropriate levels**: DEBUG, INFO, WARNING, ERROR
+3. **Include context** in log messages (job ID, step, etc.)
+4. **Use event system** for structured metrics
+5. **Report errors** in both logging and event system
+
+## See Also
+
+- [Utilities API](../api/utilities.md) — Logging functions
+- [Events & Reporting](../api/events.md) — Event system
+- [Best Practices](best-practices.md) — Production patterns
+
+
+## Error Handling
+
+# Error Handling Guide
+
+Build robust services with comprehensive error handling.
+
+## Automatic Error Reporting
+
+Exceptions are automatically caught and reported:
+
+```python
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    # Any exception here is automatically reported to the platform
+    result = process(req)  # If this raises, it's reported as a job failure
+    return Result(result=result)
+```
+
+## Manual Error Reporting
+
+Explicitly report errors within named steps:
+
+```python
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    with ctxt.report.step("processing", msg="Processing") as step:
+        try:
+            result = process(req)
+        except ValueError as e:
+            logger.error(f"Invalid input: {e}")
+            raise
+        except Exception as e:
+            logger.error(f"Unexpected error: {e}", exc_info=True)
+            raise
+
+    return Result(result=result)
+```
+
+## Try-Except Patterns
+
+### Recover from Specific Errors
+
+Use typed exceptions from `ivcap_client.exception` for platform-specific errors:
+
+```python
+from ivcap_client.exception import ResourceNotFound, IvcapApiError
+
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    with ctxt.report.step("download", msg="Downloading artifact") as step:
+        try:
+            artifact = ivcap.get_artifact(req.artifact_urn)
+            with artifact.as_local_file() as path:
+                data = path.read_bytes()
+            step.finished(msg=f"Downloaded {len(data)} bytes")
+        except ResourceNotFound:
+            logger.warning(f"Artifact not found: {req.artifact_urn}, using default data")
+            step.finished(msg="Using default data")
+            data = DEFAULT_DATA
+        except IvcapApiError as e:
+            logger.error(f"Platform API error [{e.status_code}]: {e}")
+            raise
+
+    return Result(result=process(data))
+```
+
+### Retry Logic
+
+```python
+import time
+
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+    max_retries = 3
+
+    downstream = ivcap.get_service_by_name("my-downstream-service")
+    DownstreamReq = downstream.request_model
+
+    for attempt in range(max_retries):
+        try:
+            with ctxt.report.step(f"attempt-{attempt+1}", msg=f"Attempt {attempt+1}") as step:
+                job = downstream.request_job(DownstreamReq(data=req.data), timeout=120)
+                step.finished(msg="Succeeded")
+                return Result(result=job.result)
+        except Exception as e:
+            if attempt < max_retries - 1:
+                wait_time = 2 ** attempt
+                logger.warning(f"Attempt {attempt+1} failed, retrying in {wait_time}s: {e}")
+                time.sleep(wait_time)
+            else:
+                logger.error(f"All {max_retries} attempts failed")
+                raise
+```
+
+### Graceful Degradation
+
+Try a high-quality service and fall back gracefully if it's unavailable:
+
+```python
+from ivcap_client.exception import ResourceNotFound, IvcapApiError
+
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    with ctxt.report.step("process", msg="Processing") as step:
+        try:
+            hq_svc = ivcap.get_service_by_name("hq-processor")
+            HqReq = hq_svc.request_model
+            job = hq_svc.request_job(HqReq(data=req.data), timeout=120)
+            result = job.result
+            step.finished(msg="High-quality processing complete")
+        except (ResourceNotFound, IvcapApiError) as e:
+            logger.warning(f"HQ service unavailable ({e}), using fallback")
+            step.info(event={"fallback": True})
+
+            fallback_svc = ivcap.get_service_by_name("fallback-processor")
+            FallbackReq = fallback_svc.request_model
+            job = fallback_svc.request_job(FallbackReq(data=req.data), timeout=60)
+            result = job.result
+            step.finished(msg="Fallback processing complete")
+
+    return Result(result=result)
+```
+
+## Validation Errors
+
+Pydantic validates request models automatically:
+
+```python
+from pydantic import BaseModel, Field, field_validator
+from ivcap_service import with_schema
+
+@with_schema("urn:sd:schema:my-service.request.1")
+class Request(BaseModel):
+    email: str
+    age: int = Field(ge=0, le=150)
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v):
+        if "@" not in v:
+            raise ValueError("Invalid email format")
+        return v
+
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    # Request is guaranteed to be valid here
+    # Invalid requests cause the job to fail before this function is called
+    return Result(result=f"Processing {req.email}")
+```
+
+## Cleanup on Error
+
+Use `as_local_file()` as a context manager — temporary files are cleaned up
+automatically on context exit.  For other resources, use `try/finally`:
+
+```python
+import io
+
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    artifact = ivcap.get_artifact(req.input_urn)
+
+    # as_local_file() auto-deletes the temp file on exit, even on exception
+    with artifact.as_local_file() as path:
+        result = process_file(path)
+
+    return Result(result=result)
+```
+
+For non-artifact temporary resources:
+
+```python
+import tempfile, os
+
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    tmp_file = None
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".tmp") as tmp:
+            tmp_file = tmp.name
+            tmp.write(generate_data(req))
+        result = process_file(tmp_file)
+    except Exception as e:
+        logger.error(f"Processing failed: {e}", exc_info=True)
+        raise
+    finally:
+        if tmp_file and os.path.exists(tmp_file):
+            os.unlink(tmp_file)
+
+    return Result(result=result)
+```
+
+## Partial Success Handling
+
+Continue processing items even when individual ones fail:
+
+```python
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    results = []
+    errors = []
+
+    with ctxt.report.step("batch_processing", msg="Processing batch") as step:
+        for i, item in enumerate(req.items):
+            try:
+                result = process_item(item)
+                results.append(result)
+            except Exception as e:
+                errors.append({
+                    "index": i,
+                    "item": str(item),
+                    "error": str(e)
+                })
+                logger.warning(f"Failed to process item {i}: {e}")
+
+        step.finished(msg=f"Processed {len(results)}/{len(req.items)} items successfully")
+
+    return Result(
+        results=results,
+        errors=errors,
+        success=len(errors) == 0,
+    )
+```
+
+## Custom Error Types
+
+```python
+class ProcessingError(Exception):
+    """Base error for processing failures."""
+    pass
+
+class ValidationError(ProcessingError):
+    """Input validation failed."""
+    pass
+
+class ResourceError(ProcessingError):
+    """Required resource not available."""
+    pass
+
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    try:
+        if not validate(req):
+            raise ValidationError("Invalid input data")
+
+        return Result(result=process(req))
+
+    except ValidationError as e:
+        logger.error(f"Validation failed: {e}")
+        raise
+    except ResourceError as e:
+        logger.error(f"Resource error: {e}")
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}", exc_info=True)
+        raise
+```
+
+## See Also
+
+- [Job Processing](job-processing.md) — Core patterns
+- [Observability](observability.md) — Logging and monitoring
+- [Best Practices](best-practices.md) — Production patterns
+- [ivcap-client SDK — Error Handling](https://ivcap-works.github.io/ivcap-client-sdk-python/guides/error-handling/) — Client exception reference
+
+
+## Deployment
+
+# Deployment Guide
+
+Deploy your IVCAP service to production.
+
+## Docker Containerization
+
+Create a `Dockerfile`:
+
+```dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY pyproject.toml poetry.lock* ./
+RUN pip install poetry && \
+    poetry config virtualenvs.create false && \
+    poetry install --no-dev
+
+# Copy service code
+COPY my_service.py .
+
+# Run the service
+ENTRYPOINT ["python", "my_service.py"]
+```
+
+Build the image:
+
+```bash
+docker build -t my-service:latest .
+```
+
+## Environment Configuration
+
+### Local Development
+
+```bash
+# Optional: OpenObserve integration
+export OPENOBSERVE_URL="http://localhost:5080"
+export OPENOBSERVE_ORG="myorg"
+export OPENOBSERVE_USERNAME="admin@example.com"
+export OPENOBSERVE_TOKEN="<token>"
+
+# Run the service
+python my_service.py --print-service-description
+```
+
+### Production Environment
+
+Set environment variables in your deployment:
+
+```bash
+# Service configuration
+export IVCAP_URL="https://ivcap.example.com"
+
+# Observability
+export OPENOBSERVE_URL="https://observe.example.com"
+export OPENOBSERVE_ORG="production"
+export OPENOBSERVE_USERNAME="service@example.com"
+export OPENOBSERVE_TOKEN="<production-token>"
+
+# Custom settings
+export API_KEY="<external-api-key>"
+export LOG_LEVEL="INFO"
+```
+
+## Service Registration
+
+Get the service definition:
+
+```bash
+docker run my-service:latest --print-service-description > service.json
+```
+
+Register with IVCAP:
+
+```bash
+ivcap service register service.json
+```
+
+## Kubernetes Deployment
+
+Create a `deployment.yaml`:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-service
+  template:
+    metadata:
+      labels:
+        app: my-service
+    spec:
+      containers:
+      - name: my-service
+        image: my-service:latest
+        env:
+        - name: OPENOBSERVE_URL
+          value: "https://observe.example.com"
+        - name: OPENOBSERVE_ORG
+          valueFrom:
+            secretKeyRef:
+              name: observability
+              key: org
+        - name: OPENOBSERVE_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: observability
+              key: token
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+```
+
+Deploy:
+
+```bash
+kubectl apply -f deployment.yaml
+```
+
+## Scalability Patterns
+
+### Horizontal Scaling
+
+The IVCAP platform automatically distributes jobs across service instances. Design your service to be stateless:
+
+```python
+def process_job(req: Request, ctx: JobContext) -> Result:
+    # Don't store state between jobs
+    # Each job runs independently
+    return Result(result=process(req.data))
+```
+
+### Resource Requirements
+
+Specify resource needs in your service definition. The platform uses this for scheduling:
+
+```python
+from ivcap_service import ResourceRequirements
+
+service = Service(
+    name="GPU-Intensive Service",
+    resources=ResourceRequirements(
+        cpu=2,
+        memory="4Gi",
+        gpu=1  # Request GPU
+    )
+)
+```
+
+## Monitoring
+
+### Health Checks
+
+Implement health monitoring:
+
+```bash
+# Docker health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import ivcap_service; print('healthy')"
+```
+
+### Log Aggregation
+
+Logs automatically export to OpenObserve. Query them:
+
+```bash
+# View service logs
+ivcap logs -service my-service -hours 1
+```
+
+## Troubleshooting
+
+### Container Won't Start
+
+Check logs:
+
+```bash
+docker logs my-service
+```
+
+Ensure service code is correct:
+
+```bash
+# Test locally
+docker run -it my-service:latest --print-service-description
+```
+
+### Jobs Failing
+
+Check OpenObserve for logs and errors. Common issues:
+
+1. Missing environment variables
+2. Network connectivity to IVCAP
+3. Insufficient resources
+4. Unhandled exceptions
+
+### Performance Issues
+
+1. **Increase replicas** for more parallel processing
+2. **Optimize code** to process faster
+3. **Profile** using OpenObserve metrics
+4. **Use caching** for expensive operations
+
+## See Also
+
+- [Best Practices](best-practices.md) — Production patterns
+- [Observability](observability.md) — Monitoring setup
+- [Error Handling](error-handling.md) — Robust error handling
+
+
+## Best Practices
+
+# Best Practices Guide
+
+Build production-quality IVCAP services with these patterns.
+
+## Code Organization
+
+### Structure Your Service
+
+```
+my-service/
+├── src/
+│   ├── __init__.py
+│   ├── service.py          # Service definition & entry point
+│   ├── processor.py        # Job processing logic
+│   ├── models/
+│   │   ├── request.py      # Request schemas
+│   │   └── result.py       # Result schemas
+│   └── utils/
+│       ├── __init__.py
+│       ├── artifacts.py    # Artifact utilities
+│       ├── logger.py       # Logging setup
+│       └── validators.py   # Custom validators
+├── tests/
+│   ├── test_processor.py
+│   └── test_models.py
+├── pyproject.toml
+├── Dockerfile
+└── README.md
+```
+
+### Separate Concerns
+
+```python
+# service.py
+from src.processor import process_job
+from src.models import RequestSchema, ResultSchema
+
+service = Service(name="My Service", ...)
+
+if __name__ == "__main__":
+    start_batch_service(service, process_job)
+
+# processor.py
+from src.models import RequestSchema, ResultSchema
+from src.utils import validate_input, process_data
+
+def process_job(req: RequestSchema, ctx: JobContext) -> ResultSchema:
+    validate_input(req)
+    result = process_data(req.data)
+    return ResultSchema(result=result)
+```
+
+## Testing
+
+### Unit Tests
+
+```python
+# tests/test_processor.py
+from src.processor import process_job
+from src.models import RequestSchema, ResultSchema
+import pytest
+
+def test_process_job_basic():
+    req = RequestSchema(data="test")
+    # Mock the context
+    result = process_job(req, mock_context)
+    assert isinstance(result, ResultSchema)
+    assert result.result == "TEST"
+
+def test_process_job_invalid_input():
+    with pytest.raises(ValueError):
+        req = RequestSchema(data="")
+        result = process_job(req, mock_context)
+```
+
+### Integration Tests
+
+```python
+# tests/test_integration.py
+def test_service_with_local_file():
+    """Test service with actual test data."""
+    import json
+    with open("tests/test_request.json") as f:
+        req_data = json.load(f)
+
+    # Create context
+    ctx = create_test_context()
+
+    # Process
+    result = process_job_from_dict(req_data, ctx)
+
+    # Verify
+    assert result["status"] == "success"
+```
+
+## Performance Optimization
+
+### Caching
+
+```python
+from functools import lru_cache
+
+@lru_cache(maxsize=100)
+def load_model(model_path: str):
+    """Load ML model once, reuse."""
+    return torch.load(model_path)
+
+def process_job(req: Request, ctx: JobContext) -> Result:
+    model = load_model("/path/to/model")
+    prediction = model.predict(req.data)
+    return Result(prediction=prediction)
+```
+
+### Batch Processing
+
+```python
+def process_job(req: Request, ctx: JobContext) -> Result:
+    items = req.items
+    batch_size = 32
+    results = []
+
+    with ctx.report.step("processing") as step:
+        for i in range(0, len(items), batch_size):
+            batch = items[i:i+batch_size]
+            batch_results = process_batch(batch)
+            results.extend(batch_results)
+
+    return Result(results=results)
+```
+
+### Memory Management
+
+```python
+def process_job(req: Request, ctx: JobContext) -> Result:
+    # Process in chunks instead of loading all
+    results = []
+
+    with ctx.report.step("processing") as step:
+        for chunk in iter_chunks(req.data, chunk_size=10_000):
+            result = process_chunk(chunk)
+            results.append(result)
+            # Chunk is garbage collected automatically
+
+    return Result(results=results)
+```
+
+## Error Handling Best Practices
+
+1. **Fail fast** — Detect invalid input early
+2. **Log context** — Include relevant information
+3. **Graceful degradation** — Use fallbacks when possible
+4. **Report progress** — Even if failing, report where
+
+```python
+def process_job(req: Request, ctx: JobContext) -> Result:
+    # 1. Validate early
+    if not validate(req):
+        raise ValueError("Invalid input")
+
+    try:
+        with ctx.report.step("processing") as step:
+            # 2. Include context in logs
+            logger = getLogger(f"job-{ctx.job_id}")
+            logger.info("Starting processing")
+
+            result = process(req)
+            step.finished()
+    except Exception as e:
+        # 3. Report where we failed
+        logger.error(f"Processing failed: {e}", exc_info=True)
+        raise
+
+    return Result(result=result)
+```
+
+## Documentation Best Practices
+
+### Docstring Standards
+
+```python
+def process_job(req: Request, ctx: JobContext) -> Result:
+    """
+    Process a batch of data items.
+
+    This service:
+    - Validates input format
+    - Applies transformation
+    - Returns results
+
+    Args:
+        req: Request containing items to process
+        ctx: Job context for progress and platform access
+
+    Returns:
+        Result with processed items
+
+    Raises:
+        ValueError: If input validation fails
+    """
+    # Implementation...
+```
+
+### Service Documentation
+
+```python
+from ivcap_service import Service, ServiceContact, ServiceLicense
+
+service = Service(
+    name="Data Processor",
+    contact=ServiceContact(name="Support Team", email="support@example.com"),
+    license=ServiceLicense(name="MIT", url="https://opensource.org/license/MIT"),
+)
+```
+
+## Monitoring Best Practices
+
+### Log at Appropriate Levels
+
+```python
+logger.debug("Variable x = 5")  # Development
+logger.info("Job started")       # Important milestones
+logger.warning("Falling back")   # Unexpected but recoverable
+logger.error("Processing failed") # Errors
+```
+
+### Include Context in Events
+
+```python
+with ctx.report.step("processing") as step:
+    step.info(event={
+        "job_id": ctx.job_id,
+        "stage": "validation",
+        "items_count": len(items),
+        "timestamp": datetime.now().isoformat()
+    })
+```
+
+## Configuration Best Practices
+
+### Use Environment Variables
+
+```python
+import os
+
+# Good: Use environment variables
+api_url = os.getenv("API_URL", "http://localhost:8000")
+timeout = int(os.getenv("API_TIMEOUT", "30"))
+
+# Bad: Hardcode values
+api_url = "http://production.example.com"
+```
+
+### Validate Configuration
+
+```python
+def get_config():
+    config = {
+        "api_url": os.getenv("API_URL"),
+        "api_key": os.getenv("API_KEY"),
+    }
+
+    # Validate required settings
+    if not config["api_key"]:
+        raise ValueError("API_KEY environment variable not set")
+
+    return config
+```
+
+## Security Best Practices
+
+1. **Never hardcode secrets** — Use environment variables or secret manager
+2. **Validate input** — Use Pydantic validation
+3. **Sanitize output** — Don't leak sensitive information
+4. **Use HTTPS** — For all external communication
+
+```python
+from ivcap_service import get_secret
+
+def process_job(req: Request, ctx: JobContext) -> Result:
+    # Good: Get from secret manager
+    api_key = get_secret("external_api_key")
+
+    # Good: Validate input with Pydantic
+    # Automatically validates req type
+
+    # Bad: Don't log secrets
+    logger.info(f"Using API key: {api_key}")
+
+    # Good: Log masked version
+    logger.info("Using API key: ****")
+```
+
+## Common Pitfalls
+
+### ❌ Don't: Store State Between Jobs
+
+```python
+# BAD - State persists between jobs
+shared_state = {}
+
+def process_job(req: Request, ctx: JobContext) -> Result:
+    shared_state["count"] = shared_state.get("count", 0) + 1
+```
+
+### ✅ Do: Keep Jobs Stateless
+
+```python
+# GOOD - Each job is independent
+def process_job(req: Request, ctx: JobContext) -> Result:
+    count = len(req.items)
+    return Result(count=count)
+```
+
+### ❌ Don't: Ignore Exceptions
+
+```python
+# BAD
+try:
+    result = process(req)
+except:
+    pass  # Silent failure
+```
+
+### ✅ Do: Handle and Report Errors
+
+```python
+# GOOD
+try:
+    result = process(req)
+except Exception as e:
+    logger.error(f"Processing failed: {e}")
+    raise
+```
+
+## See Also
+
+- [Job Processing](job-processing.md) — Core patterns
+- [Deployment](deployment.md) — Production setup
+- [Error Handling](error-handling.md) — Robust error handling
+
+
+# API Reference
+
+## Service
+
+# Service
+
+This page documents the core `Service` class used to define service metadata and configuration.
+
+::: ivcap_service.service_definition.Service
+
+
+## JobContext
+
+# JobContext
+
+`JobContext` is the gateway to the IVCAP platform from within your job worker function.
+It is passed automatically as the second argument to every worker function and provides:
+
+- **Job identity** — the unique ID and platform-injected authorisation token for the current job.
+- **Progress & event reporting** — a pre-configured [`EventReporter`](events.md) for emitting structured step events back to the platform.
+- **Full IVCAP platform access** — a lazy-initialized, pre-authenticated `IVCAP` client from the [ivcap-client](https://github.com/ivcap-works/ivcap-client-sdk-python) library for uploading/downloading artifacts, querying metadata, and calling other services.
+
+```python
+from ivcap_service import JobContext
+
+def process_job(req: MyRequest, ctxt: JobContext) -> MyResult:
+    # Identity
+    logger.info(f"Processing job {ctxt.job_id}")
+
+    # Progress reporting
+    with ctxt.report.step("analysis", msg="Analysing input") as step:
+        result = analyse(req.data)
+        step.finished(msg="Analysis complete")
+
+    # Platform access
+    artifact = ctxt.ivcap.get_artifact(req.input_urn)
+    with artifact.as_local_file() as path:
+        data = path.read_bytes()
+
+    return MyResult(output=result)
+```
+
+---
+
+## Properties
+
+### `job_id` · `str`
+
+The platform-assigned unique identifier for this job (e.g. `urn:ivcap:job:...`).
+Use this in log messages and when correlating events or results.
+
+```python
+logger.info(f"Starting job {ctxt.job_id}")
+```
+
+---
+
+### `report` · `EventReporter`
+
+A fully configured [`EventReporter`](events.md) instance for emitting structured progress events during execution.
+The reporter uses the platform sidecar when running on IVCAP, and falls back to structured logging locally.
+
+**Quick reference:**
+
+```python
+# Context-manager style (recommended)
+with ctxt.report.step("load", msg="Loading data") as step:
+    data = load(req.source)
+    step.finished(msg=f"Loaded {len(data)} records")
+
+# Direct-call style (for async or conditional reporting)
+ctxt.report.step_started("analysis", msg="Starting analysis")
+ctxt.report.step_info("analysis", msg="50% done")       # (1)
+ctxt.report.step_finished("analysis", msg="Done")
+```
+
+1. `step_info` is called `step_info` in the `EventReporter`; it takes `step_name` and `msg`.
+
+For full details on event types, the `EventContext` step object, and custom reporters see
+**[Events & Reporting API →](events.md)**
+
+---
+
+### `ivcap` · `IVCAP`
+
+A lazy-initialized, pre-authenticated client from the [`ivcap-client`](https://github.com/ivcap-works/ivcap-client-sdk-python) library.
+It is instantiated on first access — no credentials or configuration are required inside a platform job container.
+
+```python
+ivcap = ctxt.ivcap   # property access, no parentheses
+```
+
+The client is the primary entry point for all platform interactions:
+
+| What you want to do | Method / starting point |
+|---|---|
+| Download an input artifact | `ivcap.get_artifact(urn)` |
+| Upload a result artifact | `ivcap.upload_artifact(...)` |
+| Attach metadata to an entity | `ivcap.add_aspect(entity, aspect)` |
+| List or query existing aspects | `ivcap.list_aspects(entity=...)` |
+| Call another IVCAP service | `ivcap.get_service_by_name(...)` → `.request_job(...)` |
+| List available services | `ivcap.list_services(...)` |
+
+**Working with artifacts →** [Artifacts Guide](../guides/artifacts.md)
+
+**Calling other services →** [Service Composition Guide](../guides/service-composition.md)
+
+---
+
+### `job_authorization` · `str | None`
+
+The Bearer token injected by the platform for the current job.
+This is used internally by the SDK to authenticate outbound HTTP calls (via the `requests` and `httpx` monkey-patches in `context.py`) and by the `EventReporter` when posting events to the sidecar.
+
+You rarely need to access this directly — the `ivcap` client and the HTTP instrumentation layer use it automatically.
+
+---
+
+## Execution flow
+
+```mermaid
+sequenceDiagram
+    participant P as IVCAP Platform
+    participant S as Service Worker
+    participant R as EventReporter
+    participant C as IVCAP Client
+
+    P->>S: invoke worker(req, ctxt)
+    S->>R: ctxt.report.step("…")
+    R->>P: POST /events/{job_id}
+    S->>C: ctxt.ivcap.get_artifact(…)
+    C->>P: GET /artifacts/{id}
+    P-->>C: artifact stream
+    S->>R: step.finished(…)
+    R->>P: POST /events/{job_id}
+    S->>P: result (via push_result)
+```
+
+---
+
+## API Reference
+
+::: ivcap_service.types.JobContext
+
+
+## Events & Reporting
+
+# Events & Reporting
+
+Classes and utilities for reporting job progress and events.
+
+::: ivcap_service.events
+
+
+## Types
+
+# Types
+
+Core type definitions and data models used throughout the SDK.
+
+::: ivcap_service.types
+
+
+## Utilities
+
+# Utilities
+
+Helper functions and utilities for logging and common operations.
+
+## Logger
+
+::: ivcap_service.logger.getLogger
+
+## Logging Initialization
+
+::: ivcap_service.logger.logging_init
+
+## General Utilities
+
+::: ivcap_service.utils
+
+
+# Examples
+
+## Batch Service
+
+# Batch Service Example
+
+A complete example of a production-ready IVCAP batch service.
+
+## Overview
+
+This service processes batches of text items with validation, transformation, and error handling.
+
+## Code
+
+```python
+from pydantic import BaseModel, Field, field_validator
+from ivcap_service import (
+    Service, ServiceContact, ServiceLicense,
+    JobContext, start_batch_service,
+    getLogger, logging_init, with_schema,
+)
+import time
+
+# Initialize logging
+logging_init()
+logger = getLogger("batch_service")
+
+# Define service
+service = Service(
+    name="Batch Text Processor",
+    contact=ServiceContact(name="Developer", email="dev@example.com"),
+    license=ServiceLicense(name="MIT", url="https://opensource.org/license/MIT"),
+)
+
+# Helper item type (no schema needed — embedded in BatchRequest)
+class Item(BaseModel):
+    id: str
+    text: str = Field(min_length=1, max_length=1000)
+
+# Request schema
+@with_schema("urn:sd:schema:batch-text-processor.request.1")
+class BatchRequest(BaseModel):
+    items: list[Item] = Field(min_items=1)
+    uppercase: bool = Field(default=False)
+
+# Helper result item type
+class ProcessedItem(BaseModel):
+    id: str
+    original: str
+    processed: str
+    word_count: int
+
+# Result schema
+@with_schema("urn:sd:schema:batch-text-processor.1")
+class BatchResult(BaseModel):
+    items: list[ProcessedItem]
+    total_processed: int
+    total_time_seconds: float
+
+# Job processor
+def process_job(req: BatchRequest, ctx: JobContext) -> BatchResult:
+    """Process a batch of text items."""
+    logger.info(f"Processing batch with {len(req.items)} items")
+    start_time = time.time()
+
+    results = []
+
+    # Step 1: Validate inputs
+    with ctx.report.step("validate", msg="Validating inputs") as step:
+        for item in req.items:
+            if not item.text.strip():
+                raise ValueError(f"Item {item.id}: empty text")
+        step.finished(msg=f"Validated {len(req.items)} items")
+
+    # Step 2: Process items
+    with ctx.report.step("process", msg="Processing items") as step:
+        for i, item in enumerate(req.items):
+            # Transform
+            processed_text = item.text.upper() if req.uppercase else item.text
+            word_count = len(processed_text.split())
+
+            results.append(ProcessedItem(
+                id=item.id,
+                original=item.text,
+                processed=processed_text,
+                word_count=word_count
+            ))
+
+            # Report progress
+            if (i + 1) % 10 == 0:
+                step.info(event={
+                    "processed": i + 1,
+                    "total": len(req.items),
+                    "percentage": ((i + 1) / len(req.items)) * 100
+                })
+
+        step.finished(msg=f"Processed {len(results)} items")
+
+    # Step 3: Summary
+    duration = time.time() - start_time
+
+    with ctx.report.step("summary") as step:
+        step.info(event={
+            "total_items": len(results),
+            "duration_seconds": duration,
+            "items_per_second": len(results) / duration
+        })
+        step.finished()
+
+    return BatchResult(
+        items=results,
+        total_processed=len(results),
+        total_time_seconds=duration
+    )
+
+if __name__ == "__main__":
+    start_batch_service(service, process_job)
+```
+
+## Testing
+
+Create `test_request.json`:
+
+```json
+{
+    "items": [
+        {"id": "1", "text": "Hello world"},
+        {"id": "2", "text": "IVCAP service"},
+        {"id": "3", "text": "Batch processing"}
+    ],
+    "uppercase": true
+}
+```
+
+Test locally:
+
+```bash
+python batch_service.py --test-file test_request.json
+```
+
+Expected output:
+
+```
+Processing batch with 3 items
+Validated 3 items
+Processed 3 items
+...
+```
+
+## Key Features
+
+1. **Validation** — Pydantic validates request automatically
+2. **Progress Tracking** — Reports progress with step events
+3. **Error Handling** — Explicit error reporting
+4. **Metrics** — Tracks processing time and statistics
+5. **Logging** — Structured logging for debugging
+
+## See Also
+
+- [Job Processing Guide](../guides/job-processing.md)
+- [Artifacts Guide](../guides/artifacts.md)
+- [Best Practices](../guides/best-practices.md)
+
+
+## Advanced Patterns
+
+# Advanced Patterns
+
+Advanced techniques for building sophisticated IVCAP services.
+
+## Service Composition Pipeline
+
+Build complex workflows by composing multiple services:
+
+```python
+import time
+
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    validate_svc = ivcap.get_service_by_name("validate-service")
+    transform_svc = ivcap.get_service_by_name("transform-service")
+    enrich_svc   = ivcap.get_service_by_name("enrich-service")
+
+    with ctxt.report.step("validate", msg="Validating") as s:
+        ValidateReq = validate_svc.request_model
+        validated_job = validate_svc.request_job(ValidateReq(data=req.data), timeout=60)
+        s.finished()
+
+    with ctxt.report.step("transform", msg="Transforming") as s:
+        TransformReq = transform_svc.request_model
+        transformed_job = transform_svc.request_job(
+            TransformReq(data=validated_job.result), timeout=120
+        )
+        s.finished()
+
+    with ctxt.report.step("enrich", msg="Enriching") as s:
+        EnrichReq = enrich_svc.request_model
+        enriched_job = enrich_svc.request_job(
+            EnrichReq(data=transformed_job.result), timeout=120
+        )
+        s.finished()
+
+    return Result(result=enriched_job.result)
+```
+
+## Parallel Fan-Out
+
+Dispatch multiple downstream jobs in parallel, then collect results:
+
+```python
+import time
+
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+    results = {}
+
+    processor = ivcap.get_service_by_name("item-processor")
+    ProcessorReq = processor.request_model
+
+    # Dispatch all jobs without blocking (timeout=0)
+    jobs = {
+        item_id: processor.request_job(ProcessorReq(data=item), timeout=0)
+        for item_id, item in enumerate(req.items)
+    }
+
+    # Poll until all finish
+    completed = 0
+    with ctxt.report.step("parallel_processing", msg="Waiting for parallel jobs") as step:
+        while completed < len(jobs):
+            for item_id, job in jobs.items():
+                if item_id not in results and job.finished:
+                    results[item_id] = job.result
+                    completed += 1
+                elif not job.finished:
+                    job.refresh()
+
+            if completed < len(jobs):
+                step.info(event={"completed": completed, "total": len(jobs)})
+                time.sleep(3)
+
+        step.finished(msg=f"Completed {len(results)} jobs")
+
+    return Result(results=results)
+```
+
+## Streaming Large Files
+
+Handle large artifacts efficiently using `as_stream()` or `as_local_file()`:
+
+```python
+import io
+
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+    chunk_size = 1024 * 1024  # 1 MB
+
+    artifact = ivcap.get_artifact(req.input_urn)
+
+    with ctxt.report.step("process", msg="Streaming and processing") as step:
+        processed_chunks = []
+        bytes_processed = 0
+
+        for chunk in artifact.as_stream():
+            processed = process_chunk(chunk)
+            processed_chunks.append(processed)
+            bytes_processed += len(chunk)
+
+            if bytes_processed % (10 * 1024 * 1024) == 0:  # Every 10 MB
+                step.info(event={"bytes_processed": bytes_processed})
+
+        step.finished(msg=f"Processed {bytes_processed} bytes")
+
+    with ctxt.report.step("upload", msg="Uploading result") as step:
+        final_data = b"".join(processed_chunks)
+        result_artifact = ivcap.upload_artifact(
+            name="processed-output.bin",
+            io_stream=io.BytesIO(final_data),
+            content_type="application/octet-stream",
+            content_size=len(final_data),
+        )
+        step.finished(msg=f"Uploaded {result_artifact.id}")
+
+    return Result(artifact_urn=result_artifact.id)
+```
+
+For very large files where you want minimal memory footprint, download directly to disk:
+
+```python
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    artifact = ivcap.get_artifact(req.input_urn)
+
+    with ctxt.report.step("process", msg="Processing large file") as step:
+        # as_local_file() streams the artifact to a temp file — no memory spike
+        with artifact.as_local_file() as path:
+            result = process_large_file(path)  # path is a pathlib.Path
+        step.finished()
+
+    return Result(result=result)
+```
+
+## Retry with Exponential Backoff
+
+Robust error handling with exponential backoff:
+
+```python
+import time
+import random
+from ivcap_client.exception import IvcapApiError
+
+def retry_with_backoff(func, max_retries=3, base_wait=1):
+    for attempt in range(max_retries):
+        try:
+            return func()
+        except Exception as e:
+            if attempt == max_retries - 1:
+                raise
+            wait_time = base_wait * (2 ** attempt) + random.uniform(0, 1)
+            logger.warning(f"Attempt {attempt+1} failed, retrying in {wait_time:.1f}s: {e}")
+            time.sleep(wait_time)
+
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    downstream = ivcap.get_service_by_name("flaky-service")
+    DownstreamReq = downstream.request_model
+
+    with ctxt.report.step("call_service", msg="Calling service with retry") as step:
+        job = retry_with_backoff(
+            lambda: downstream.request_job(DownstreamReq(data=req.data), timeout=60)
+        )
+        step.finished()
+
+    return Result(result=job.result)
+```
+
+## Dynamic Service Discovery
+
+Find and invoke services at runtime based on request parameters:
+
+```python
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    # Look up service by name from the request
+    svc = ivcap.get_service_by_name(req.processor_service_name)
+    SvcReq = svc.request_model
+
+    # Inspect available parameters (useful for debugging)
+    for name, param in svc.parameters.items():
+        logger.debug(f"  {name}: {param.type}, optional={param.is_optional}")
+
+    with ctxt.report.step("process", msg=f"Using {req.processor_service_name}") as step:
+        job = svc.request_job(SvcReq(data=req.data), timeout=300)
+        step.finished()
+
+    return Result(result=job.result)
+```
+
+## Conditional Processing
+
+Branch to different services based on input type or size:
+
+```python
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    ivcap = ctxt.ivcap
+
+    if req.type == "small":
+        svc_name = "fast-processor"
+    elif req.type == "large":
+        svc_name = "powerful-processor"
+    else:
+        svc_name = "default-processor"
+
+    svc = ivcap.get_service_by_name(svc_name)
+    SvcReq = svc.request_model
+
+    with ctxt.report.step("process", msg=f"Using {svc_name}") as step:
+        job = svc.request_job(SvcReq(data=req.data), timeout=300)
+        step.finished()
+
+    return Result(result=job.result)
+```
+
+## Caching Strategy
+
+Implement in-process caching to avoid redundant computation across jobs:
+
+```python
+from functools import lru_cache
+import hashlib
+
+@lru_cache(maxsize=100)
+def get_cached_model(model_id: str):
+    """Load model once per process — reused across jobs."""
+    return load_model(model_id)
+
+result_cache: dict = {}
+
+def process_job(req: Request, ctxt: JobContext) -> Result:
+    # Check in-memory cache
+    input_hash = hashlib.md5(req.data).hexdigest()
+    if input_hash in result_cache:
+        logger.info("Cache hit!")
+        return Result(result=result_cache[input_hash])
+
+    # Process
+    with ctxt.report.step("process", msg="Processing") as step:
+        model = get_cached_model(req.model_id)
+        result = model.predict(req.data)
+        step.finished()
+
+    # Cache for future jobs
+    result_cache[input_hash] = result
+
+    return Result(result=result)
+```
+
+## See Also
+
+- [Service Composition Guide](../guides/service-composition.md)
+- [Artifacts Guide](../guides/artifacts.md)
+- [Job Processing Guide](../guides/job-processing.md)
+- [Best Practices](../guides/best-practices.md)

@@ -1,0 +1,40 @@
+# IVCAP Service SDK (Python)
+
+> Python SDK for building batch services on the IVCAP platform — define services, process jobs, manage artifacts, report progress, and compose workflows
+
+ivcap_service is a Python SDK for building batch services on the IVCAP
+(Intelligent Visual Computing and Analytics Platform). Use it to define
+services with typed Pydantic request/result models, process jobs from a
+platform queue, report progress via named steps, upload and download
+artifacts, compose workflows by calling other IVCAP services, and export
+logs and metrics to OpenObserve and OpenTelemetry.
+
+
+## Getting Started
+
+- [Installation](https://ivcap-works.github.io/ivcap-service-sdk-python/getting-started/installation/index.md)
+- [Quick Start](https://ivcap-works.github.io/ivcap-service-sdk-python/getting-started/quick-start/index.md)
+- [Your First Service](https://ivcap-works.github.io/ivcap-service-sdk-python/getting-started/first-service/index.md)
+
+## Guides
+
+- [Job Processing](https://ivcap-works.github.io/ivcap-service-sdk-python/guides/job-processing/index.md)
+- [Working with Artifacts](https://ivcap-works.github.io/ivcap-service-sdk-python/guides/artifacts/index.md)
+- [Service Composition](https://ivcap-works.github.io/ivcap-service-sdk-python/guides/service-composition/index.md)
+- [Observability & Logging](https://ivcap-works.github.io/ivcap-service-sdk-python/guides/observability/index.md)
+- [Error Handling](https://ivcap-works.github.io/ivcap-service-sdk-python/guides/error-handling/index.md)
+- [Deployment](https://ivcap-works.github.io/ivcap-service-sdk-python/guides/deployment/index.md)
+- [Best Practices](https://ivcap-works.github.io/ivcap-service-sdk-python/guides/best-practices/index.md)
+
+## API Reference
+
+- [Service](https://ivcap-works.github.io/ivcap-service-sdk-python/api/service/index.md)
+- [JobContext](https://ivcap-works.github.io/ivcap-service-sdk-python/api/job-context/index.md)
+- [Events & Reporting](https://ivcap-works.github.io/ivcap-service-sdk-python/api/events/index.md)
+- [Types](https://ivcap-works.github.io/ivcap-service-sdk-python/api/types/index.md)
+- [Utilities](https://ivcap-works.github.io/ivcap-service-sdk-python/api/utilities/index.md)
+
+## Examples
+
+- [Batch Service](https://ivcap-works.github.io/ivcap-service-sdk-python/examples/batch-service/index.md)
+- [Advanced Patterns](https://ivcap-works.github.io/ivcap-service-sdk-python/examples/advanced-patterns/index.md)
