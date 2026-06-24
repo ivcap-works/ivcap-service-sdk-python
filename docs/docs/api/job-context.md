@@ -5,7 +5,7 @@ It is passed automatically as the second argument to every worker function and p
 
 - **Job identity** — the unique ID and platform-injected authorisation token for the current job.
 - **Progress & event reporting** — a pre-configured [`EventReporter`](events.md) for emitting structured step events back to the platform.
-- **Full IVCAP platform access** — a lazy-initialized, pre-authenticated [`IVCAP`](#the-ivcap-client) client from the [ivcap-client](https://github.com/ivcap-works/ivcap-client-sdk-python) library for uploading/downloading artifacts, querying metadata, and calling other services.
+- **Full IVCAP platform access** — a lazy-initialized, pre-authenticated `IVCAP` client from the [ivcap-client](https://github.com/ivcap-works/ivcap-client-sdk-python) library for uploading/downloading artifacts, querying metadata, and calling other services.
 
 ```python
 from ivcap_service import JobContext
