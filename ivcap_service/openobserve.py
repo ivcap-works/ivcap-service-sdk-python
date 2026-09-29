@@ -477,6 +477,7 @@ def init_openobserve_from_env(
     logger: logging.Logger | None = None,
     service_name: str | None = None,
     service_version: str | None = None,
+    service_id: str | None = None,
 ) -> OpenObserveConfig | None:
     """Initialise OpenTelemetry exporters for OpenObserve (logs + metrics).
 
@@ -542,6 +543,12 @@ def init_openobserve_from_env(
         resource_attrs[ResourceAttributes.SERVICE_NAME] = cfg.service_name
     if cfg.service_version:
         resource_attrs[ResourceAttributes.SERVICE_VERSION] = cfg.service_version
+    if service_id:
+        # The IVCAP service URN (constant across all jobs run by this service
+        # instance). Not a standard semconv attribute, so we use an `ivcap.*`
+        # namespaced key, consistent with the span attributes set elsewhere
+        # (see `service.py::_job_span` and `events.py::EventContext`).
+        resource_attrs["ivcap.service_id"] = service_id
     resource = Resource.create(resource_attrs)
 
     if cfg.enable_logs:
@@ -595,6 +602,19 @@ def _init_logs(cfg: OpenObserveConfig, resource: Any, logger: logging.Logger) ->
 def _init_metrics(
     cfg: OpenObserveConfig, resource: Any, logger: logging.Logger
 ) -> None:
+    """Initialise an OTLP/HTTP metric reader.
+
+    Caveat: unlike `TracerProvider.add_span_processor()`, the SDK's
+    `MeterProvider` has no public API to attach an additional
+    `MetricReader` after construction. If the global `MeterProvider` is
+    already set (e.g. by an external `opentelemetry-instrument` wrapper
+    launched before this process's own code runs), `metrics.set_meter_provider()`
+    below will silently no-op (per OTEL API semantics - see
+    `opentelemetry.trace`/`opentelemetry.metrics` `_set_*_provider` `Once`
+    guards) and our OpenObserve metric reader will not be attached to the
+    active provider. We detect and log that case explicitly, since there is
+    no reliable workaround.
+    """
     from opentelemetry import metrics
     from opentelemetry.exporter.otlp.proto.http.metric_exporter import (
         OTLPMetricExporter,
@@ -617,6 +637,15 @@ def _init_metrics(
     provider = MeterProvider(resource=resource, metric_readers=[reader])
     setattr(provider, "_ivcap_openobserve", True)
     metrics.set_meter_provider(provider)
+    if metrics.get_meter_provider() is not provider:
+        # A MeterProvider was already installed (e.g. by an external
+        # auto-instrumentation agent) - our exporter was never attached.
+        logger.warning(
+            "Could not install OpenObserve OTLP metric reader: a "
+            "MeterProvider is already set for this process and cannot be "
+            "replaced - metrics will not be exported to OpenObserve"
+        )
+        return
     logger.debug("Installed OpenObserve OTLP metric reader")
 
 
@@ -672,6 +701,19 @@ def _init_traces(cfg: OpenObserveConfig, resource: Any, logger: logging.Logger) 
 
     Note: We keep this separate from `otel_instrument()`; this is about exporting
     *SDK-created* spans (like job spans).
+
+    Important: `opentelemetry.trace.set_tracer_provider()` can only ever
+    succeed **once** per process - the OTEL API silently ignores (and only
+    logs a warning for) any further attempt to install a new
+    `TracerProvider`. If the process was launched under an external
+    auto-instrumentation wrapper (e.g. `opentelemetry-instrument`, commonly
+    identifiable via `OTEL_SERVICE_NAME`/`OTEL_EXPORTER_OTLP_*` env vars being
+    pre-set), a `TracerProvider` will already be installed by the time this
+    function runs, and naively calling `set_tracer_provider()` here would
+    silently drop our OpenObserve exporter - spans would keep being created,
+    but never exported to OpenObserve. To avoid that, when a real SDK
+    `TracerProvider` is already active we attach our exporter to it via
+    `add_span_processor()` instead of trying to replace it.
     """
 
     from opentelemetry import trace
@@ -688,8 +730,39 @@ def _init_traces(cfg: OpenObserveConfig, resource: Any, logger: logging.Logger) 
         headers=cfg.traces_headers(),
     )
 
+    if isinstance(provider, TracerProvider):
+        # A "real" SDK TracerProvider is already active (installed by us
+        # earlier, or by an external auto-instrumentation agent). Attach our
+        # exporter to it rather than trying (and silently failing) to
+        # install a brand new provider.
+        provider.add_span_processor(BatchSpanProcessor(exporter))
+        setattr(provider, "_ivcap_openobserve", True)
+        logger.debug(
+            "Attached OpenObserve OTLP trace exporter to existing TracerProvider"
+        )
+        return
+
     tp = TracerProvider(resource=resource)
     tp.add_span_processor(BatchSpanProcessor(exporter))
     setattr(tp, "_ivcap_openobserve", True)
     trace.set_tracer_provider(tp)
+    if trace.get_tracer_provider() is not tp:
+        # `set_tracer_provider()` is a no-op if a provider was installed
+        # between our check above and now (e.g. a race with an external
+        # agent). Fall back to attaching to whatever is active, if possible.
+        active = trace.get_tracer_provider()
+        if isinstance(active, TracerProvider):
+            active.add_span_processor(BatchSpanProcessor(exporter))
+            setattr(active, "_ivcap_openobserve", True)
+            logger.debug(
+                "TracerProvider was set concurrently; attached OpenObserve "
+                "OTLP trace exporter to it instead"
+            )
+        else:
+            logger.warning(
+                "Could not install OpenObserve OTLP trace exporter: a "
+                "TracerProvider is already set and does not support "
+                "'add_span_processor()' - traces will not be exported to OpenObserve"
+            )
+        return
     logger.debug("Installed OpenObserve OTLP trace exporter")

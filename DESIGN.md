@@ -276,7 +276,52 @@ When proxying, the SDK sets:
 
 If `--with-telemetry` is set and `OTEL_EXPORTER_OTLP_ENDPOINT` is configured,
 the runtime will enable OpenTelemetry auto-instrumentation and attempt to
-instrument `requests` and `httpx`.
+instrument `requests` and `httpx`. Both instrumentors (and the job/step spans
+created by the SDK) check `is_instrumented_by_opentelemetry` /
+`get_tracer_provider()` first, so re-running against a process that was
+already auto-instrumented by an external `opentelemetry-instrument` wrapper
+is a safe no-op rather than emitting spurious "already instrumented" warnings.
+
+### Job/step spans
+
+Every job fetched via `GET /next_job` is wrapped in an `ivcap.job` span
+(see `service.py::_job_span`), tagged with:
+
+* `ivcap.job_id` - the job's URN
+* `ivcap.service_id` - this service's URN, sourced from `IVCAP_SERVICE_ID`
+  (constant across all jobs handled by this service instance)
+* `ivcap.ok` / `ivcap.error_type` / `ivcap.error` - outcome, set once the job
+  finishes
+
+`ctxt.report.step(...)` creates a child `ivcap.event:<name>` span
+(see `events.py::EventContext`) tagged with the same `ivcap.job_id` and
+`ivcap.service_id`, plus `ivcap.event_name`.
+
+### OpenObserve export vs. externally-installed providers
+
+`init_openobserve_from_env()` (`openobserve.py`) installs OTLP exporters for
+logs, metrics and traces. A subtlety here: OpenTelemetry's global providers
+(`TracerProvider`, `MeterProvider`, `LoggerProvider`) can each only be
+installed **once** per process - `opentelemetry.trace.set_tracer_provider()`
+(and the metrics/logs equivalents) silently ignore any further call once a
+provider is already set, only logging a warning. If the process is launched
+under an external auto-instrumentation wrapper (recognisable via
+`OTEL_SERVICE_NAME` / `OTEL_EXPORTER_OTLP_*` env vars being pre-set by that
+wrapper), a provider will already be active by the time this SDK code runs.
+
+To avoid silently dropping the OpenObserve exporter in that case:
+
+* **Traces**: `_init_traces()` detects an already-active `TracerProvider` and
+  attaches its `BatchSpanProcessor`/`OTLPSpanExporter` to it via
+  `add_span_processor()`, instead of trying (and failing) to install a new
+  provider.
+* **Logs**: `_init_logs()` is unaffected by this problem because
+  `LoggingHandler` is constructed with an explicit `logger_provider=` and
+  holds a direct reference to it, independent of the global registry.
+* **Metrics**: the SDK's `MeterProvider` has no public API to attach an
+  additional `MetricReader` after construction. If a `MeterProvider` is
+  already active, `_init_metrics()` logs a warning rather than silently
+  doing nothing, since there is no reliable workaround.
 
 ---
 

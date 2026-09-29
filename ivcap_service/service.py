@@ -29,8 +29,17 @@ from .utils import get_function_return_type, get_input_type
 from .version import get_version
 
 
+def _get_service_id() -> str | None:
+    """Best-effort lookup of this service's IVCAP URN.
+
+    Sourced from the `IVCAP_SERVICE_ID` env var (the same variable used
+    elsewhere, e.g. in `service_definition.py`, to identify the service).
+    """
+    return os.getenv("IVCAP_SERVICE_ID")
+
+
 @contextmanager
-def _job_span(job_id: str):
+def _job_span(job_id: str, service_id: str | None = None):
     """Create a best-effort OpenTelemetry span for a job execution.
 
     This SDK is usable without telemetry enabled/configured, so span creation
@@ -43,6 +52,8 @@ def _job_span(job_id: str):
         tracer = trace.get_tracer("ivcap_service.service")
         with tracer.start_as_current_span("ivcap.job") as span:
             span.set_attribute("ivcap.job_id", job_id)
+            if service_id:
+                span.set_attribute("ivcap.service_id", service_id)
             yield span
     except Exception:
         # No OTEL installed/configured (or other OTEL issue) => proceed without a span.
@@ -126,6 +137,7 @@ def wait_for_work(svc_ctxt: ServiceContext):
     logger = svc_ctxt.logger
     logger.info(f"... checking for work at '{url}'")
     runtime_metrics = maybe_create_runtime_metrics()
+    service_id = _get_service_id()
     try:
         while True:
             result = None
@@ -140,7 +152,7 @@ def wait_for_work(svc_ctxt: ServiceContext):
                     sys.exit(0)
 
                 job_id = job.get("id", "unknown_job_id")
-                with _job_span(job_id) as span:
+                with _job_span(job_id, service_id) as span:
                     try:
                         raw_result = do_job(job, svc_ctxt, job_authorization)
                         result = verify_result(raw_result, job_id, logger)
@@ -334,6 +346,7 @@ def start_batch_service(
             logger=logger,
             service_name=service_description.name,
             service_version=service_description.version,
+            service_id=_get_service_id(),
         )
     except Exception as e:
         logger.warning("OpenObserve init failed: %s", e)
@@ -349,7 +362,7 @@ def start_batch_service(
 
         job = file_to_json(args.test_file)
         job_id = job.get("id", "unknown_job_id")
-        with _job_span(job_id):
+        with _job_span(job_id, _get_service_id()):
             res = do_job(job, svc_ctxt)
         if get_ivcap_url() is not None:
             result = verify_result(res, job["id"], logger)

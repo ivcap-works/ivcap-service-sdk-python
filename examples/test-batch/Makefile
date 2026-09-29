@@ -34,12 +34,13 @@ test-ivcap-stream:
 
 IVCAP_URL=$(shell ivcap context get url)
 test-ivcap:
-	curl -X POST \
-		-H "content-type: application/json" \
-		-H "Authorization: Bearer $(shell ivcap context get access-token --refresh-token)" \
-		-H "Timeout: ${TIMEOUT}" \
-		--data @${REQUEST_FILE} \
-		${IVCAP_URL}/1/services2/${SERVICE_ID}/jobs
+	cat ${REQUEST_FILE} | jq '.["in-content"]' \
+	| curl -X POST \
+			-H "content-type: application/json" \
+			-H "Authorization: Bearer $(shell ivcap context get access-token --refresh-token)" \
+			-H "Timeout: ${TIMEOUT}" \
+			--data @- \
+			${IVCAP_URL}/1/services2/${SERVICE_ID}/jobs
 
 service-description:
 	env VERSION=$(VERSION) \

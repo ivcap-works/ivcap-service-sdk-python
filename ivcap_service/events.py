@@ -4,6 +4,7 @@
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
 import json
+import os
 import traceback
 from collections.abc import Callable, Generator
 from contextlib import contextmanager
@@ -140,6 +141,9 @@ class EventContext:
             try:
                 self._otel_span.set_attribute("ivcap.job_id", reporter.job_id)
                 self._otel_span.set_attribute("ivcap.event_name", event_name)
+                service_id = os.getenv("IVCAP_SERVICE_ID")
+                if service_id:
+                    self._otel_span.set_attribute("ivcap.service_id", service_id)
             except Exception:
                 pass
         except Exception:

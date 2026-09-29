@@ -86,17 +86,33 @@ def otel_instrument(
     if excluded_urls:
         logger.debug(f"excluding URLs from tracing: {excluded_urls}")
 
-    # Also instrument HTTP libraries with URL exclusions
+    # Also instrument HTTP libraries with URL exclusions.
+    #
+    # Note: some deployment environments launch the process via the
+    # `opentelemetry-instrument` wrapper (zero-code auto-instrumentation),
+    # which will have already instrumented `requests`/`httpx` before this
+    # code runs. Since these instrumentors are process-wide singletons, we
+    # guard with `is_instrumented_by_opentelemetry` to avoid re-instrumenting
+    # (which is a harmless no-op but logs a noisy
+    # "Attempting to instrument while already instrumented" warning).
     try:
         from opentelemetry.instrumentation.requests import RequestsInstrumentor
 
-        RequestsInstrumentor().instrument(excluded_urls=excluded_urls)
+        instrumentor = RequestsInstrumentor()
+        if not instrumentor.is_instrumented_by_opentelemetry:
+            instrumentor.instrument(excluded_urls=excluded_urls)
+        else:
+            logger.debug("'requests' already instrumented - skipping")
     except ImportError:
         pass
     try:
         from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
 
-        HTTPXClientInstrumentor().instrument(excluded_urls=excluded_urls)
+        instrumentor = HTTPXClientInstrumentor()
+        if not instrumentor.is_instrumented_by_opentelemetry:
+            instrumentor.instrument(excluded_urls=excluded_urls)
+        else:
+            logger.debug("'httpx' already instrumented - skipping")
     except ImportError:
         pass
 

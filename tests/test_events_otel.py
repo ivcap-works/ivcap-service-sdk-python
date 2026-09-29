@@ -73,6 +73,33 @@ def test_event_context_creates_child_span(monkeypatch: pytest.MonkeyPatch):
     assert span.attributes["ivcap.event_name"] == "my-step"
 
 
+def test_event_context_tags_service_id(monkeypatch: pytest.MonkeyPatch):
+    """EventReporter.step() should also tag `ivcap.service_id` when the
+    IVCAP_SERVICE_ID env var is set."""
+
+    from ivcap_service import events
+
+    span = DummySpan()
+    tracer = DummyTracer(span)
+
+    def _get_tracer(name: str):
+        return tracer
+
+    monkeypatch.setattr(events, "trace", None, raising=False)
+    monkeypatch.setitem(
+        __import__("sys").modules,
+        "opentelemetry",
+        type("otel", (), {"trace": type("trace", (), {"get_tracer": _get_tracer})})(),
+    )
+    monkeypatch.setenv("IVCAP_SERVICE_ID", "urn:ivcap:service:abc")
+
+    r = events.EventReporter("job-123", None)
+    with r.step("my-step") as _ctxt:
+        pass
+
+    assert span.attributes["ivcap.service_id"] == "urn:ivcap:service:abc"
+
+
 def test_event_context_records_error(monkeypatch: pytest.MonkeyPatch):
     from ivcap_service import events
 
