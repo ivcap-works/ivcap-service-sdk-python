@@ -579,7 +579,16 @@ start_batch_service(
 - `worker_fn` - The worker function to call for each job
 - `custom_args` (optional) - Function to add custom command-line arguments
 - `run_opts` (optional) - Additional runtime options
-- `with_telemetry` (optional) - Enable OpenTelemetry instrumentation
+- `with_telemetry` (optional, tri-state) - Controls OpenTelemetry
+  instrumentation of outbound `requests`/`httpx` calls:
+  - `None` (default) - auto-enable whenever `OTEL_EXPORTER_OTLP_ENDPOINT`
+    is configured; no-op otherwise. This is almost always what you want:
+    if you've configured an OTLP endpoint, your outbound HTTP calls get
+    traced automatically without any extra flag.
+  - `True` - force-enable (warns if no endpoint is configured).
+  - `False` - force-disable, even if an endpoint is configured.
+  - The `--with-telemetry` / `--without-telemetry` CLI flags (see below)
+    override this parameter at runtime.
 
 **Command-Line Options (automatic):**
 - `--print-service-description` - Print service metadata
@@ -589,7 +598,14 @@ start_batch_service(
   results to the sidecar (no HTTP calls, no retries, no warnings). Useful
   when running locally/in a container without a reachable
   `IVCAP_BASE_URL`/sidecar - typically combined with `--test-file`.
-- `--with-telemetry` - Enable OpenTelemetry tracing
+- `--with-telemetry` - Force-enable OpenTelemetry instrumentation of outbound
+  `requests`/`httpx` calls, even if no `OTEL_EXPORTER_OTLP_ENDPOINT` is
+  configured yet (logs a warning in that case). Not normally needed:
+  instrumentation is auto-enabled whenever an OTLP endpoint is configured.
+- `--without-telemetry` - Force-disable OpenTelemetry instrumentation of
+  outbound `requests`/`httpx` calls, even if an OTLP endpoint is configured.
+  Mutually exclusive with `--with-telemetry`. Log/metric export to
+  OpenObserve is unaffected by this flag.
 
 ### 12. Testing
 
@@ -668,17 +684,17 @@ All logs via `getLogger()` are automatically sent to OpenObserve.
 
 ### OpenTelemetry Support
 
-For distributed tracing, enable with:
-
-```bash
-python my_service.py --with-telemetry
-```
-
-And configure the OTEL endpoint:
+For distributed tracing, just configure the OTEL endpoint:
 
 ```bash
 export OTEL_EXPORTER_OTLP_ENDPOINT="http://otel-collector:4318"
 ```
+
+Instrumentation of outbound `requests`/`httpx` calls (as well as job/step
+span creation) is **auto-enabled** as soon as this endpoint is configured -
+no extra flag needed. Use `--without-telemetry` if you want to suppress
+HTTP instrumentation while still exporting logs/metrics via OpenObserve, or
+`--with-telemetry` to force-enable it even before an endpoint is set.
 
 The SDK automatically:
 - Creates spans for each job execution

@@ -67,10 +67,17 @@ endpoint shaping).
   across all jobs handled by this service instance).
 - **Example**: `urn:ivcap:service:3678e5f1-8fb7-5ad6-b65b-8bd8c23c0948`
 
-### Command-line flag: `--with-telemetry`
+### Command-line flags: `--with-telemetry` / `--without-telemetry`
 
-Enables OpenTelemetry auto-instrumentation of outbound `requests`/`httpx`
-calls, in addition to the OTLP export configured via the env vars above.
+OpenTelemetry auto-instrumentation of outbound `requests`/`httpx` calls is
+**auto-enabled** whenever `OTEL_EXPORTER_OTLP_ENDPOINT` is configured - no
+flag is needed in the common case. These mutually-exclusive flags override
+that default:
+
+- `--with-telemetry` - force-enable instrumentation, even if no endpoint is
+  configured yet (logs a warning in that case).
+- `--without-telemetry` - force-disable instrumentation, even if an
+  endpoint is configured. Log/metric export via OpenObserve is unaffected.
 
 ### OpenObserve-specific variables (all optional; add extras on top)
 

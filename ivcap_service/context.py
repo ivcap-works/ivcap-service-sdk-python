@@ -66,12 +66,27 @@ def otel_instrument(
     extension: Callable[[str], None] | None,
     logger: Logger,
 ):
-    if not with_telemetry:
-        return
+    """Instrument outbound `requests`/`httpx` calls with OpenTelemetry tracing.
+
+    `with_telemetry` is tri-state:
+    - `None` (default) - auto-enable whenever a usable OTLP endpoint is
+      configured (`OTEL_EXPORTER_OTLP_ENDPOINT`). This is the sensible
+      default: if you've gone to the trouble of configuring an OTLP
+      endpoint, you almost certainly also want your outbound HTTP calls
+      traced.
+    - `True` (`--with-telemetry`) - force-enable; warns if no endpoint is
+      configured (nothing to instrument towards).
+    - `False` (`--without-telemetry`) - force-disable, even if an endpoint
+      is configured (e.g. to suppress tracing overhead/headers on outbound
+      calls while still exporting logs/metrics via OpenObserve).
+    """
     endpoint = os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT")
+
+    if with_telemetry is False:
+        return
+
     if endpoint is None:
-        # `with_telemetry` can only be `True` or `None` based on its type.
-        if with_telemetry:
+        if with_telemetry is True:
             logger.warning("requested --with-telemetry but exporter is not defined")
         return
 

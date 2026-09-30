@@ -86,13 +86,21 @@ logger.error("Error occurred")
 ### Tracing
 
 Job and step spans are created automatically (tagged with `ivcap.job_id` and
-`ivcap.service_id`, sourced from the `IVCAP_SERVICE_ID` env var). To enable
-trace export, also pass `--with-telemetry` on the command line, which
-instruments outbound `requests`/`httpx` calls in addition to the OTLP
-export configured above:
+`ivcap.service_id`, sourced from the `IVCAP_SERVICE_ID` env var). Outbound
+`requests`/`httpx` calls are automatically instrumented as soon as an OTLP
+endpoint is configured (see above) - no extra flag is needed:
 
 ```bash
-python my_service.py --with-telemetry
+export OTEL_EXPORTER_OTLP_ENDPOINT="http://otel-collector:4318"
+python my_service.py
+```
+
+Use `--without-telemetry` to suppress HTTP instrumentation while still
+exporting logs/metrics via OpenObserve, or `--with-telemetry` to
+force-enable it even before an endpoint is configured:
+
+```bash
+python my_service.py --without-telemetry
 ```
 
 ### Local testing without a sidecar

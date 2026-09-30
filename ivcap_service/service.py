@@ -304,13 +304,39 @@ def start_batch_service(
         logger (Logger): _description_
         custom_args (Optional[Callable[[argparse.ArgumentParser], argparse.Namespace]], optional): _description_. Defaults to None.
         run_opts (Optional[Dict[str, Any]], optional): _description_. Defaults to None.
-        with_telemetry: (Optional[bool]): Instantiate or block use of OpenTelemetry tracing
+        with_telemetry: (Optional[bool]): Tri-state control of OpenTelemetry
+            instrumentation for outbound requests/httpx calls.
+            - `None` (default) - auto-enable whenever `OTEL_EXPORTER_OTLP_ENDPOINT`
+              is configured.
+            - `True` - force-enable (warns if no endpoint is configured).
+            - `False` - force-disable, even if an endpoint is configured.
+            Can be overridden at runtime via the `--with-telemetry` /
+            `--without-telemetry` CLI flags, which take precedence over
+            this parameter.
     """
     logger = getLogger("server")
 
     parser = argparse.ArgumentParser(description=service_description.name)
-    parser.add_argument(
-        "--with-telemetry", action="store_true", help="Initialise OpenTelemetry"
+    telemetry_group = parser.add_mutually_exclusive_group()
+    telemetry_group.add_argument(
+        "--with-telemetry",
+        action="store_true",
+        help=(
+            "Force-enable OpenTelemetry instrumentation of outbound "
+            "requests/httpx calls. Not usually needed: instrumentation is "
+            "already auto-enabled whenever OTEL_EXPORTER_OTLP_ENDPOINT is "
+            "configured. Use this to enable it even if no endpoint is set "
+            "yet (e.g. testing), or as a warning if none is configured."
+        ),
+    )
+    telemetry_group.add_argument(
+        "--without-telemetry",
+        action="store_true",
+        help=(
+            "Force-disable OpenTelemetry instrumentation of outbound "
+            "requests/httpx calls, even if OTEL_EXPORTER_OTLP_ENDPOINT is "
+            "configured (logs/metrics export via OpenObserve is unaffected)."
+        ),
     )
     parser.add_argument(
         "--print-service-description",
@@ -393,7 +419,16 @@ def start_batch_service(
 
         print(res.model_dump_json(indent=2, by_alias=True))
     else:
-        otel_instrument(with_telemetry, None, logger)
+        # Resolve the effective tri-state telemetry setting. Precedence:
+        # explicit CLI flags > the `with_telemetry` kwarg passed to
+        # `start_batch_service()` > auto-detect (None, handled by
+        # `otel_instrument()` based on whether an OTLP endpoint is set).
+        effective_with_telemetry = with_telemetry
+        if getattr(args, "without_telemetry", False):
+            effective_with_telemetry = False
+        elif getattr(args, "with_telemetry", False):
+            effective_with_telemetry = True
+        otel_instrument(effective_with_telemetry, None, logger)
         set_context(lambda: svc_ctxt.job_context)
         wait_for_work(svc_ctxt)
 
