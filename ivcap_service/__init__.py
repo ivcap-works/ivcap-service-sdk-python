@@ -19,8 +19,10 @@ from .ivcap import (
     OnResultF,
     SidecarReporter,
     get_ivcap_url,
+    is_sidecar_delivery_disabled,
     push_result,
     set_result_callback,
+    set_sidecar_delivery_disabled,
     verify_result,
 )
 from .logger import getLogger, logging_init, service_log_config, set_service_log_config
@@ -75,6 +77,7 @@ __all__ = [
     "get_ivcap_url",
     "get_secret",
     "get_version",
+    "is_sidecar_delivery_disabled",
     "logging_init",
     "otel_instrument",
     "print_tool_definition",
@@ -84,6 +87,7 @@ __all__ = [
     "set_event_reporter_factory",
     "set_result_callback",
     "set_service_log_config",
+    "set_sidecar_delivery_disabled",
     "start_batch_service",
     "init_openobserve_from_env",
     "load_openobserve_config_from_env",

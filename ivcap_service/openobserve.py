@@ -4,14 +4,37 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
-"""OpenObserve reporting (logs + metrics) via OpenTelemetry OTLP/HTTP.
+"""OpenObserve reporting (logs + metrics + traces) via OpenTelemetry OTLP/HTTP.
 
 This module is intentionally **opt-in** and is configured primarily through
 environment variables.
 
+## Enablement
+
+Telemetry export is enabled implicitly as soon as a usable OTLP endpoint can
+be resolved - from *either* a plain, standard OTel `OTEL_EXPORTER_OTLP_ENDPOINT`
+*or* OpenObserve-specific config (`OPENOBSERVE_URL` / `OPENOBSERVE_OTLP_ENDPOINT`).
+`OPENOBSERVE_ENABLED` only needs to be set explicitly if you want to force
+enable (`true`, with no endpoint - raises an error) or force disable (`false`,
+even though an endpoint is configured).
+
+In other words: standard `OTEL_EXPORTER_OTLP_*` variables are sufficient on
+their own to turn on export. The `OPENOBSERVE_*` variables below never gate
+whether export happens - they only ever *add* extra information on top
+(auth, stream routing, org/URL-derived endpoint shaping) when present.
+
 ## Environment variables
 
-OpenObserve-specific variables (preferred for convenience):
+Standard OpenTelemetry variables (sufficient on their own):
+
+* `OTEL_EXPORTER_OTLP_ENDPOINT`         Base OTLP endpoint (enables export by itself)
+* `OTEL_EXPORTER_OTLP_HEADERS`         Generic headers, e.g. `k=v,k2=v2`
+* `OTEL_EXPORTER_OTLP_LOGS_HEADERS`    Log-specific headers (override generic)
+* `OTEL_EXPORTER_OTLP_METRICS_HEADERS` Metric-specific headers (override generic)
+* `OTEL_EXPORTER_OTLP_TRACES_HEADERS`  Trace-specific headers (override generic)
+
+OpenObserve-specific variables (all optional; add convenience/extra info on
+top of the standard OTel config above - never required to enable export):
 
 * `OPENOBSERVE_URL`               Base URL, e.g. `https://observe.example.com`
 * `OPENOBSERVE_ORG`               Org name (default: `default`)
@@ -22,23 +45,25 @@ OpenObserve-specific variables (preferred for convenience):
                                  (If you need a Bearer token, use `OPENOBSERVE_AUTH`.)
 * `OPENOBSERVE_USERNAME` / `OPENOBSERVE_PASSWORD`
                                  Convenience: sets HTTP Basic auth header
+* `OPENOBSERVE_ENABLED`           Force enable (`true`) or disable (`false`) export
 * `OPENOBSERVE_ENABLE_LOGS`       Enable log exporting (default: true)
 * `OPENOBSERVE_ENABLE_METRICS`    Enable metric exporting (default: true)
+* `OPENOBSERVE_ENABLE_TRACES`     Enable trace exporting (default: true)
 * `OPENOBSERVE_METRICS_INTERVAL`  Export interval in seconds (default: 60)
 * `OPENOBSERVE_LOGS_STREAM_NAME`  Stream name for logs (default: `default`)
 * `OPENOBSERVE_METRICS_STREAM_NAME`
                                  Stream name for metrics (default: `default`)
+* `OPENOBSERVE_TRACES_STREAM_NAME`
+                                 Stream name for traces (default: `default`)
 * `OPENOBSERVE_ADD_STREAM_NAME_HEADER`
-                                 Add `stream-name` header (default: true)
+                                 Add `stream-name` header (default: true; only
+                                 applies when the endpoint originates from
+                                 OpenObserve-specific config, not plain OTEL_*)
 * `OPENOBSERVE_USE_UNIFIED_OTLP_ENDPOINT`
-                                 Use unified `/v1/otlp` endpoint (default: false)
+                                 Use unified `/v1/otlp` endpoint (default: false;
+                                 only applies to OpenObserve-specific config)
 
-Standard OpenTelemetry variables can still be used to override details, such as:
-
-* `OTEL_EXPORTER_OTLP_ENDPOINT`
-* `OTEL_EXPORTER_OTLP_HEADERS`
-
-Resolution order:
+Resolution order for the endpoint:
 
 1. If `OTEL_EXPORTER_OTLP_ENDPOINT` is set, it wins.
 2. Else if `OPENOBSERVE_OTLP_ENDPOINT` is set, it wins.
@@ -53,7 +78,7 @@ from __future__ import annotations
 import base64
 import logging
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from urllib.parse import quote, urlparse
 
@@ -173,6 +198,15 @@ class OpenObserveConfig:
     metrics_stream_name: str | None = None
     traces_stream_name: str | None = None
 
+    # Per-signal header overrides, sourced from the standard OTel
+    # `OTEL_EXPORTER_OTLP_{LOGS,METRICS,TRACES}_HEADERS` env vars. These are
+    # layered on top of `headers` (the generic `OTEL_EXPORTER_OTLP_HEADERS` /
+    # `OPENOBSERVE_HEADERS`) when building signal-specific headers below,
+    # matching standard OTel signal-specific-overrides-generic semantics.
+    extra_logs_headers: dict[str, str] = field(default_factory=dict)
+    extra_metrics_headers: dict[str, str] = field(default_factory=dict)
+    extra_traces_headers: dict[str, str] = field(default_factory=dict)
+
     # Resource metadata
     service_name: str | None = None
     service_version: str | None = None
@@ -204,12 +238,14 @@ class OpenObserveConfig:
 
     def logs_headers(self) -> dict[str, str]:
         h = dict(self.headers)
+        h.update(self.extra_logs_headers)
         if self.logs_stream_name and "stream-name" not in h:
             h["stream-name"] = self.logs_stream_name
         return h
 
     def metrics_headers(self) -> dict[str, str]:
         h = dict(self.headers)
+        h.update(self.extra_metrics_headers)
         if self.metrics_stream_name and "stream-name" not in h:
             h["stream-name"] = self.metrics_stream_name
         return h
@@ -225,6 +261,7 @@ class OpenObserveConfig:
 
     def traces_headers(self) -> dict[str, str]:
         h = dict(self.headers)
+        h.update(self.extra_traces_headers)
         if self.traces_stream_name and "stream-name" not in h:
             h["stream-name"] = self.traces_stream_name
         return h
@@ -375,25 +412,36 @@ def load_openobserve_config_from_env(
     #   - "collector:4318" (missing scheme)
     endpoint = _validate_otlp_http_endpoint(endpoint)
 
-    # If user didn't explicitly enable/disable, enable if any OpenObserve env is present.
+    # If user didn't explicitly enable/disable, enable implicitly whenever we
+    # have a usable OTLP endpoint - whether that endpoint came from a plain
+    # `OTEL_EXPORTER_OTLP_ENDPOINT` or from OpenObserve-specific config
+    # (`OPENOBSERVE_URL`/`OPENOBSERVE_OTLP_ENDPOINT`). This means plain OTEL_*
+    # env vars are sufficient on their own to turn on telemetry export;
+    # OPENOBSERVE_* vars only ever *add* extra information on top (auth,
+    # stream routing, org/URL-derived endpoints) - they are never required
+    # just to enable export.
     if enabled is None:
-        enabled = any(
-            os.getenv(k) not in (None, "")
-            for k in (
-                "OPENOBSERVE_URL",
-                "OPENOBSERVE_OTLP_ENDPOINT",
-                "OPENOBSERVE_TOKEN",
-                "OPENOBSERVE_AUTH",
-                "OPENOBSERVE_USERNAME",
-            )
-        )
+        enabled = endpoint_source is not None
 
     if not enabled:
         return None
 
-    # Headers: start with OTEL headers, allow OpenObserve-specific overrides.
+    # Headers: start with generic OTEL headers, then layer OpenObserve-specific
+    # overrides on top (OPENOBSERVE_* is purely additive - it never disables
+    # anything derived from plain OTEL_* vars).
     headers = _parse_kv_list(os.getenv("OTEL_EXPORTER_OTLP_HEADERS"))
     headers.update(_parse_kv_list(os.getenv("OPENOBSERVE_HEADERS")))
+
+    # Per-signal header overrides, matching standard OTel semantics where
+    # OTEL_EXPORTER_OTLP_{LOGS,METRICS,TRACES}_HEADERS take precedence over
+    # the generic OTEL_EXPORTER_OTLP_HEADERS for their respective signal.
+    extra_logs_headers = _parse_kv_list(os.getenv("OTEL_EXPORTER_OTLP_LOGS_HEADERS"))
+    extra_metrics_headers = _parse_kv_list(
+        os.getenv("OTEL_EXPORTER_OTLP_METRICS_HEADERS")
+    )
+    extra_traces_headers = _parse_kv_list(
+        os.getenv("OTEL_EXPORTER_OTLP_TRACES_HEADERS")
+    )
 
     # Convenience auth helpers.
     if "Authorization" not in headers:
@@ -467,6 +515,9 @@ def load_openobserve_config_from_env(
         logs_stream_name=logs_stream_name,
         metrics_stream_name=metrics_stream_name,
         traces_stream_name=traces_stream_name,
+        extra_logs_headers=extra_logs_headers,
+        extra_metrics_headers=extra_metrics_headers,
+        extra_traces_headers=extra_traces_headers,
         service_name=service_name,
         service_version=service_version,
     )

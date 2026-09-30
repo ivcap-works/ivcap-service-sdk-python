@@ -112,6 +112,32 @@ def create_event_reporter(
     return EventReporter(job_id, job_authorization)
 
 
+def _otel_attribute_value(value: Any) -> Any:
+    """Best-effort coercion of a value to something OTel span attributes
+    accept: str, bool, int, float, or a homogeneous list/tuple of those.
+
+    Returns None for values that can't be represented (e.g. dicts, None,
+    arbitrary objects), so the caller can skip setting the attribute rather
+    than raising.
+    """
+    if value is None:
+        return None
+    if isinstance(value, bool | int | float | str):
+        return value
+    if isinstance(value, list | tuple):
+        items = list(value)
+        if not items:
+            return items
+        # OTel span attributes require homogeneously-typed sequences.
+        first_type = type(items[0])
+        if first_type in (bool, int, float, str) and all(
+            type(v) is first_type for v in items
+        ):
+            return items
+        return None
+    return None
+
+
 class EventContext:
     def __init__(
         self,
@@ -119,6 +145,7 @@ class EventContext:
         reporter: "EventReporter",
         finishEventClass: type[GenericEvent] | None,
         errorEventClass: type[GenericErrorEvent] | None,
+        span_attributes: dict[str, Any] | None = None,
     ):
         self._event_name = event_name
         self._reporter = reporter
@@ -144,6 +171,14 @@ class EventContext:
                 service_id = os.getenv("IVCAP_SERVICE_ID")
                 if service_id:
                     self._otel_span.set_attribute("ivcap.service_id", service_id)
+                # Extra caller-supplied kwargs (e.g. from `report.step(..., foo=1)`)
+                # are set as `ivcap.event.<key>` attributes, best-effort. Values
+                # that OTel can't represent (dicts, None, mixed-type lists, ...)
+                # are silently skipped rather than raising.
+                for k, v in (span_attributes or {}).items():
+                    coerced = _otel_attribute_value(v)
+                    if coerced is not None:
+                        self._otel_span.set_attribute(f"ivcap.event.{k}", coerced)
             except Exception:
                 pass
         except Exception:
@@ -165,6 +200,13 @@ class EventContext:
         self._finished_sent = True
 
         if self._otel_span is not None:
+            try:
+                for k, v in options.items():
+                    coerced = _otel_attribute_value(v)
+                    if coerced is not None:
+                        self._otel_span.set_attribute(f"ivcap.event.{k}", coerced)
+            except Exception:
+                pass
             try:
                 from opentelemetry.trace import Status, StatusCode
 
@@ -254,8 +296,14 @@ class EventReporter:
 
     def step(self, step_name, message=None, **kwargs):
         self.step_started(step_name, message, **kwargs)
+        span_attributes = dict(kwargs)
+        if message:
+            span_attributes["message"] = message
         return self._event_scope(
-            step_name, StepFinishEvent(name=step_name, options=None), StepErrorEvent
+            step_name,
+            StepFinishEvent(name=step_name, options=None),
+            StepErrorEvent,
+            span_attributes=span_attributes,
         )
 
     @contextmanager
@@ -264,13 +312,14 @@ class EventReporter:
         event_name: str,
         defaultFinishEvent: BaseEvent | None = None,
         errorEventClass: type[GenericErrorEvent] | None = None,
+        span_attributes: dict[str, Any] | None = None,
     ) -> EventCtxtGenerator:
         fevc = (
             defaultFinishEvent.__class__
             if isinstance(defaultFinishEvent, GenericEvent)
             else None
         )
-        ctxt = EventContext(event_name, self, fevc, errorEventClass)
+        ctxt = EventContext(event_name, self, fevc, errorEventClass, span_attributes)
         try:
             yield ctxt
         except Exception as e:

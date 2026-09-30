@@ -585,6 +585,10 @@ start_batch_service(
 - `--print-service-description` - Print service metadata
 - `--print-tool-description` - Print tool schema
 - `--test-file <path>` - Test service with a job file (useful for debugging)
+- `--test-without-sidecar` - Silently drop any attempt to deliver events or
+  results to the sidecar (no HTTP calls, no retries, no warnings). Useful
+  when running locally/in a container without a reachable
+  `IVCAP_BASE_URL`/sidecar - typically combined with `--test-file`.
 - `--with-telemetry` - Enable OpenTelemetry tracing
 
 ### 12. Testing
@@ -640,7 +644,18 @@ Common environment variables used by the SDK:
 
 ### Logging to OpenObserve
 
-The SDK automatically exports logs and metrics to OpenObserve when configured:
+The SDK automatically exports logs, metrics, and traces via OTLP/HTTP once a
+usable endpoint can be resolved. A plain, standard OTEL endpoint is
+sufficient on its own - no OpenObserve-specific env vars are required:
+
+```bash
+export OTEL_EXPORTER_OTLP_ENDPOINT="http://openobserve.example.com/api/default"
+export OTEL_EXPORTER_OTLP_PROTOCOL="http/protobuf"
+```
+
+`OPENOBSERVE_*` variables are optional and only ever *add* extra information
+on top (auth, stream-name routing, org/URL-derived endpoints) - they never
+gate whether export happens:
 
 ```bash
 export OPENOBSERVE_URL="https://observe.example.com"

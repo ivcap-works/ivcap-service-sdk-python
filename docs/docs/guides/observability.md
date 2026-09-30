@@ -35,9 +35,22 @@ def process_job(req: Request, ctx: JobContext) -> Result:
     return Result(result=result)
 ```
 
-## OpenObserve Integration
+## OpenTelemetry / OpenObserve Integration
 
-Configure environment variables:
+Logs, metrics, and traces are automatically exported via OTLP/HTTP as soon as
+a usable OTLP endpoint can be resolved. A **plain, standard OpenTelemetry
+endpoint is sufficient on its own** - no OpenObserve-specific env vars are
+required:
+
+```bash
+export OTEL_EXPORTER_OTLP_ENDPOINT="http://openobserve.example.com/api/default"
+export OTEL_EXPORTER_OTLP_PROTOCOL="http/protobuf"
+```
+
+`OPENOBSERVE_*` environment variables are entirely optional and only ever
+*add* extra information on top of the standard OTEL config above (auth,
+stream-name routing, org/URL-derived endpoint shaping). They never gate
+whether export happens:
 
 ```bash
 export OPENOBSERVE_URL="https://observe.example.com"
@@ -46,7 +59,18 @@ export OPENOBSERVE_USERNAME="service@example.com"
 export OPENOBSERVE_TOKEN="<api-token>"
 ```
 
-Then logs automatically export:
+If you need per-signal headers (e.g. OpenObserve's `stream-name` routing
+header), use the standard OTel signal-specific variables - these take
+precedence over the generic `OTEL_EXPORTER_OTLP_HEADERS` for their
+respective signal:
+
+```bash
+export OTEL_EXPORTER_OTLP_TRACES_HEADERS="stream-name=default"
+export OTEL_EXPORTER_OTLP_LOGS_HEADERS="stream-name=default"
+export OTEL_EXPORTER_OTLP_METRICS_HEADERS="stream-name=default"
+```
+
+Once configured, logs automatically export:
 
 ```python
 from ivcap_service import logging_init, getLogger
@@ -54,9 +78,31 @@ from ivcap_service import logging_init, getLogger
 logging_init()
 logger = getLogger("my_service")
 
-# Logs automatically sent to OpenObserve
+# Logs automatically sent to OpenObserve / your OTLP collector
 logger.info("Processing started")
 logger.error("Error occurred")
+```
+
+### Tracing
+
+Job and step spans are created automatically (tagged with `ivcap.job_id` and
+`ivcap.service_id`, sourced from the `IVCAP_SERVICE_ID` env var). To enable
+trace export, also pass `--with-telemetry` on the command line, which
+instruments outbound `requests`/`httpx` calls in addition to the OTLP
+export configured above:
+
+```bash
+python my_service.py --with-telemetry
+```
+
+### Local testing without a sidecar
+
+When testing locally (e.g. via `--test-file`) without a real IVCAP sidecar
+reachable at `IVCAP_BASE_URL`, add `--test-without-sidecar` to silently skip
+delivering events/results to the sidecar (no retries, no warnings):
+
+```bash
+python my_service.py --test-file job.json --test-without-sidecar
 ```
 
 ## Progress Events

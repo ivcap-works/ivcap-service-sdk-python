@@ -1,15 +1,25 @@
-FROM python:3.10-slim-buster
+FROM python:3.11-slim-buster
 
 RUN pip install poetry
 
 WORKDIR /app
 
-# Copy and install the local ivcap_service source from the repository root
+# Build and install the local ivcap_service source from the repository root.
+#
+# NOTE: `poetry install` (without `--no-root`) installs the root package in
+# *editable* mode - it does not copy the package into site-packages, it just
+# points back at /tmp/ivcap_sdk/ivcap_service. Deleting /tmp/ivcap_sdk
+# afterwards (to keep the image slim) would therefore break the import at
+# runtime with `ModuleNotFoundError: No module named 'ivcap_service'`. To
+# avoid this, we build a wheel and `pip install` it instead, which copies
+# the package files into site-packages and is safe to clean up afterwards.
 COPY ivcap_service /tmp/ivcap_sdk/ivcap_service
 COPY pyproject.toml poetry.lock README.md /tmp/ivcap_sdk/
 RUN cd /tmp/ivcap_sdk && \
   poetry config virtualenvs.create false && \
-  poetry install --only main && \
+  poetry build -f wheel && \
+  pip install dist/*.whl && \
+  cd / && \
   rm -rf /tmp/ivcap_sdk
 
 # Install remaining service dependencies (ivcap_service already installed from local source)

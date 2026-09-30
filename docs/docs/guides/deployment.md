@@ -35,14 +35,21 @@ docker build -t my-service:latest .
 ### Local Development
 
 ```bash
-# Optional: OpenObserve integration
-export OPENOBSERVE_URL="http://localhost:5080"
-export OPENOBSERVE_ORG="myorg"
-export OPENOBSERVE_USERNAME="admin@example.com"
-export OPENOBSERVE_TOKEN="<token>"
+# Optional: telemetry export (a plain OTEL endpoint is enough on its own -
+# OpenObserve-specific vars are only needed for auth/stream-routing extras)
+export OTEL_EXPORTER_OTLP_ENDPOINT="http://localhost:5080/api/default"
+export OTEL_EXPORTER_OTLP_PROTOCOL="http/protobuf"
 
 # Run the service
 python my_service.py --print-service-description
+```
+
+To test locally without a reachable sidecar, add `--test-without-sidecar`
+(typically combined with `--test-file`) so events/results delivery attempts
+are silently skipped instead of retrying/warning:
+
+```bash
+python my_service.py --test-file job.json --test-without-sidecar
 ```
 
 ### Production Environment
@@ -52,10 +59,13 @@ Set environment variables in your deployment:
 ```bash
 # Service configuration
 export IVCAP_URL="https://ivcap.example.com"
+export IVCAP_SERVICE_ID="urn:ivcap:service:..."
 
-# Observability
-export OPENOBSERVE_URL="https://observe.example.com"
-export OPENOBSERVE_ORG="production"
+# Observability - a plain OTEL endpoint is sufficient on its own
+export OTEL_EXPORTER_OTLP_ENDPOINT="https://observe.example.com/api/production"
+export OTEL_EXPORTER_OTLP_PROTOCOL="http/protobuf"
+
+# Optional: only needed for auth against a secured OpenObserve instance
 export OPENOBSERVE_USERNAME="service@example.com"
 export OPENOBSERVE_TOKEN="<production-token>"
 
@@ -101,13 +111,11 @@ spec:
       - name: my-service
         image: my-service:latest
         env:
-        - name: OPENOBSERVE_URL
-          value: "https://observe.example.com"
-        - name: OPENOBSERVE_ORG
-          valueFrom:
-            secretKeyRef:
-              name: observability
-              key: org
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "https://observe.example.com/api/production"
+        - name: OTEL_EXPORTER_OTLP_PROTOCOL
+          value: "http/protobuf"
+        # Optional: only needed for auth against a secured OpenObserve instance
         - name: OPENOBSERVE_TOKEN
           valueFrom:
             secretKeyRef:

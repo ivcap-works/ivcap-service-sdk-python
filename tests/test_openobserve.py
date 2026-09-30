@@ -159,3 +159,77 @@ def test_openobserve_username_without_token_or_password_complains(
     monkeypatch.delenv("OPENOBSERVE_PASSWORD", raising=False)
     with pytest.raises(ValueError, match=r"USERNAME.*TOKEN|TOKEN.*USERNAME"):
         load_openobserve_config_from_env(service_name="svc")
+
+
+def test_plain_otel_endpoint_alone_enables_export(monkeypatch: pytest.MonkeyPatch):
+    """Plain OTEL_EXPORTER_OTLP_ENDPOINT must be sufficient on its own to
+    enable telemetry export - OPENOBSERVE_ENABLED must never be required."""
+
+    monkeypatch.delenv("OPENOBSERVE_ENABLED", raising=False)
+    monkeypatch.delenv("OPENOBSERVE_URL", raising=False)
+    monkeypatch.delenv("OPENOBSERVE_OTLP_ENDPOINT", raising=False)
+    monkeypatch.delenv("OPENOBSERVE_TOKEN", raising=False)
+    monkeypatch.delenv("OPENOBSERVE_AUTH", raising=False)
+    monkeypatch.delenv("OPENOBSERVE_USERNAME", raising=False)
+    monkeypatch.setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://collector:4318")
+
+    cfg = load_openobserve_config_from_env(service_name="svc")
+    assert cfg is not None
+    assert cfg.endpoint == "http://collector:4318"
+
+
+def test_openobserve_enabled_false_disables_even_with_otel_endpoint(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    """Explicit OPENOBSERVE_ENABLED=false must still be respected even when a
+    plain OTEL endpoint is present (force-disable)."""
+
+    monkeypatch.setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://collector:4318")
+    monkeypatch.setenv("OPENOBSERVE_ENABLED", "false")
+
+    cfg = load_openobserve_config_from_env(service_name="svc")
+    assert cfg is None
+
+
+def test_signal_specific_otel_headers_are_applied_per_signal(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    """OTEL_EXPORTER_OTLP_{LOGS,METRICS,TRACES}_HEADERS must be picked up and
+    applied to their respective signal, on top of the generic
+    OTEL_EXPORTER_OTLP_HEADERS - matching standard OTel semantics where the
+    signal-specific var overrides the generic one."""
+
+    monkeypatch.delenv("OPENOBSERVE_ENABLED", raising=False)
+    monkeypatch.setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://openobserve.local/api/default")
+    monkeypatch.setenv("OTEL_EXPORTER_OTLP_HEADERS", "common=1")
+    monkeypatch.setenv("OTEL_EXPORTER_OTLP_TRACES_HEADERS", "stream-name=default")
+    monkeypatch.setenv("OTEL_EXPORTER_OTLP_LOGS_HEADERS", "stream-name=default")
+    monkeypatch.setenv("OTEL_EXPORTER_OTLP_METRICS_HEADERS", "stream-name=default")
+
+    cfg = load_openobserve_config_from_env(service_name="svc")
+    assert cfg is not None
+
+    # generic header present everywhere
+    assert cfg.headers["common"] == "1"
+
+    # signal-specific header applied per signal
+    assert cfg.logs_headers()["stream-name"] == "default"
+    assert cfg.logs_headers()["common"] == "1"
+    assert cfg.metrics_headers()["stream-name"] == "default"
+    assert cfg.traces_headers()["stream-name"] == "default"
+
+
+def test_signal_specific_otel_headers_override_generic(monkeypatch: pytest.MonkeyPatch):
+    """A signal-specific header must win over the generic one for the same key."""
+
+    monkeypatch.delenv("OPENOBSERVE_ENABLED", raising=False)
+    monkeypatch.setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://collector:4318")
+    monkeypatch.setenv("OTEL_EXPORTER_OTLP_HEADERS", "stream-name=generic")
+    monkeypatch.setenv("OTEL_EXPORTER_OTLP_LOGS_HEADERS", "stream-name=logs-specific")
+
+    cfg = load_openobserve_config_from_env(service_name="svc")
+    assert cfg is not None
+    assert cfg.logs_headers()["stream-name"] == "logs-specific"
+    # metrics/traces were not overridden, so they keep the generic value
+    assert cfg.metrics_headers()["stream-name"] == "generic"
+    assert cfg.traces_headers()["stream-name"] == "generic"

@@ -82,7 +82,9 @@ def consume_compute(req: Request, ctxt: JobContext) -> Result:
 
     with ctxt.report.step(
         "consume_compute",
-        msg=f"Consuming CPU for {duration_seconds} seconds at {target_cpu_percent}%",
+        f"Consuming CPU for {duration_seconds} seconds at {target_cpu_percent}%",
+        duration_seconds=duration_seconds,
+        target_cpu_percent=target_cpu_percent,
     ) as ectxt:
         start_time = time.time()
         end_time = start_time + duration_seconds
@@ -134,8 +136,8 @@ def consume_compute(req: Request, ctxt: JobContext) -> Result:
                 # Allocate 10MB chunks repeatedly
                 data.append(" " * 10_000_000)
 
-        ectxt.finished(msg=msg)
-        return Result(msg="CPU consumption finished.", run_time=run_time)
+        ectxt.finished(actual_duration=run_time, loops=loop_count)
+        return Result(msg=msg, run_time=run_time)
 
 
 if __name__ == "__main__":

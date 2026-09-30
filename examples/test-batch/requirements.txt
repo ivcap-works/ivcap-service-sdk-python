@@ -1,4 +1,0 @@
-fastapi[standard] >= 0.111.1
-ivcap-service >= 2.0.0
-litellm
-litellm[proxy]

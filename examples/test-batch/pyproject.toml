@@ -1,6 +1,6 @@
 [project]
 name = "batch-tester"
-version = "0.1.0"
+version = "0.2.0"
 description = "A batch tool primarily used for load testing."
 authors = [
     {name = "Max Ott",email = "max.ott@data61.csiro.au"}
@@ -10,10 +10,10 @@ authors = [
 package-mode = false
 
 [tool.poetry.dependencies]
-python = ">=3.10,<4.0"
+python = ">=3.11,<4.0"
 pydantic = ">=2.11.4,<3.0.0"
 #ivcap_service = { path = "../.." }
-ivcap_service = "^0.6.3"
+ivcap_service = "^0.6.22"
 
 [tool.poetry-plugin-ivcap]
 service-file = "batch_service.py"

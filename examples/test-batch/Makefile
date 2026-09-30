@@ -89,8 +89,36 @@ docker-run-local: docker-build-local
 	docker run -it \
 		-p ${PORT}:${PORT} \
 		-e IVCAP_BASE_URL="http://ivcap.local" \
+		-e IVCAP_SERVICE_ID="${SERVICE_ID}" \
+		-v ${PROJECT_DIR}/tests:/app/tests \
 		--rm \
-		${DOCKER_TAG_LOCAL_SRC} --test-file /app/tests/load_1.json
+		${DOCKER_TAG_LOCAL_SRC} --test-file /app/tests/load_1.json --test-without-sidecar
+
+# Run the locally-built image with OTEL traces/logs/metrics exported to an
+# OpenObserve (or generic OTLP/HTTP collector) instance listening on the
+# HOST machine. Note: the ivcap_service SDK uses the OTLP/HTTP exporters
+# (opentelemetry-exporter-otlp-proto-http), so we must point at the OTLP
+# *HTTP* port 4318 - NOT the OTLP gRPC port 4317 (the two are separate
+# listeners/protocols and are not interchangeable).
+# `host.docker.internal` resolves to the host machine from inside the
+# container; `--add-host` makes this work on Linux too (it's a no-op but
+# harmless on Docker Desktop for macOS/Windows, where it already works).
+#
+# Note: OPENOBSERVE_ENABLED is NOT needed - a resolvable
+# OTEL_EXPORTER_OTLP_ENDPOINT is sufficient on its own to enable telemetry
+# export. OPENOBSERVE_* vars are only needed to add OpenObserve-specific
+# extras (auth, stream-name routing, org/URL-derived endpoints) on top.
+OTEL_PORT=4318
+docker-run-local-with-otel: docker-build-local
+	docker run -it \
+		--add-host=host.docker.internal:host-gateway \
+		-e IVCAP_BASE_URL="http://ivcap.local" \
+		-e IVCAP_SERVICE_ID="${SERVICE_ID}" \
+		-e OTEL_EXPORTER_OTLP_ENDPOINT="http://host.docker.internal:${OTEL_PORT}" \
+		-e OTEL_EXPORTER_OTLP_PROTOCOL="http/protobuf" \
+		-v ${PROJECT_DIR}/tests:/app/tests \
+		--rm \
+		${DOCKER_TAG_LOCAL_SRC} --test-file /app/tests/load_1.json --with-telemetry --test-without-sidecar
 
 # For reference: build using published version (standard Dockerfile)
 docker-build-published:

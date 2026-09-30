@@ -27,6 +27,31 @@ OnResultF = Callable[[IvcapResult | ExecutionError, str, str | None], None]
 
 result_callback: OnResultF | None = None
 
+# When True, `push_result()` and `SidecarReporter._send()` silently skip any
+# attempt to actually deliver events/results to the sidecar (no HTTP call,
+# no retries, no warnings). Useful for local testing (e.g. via
+# `--test-without-sidecar` / `--test-file`) without requiring a reachable
+# `IVCAP_BASE_URL` / sidecar endpoint.
+_sidecar_delivery_disabled = False
+
+
+def set_sidecar_delivery_disabled(disabled: bool = True) -> None:
+    """Enable/disable delivery of events and results to the sidecar.
+
+    When disabled, `push_result()` and `SidecarReporter` silently drop any
+    attempt to deliver events or results to the sidecar - no HTTP request is
+    made, no retries happen, and no warnings are logged. Any locally
+    registered `result_callback` is still invoked, since that is not
+    "delivery to the sidecar".
+    """
+    global _sidecar_delivery_disabled
+    _sidecar_delivery_disabled = disabled
+
+
+def is_sidecar_delivery_disabled() -> bool:
+    """Return whether sidecar delivery of events/results is currently disabled."""
+    return _sidecar_delivery_disabled
+
 
 def set_result_callback(cbk: OnResultF):
     """
@@ -107,6 +132,10 @@ def push_result(
         # If a result handler is set, call it as well
         result_callback(result, job_id, authorization)
 
+    if _sidecar_delivery_disabled:
+        logger.debug(f"{job_id}: sidecar delivery disabled - not pushing result")
+        return
+
     ivcap_url = get_ivcap_url()
     if ivcap_url is None:
         # Make this library more useful outside the confines of IVCAP
@@ -176,6 +205,8 @@ class SidecarReporter(EventReporter):
     def _send(self, event: BaseEvent):
         event_logger.debug(f"{self.job_id}: {event.model_dump_json(exclude_none=True)}")
         if self._ivcap_url is None:
+            return
+        if _sidecar_delivery_disabled:
             return
 
         url = f"{self._ivcap_url}/events/{self.job_id}"

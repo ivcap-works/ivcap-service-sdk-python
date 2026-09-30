@@ -148,6 +148,25 @@ The sidecar base URL is taken from:
 
 If it is not set, the SDK will still run locally, but sidecar communication is disabled.
 
+### Disabling sidecar delivery for local testing
+
+Even with `IVCAP_BASE_URL` set (e.g. to run through `_job_span`/OpenObserve
+code paths that check for its presence), you may want to run against a
+non-existent/unreachable sidecar - for example when testing a locally-built
+Docker image without an actual IVCAP platform behind it. In that scenario,
+`push_result()` and `SidecarReporter` will otherwise retry with exponential
+backoff (up to `MAX_DELIVER_RESULT_ATTEMPTS`/`MAX_REQUEST_JOB_ATTEMPTS`
+times) and log warnings for every failed attempt.
+
+The `--test-without-sidecar` CLI flag (typically combined with `--test-file`)
+disables this: it calls `ivcap_service.ivcap.set_sidecar_delivery_disabled(True)`
+during startup, which makes `push_result()` and `SidecarReporter._send()`
+silently skip the actual HTTP call - no retries, no warnings. A locally
+registered `result_callback` (via `set_result_callback()`) is still invoked,
+since that is not "delivery to the sidecar". This can also be toggled
+programmatically via `ivcap_service.set_sidecar_delivery_disabled()` /
+`ivcap_service.is_sidecar_delivery_disabled()`.
+
 ### Sidecar protocol (as implemented)
 
 The SDK uses these endpoints relative to `IVCAP_BASE_URL`:
@@ -296,6 +315,52 @@ Every job fetched via `GET /next_job` is wrapped in an `ivcap.job` span
 `ctxt.report.step(...)` creates a child `ivcap.event:<name>` span
 (see `events.py::EventContext`) tagged with the same `ivcap.job_id` and
 `ivcap.service_id`, plus `ivcap.event_name`.
+
+Any extra keyword arguments passed to `report.step(name, message, **kwargs)`
+or `ectxt.finished(message, **kwargs)` are set as `ivcap.event.<key>` span
+attributes (in addition to being included in the emitted event's JSON
+payload), best-effort:
+
+```python
+with ctxt.report.step(
+    "consume_compute",
+    f"Consuming CPU for {duration_seconds}s at {target_cpu_percent}%",
+    duration_seconds=duration_seconds,
+    target_cpu_percent=target_cpu_percent,
+) as ectxt:
+    ...
+    ectxt.finished(msg=msg, run_time=run_time)
+```
+
+produces span attributes `ivcap.event.duration_seconds`,
+`ivcap.event.target_cpu_percent`, `ivcap.event.message`, `ivcap.event.msg`,
+`ivcap.event.run_time`. Only OTel-representable values are set (`str`,
+`bool`, `int`, `float`, or a homogeneously-typed list/tuple of those);
+anything else (dicts, `None`, mixed-type lists, arbitrary objects) is
+silently skipped rather than raising, since span attribute creation must
+never break job execution.
+
+### Enabling OpenObserve export - plain OTEL_* vars are sufficient
+
+`init_openobserve_from_env()` / `load_openobserve_config_from_env()`
+(`openobserve.py`) enable export implicitly as soon as a usable OTLP
+endpoint can be resolved, from *either* a standard `OTEL_EXPORTER_OTLP_ENDPOINT`
+*or* OpenObserve-specific config (`OPENOBSERVE_URL` / `OPENOBSERVE_OTLP_ENDPOINT`).
+`OPENOBSERVE_ENABLED` is only needed to force-enable (with no endpoint - this
+raises an error) or force-disable (even with an endpoint present). It is
+**never** required just to turn export on: setting only
+`OTEL_EXPORTER_OTLP_ENDPOINT` (+ optionally `OTEL_EXPORTER_OTLP_PROTOCOL` and
+the signal-specific `OTEL_EXPORTER_OTLP_{LOGS,METRICS,TRACES}_HEADERS`) is
+sufficient on its own. `OPENOBSERVE_*` variables only ever *add* extra
+information on top (auth header construction, `stream-name` header
+injection, org/URL-derived `/api/<org>` endpoint shaping) - they never gate
+whether export happens at all.
+
+Header resolution also honours the standard OTel signal-specific header
+variables (`OTEL_EXPORTER_OTLP_LOGS_HEADERS`, `_METRICS_HEADERS`,
+`_TRACES_HEADERS`), layering them on top of the generic
+`OTEL_EXPORTER_OTLP_HEADERS` for their respective signal - matching standard
+OTel semantics where the signal-specific variable overrides the generic one.
 
 ### OpenObserve export vs. externally-installed providers
 

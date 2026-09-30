@@ -20,7 +20,13 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from .context import JobContext, otel_instrument, set_context
 from .events import create_event_reporter, set_event_reporter_factory
-from .ivcap import SidecarReporter, get_ivcap_url, push_result, verify_result
+from .ivcap import (
+    SidecarReporter,
+    get_ivcap_url,
+    push_result,
+    set_sidecar_delivery_disabled,
+    verify_result,
+)
 from .logger import getLogger
 from .openobserve import init_openobserve_from_env, maybe_create_runtime_metrics
 from .tool_definition import print_tool_definition  # Import the requests library
@@ -319,6 +325,16 @@ def start_batch_service(
     parser.add_argument(
         "--test-file", type=str, help="path to job file for testing service"
     )
+    parser.add_argument(
+        "--test-without-sidecar",
+        action="store_true",
+        help=(
+            "Silently drop any attempt to deliver events or results to the "
+            "sidecar (no HTTP calls, no retries, no warnings). Useful for "
+            "local testing (typically together with --test-file) without a "
+            "reachable IVCAP_BASE_URL/sidecar."
+        ),
+    )
 
     if custom_args is not None:
         args = custom_args(parser)
@@ -338,6 +354,13 @@ def start_batch_service(
     logger.info(
         f"{service_description.name} - {os.getenv('VERSION')} - v{get_version()}"
     )
+
+    if args.test_without_sidecar:
+        logger.info(
+            "--test-without-sidecar set - events/results will not be delivered "
+            "to the sidecar"
+        )
+        set_sidecar_delivery_disabled(True)
 
     # Optional OpenObserve reporting (logs + metrics) via OTLP/HTTP.
     # This is env-driven and non-breaking if not configured.
