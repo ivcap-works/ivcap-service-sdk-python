@@ -406,6 +406,11 @@ def start_batch_service(
         )
     )
     svc_ctxt = create_service_context(worker_fn, logger)
+    # Install the requests/httpx monkey-patches *before* running the job
+    # so outbound calls made from inside the worker function (e.g. via
+    # `httpx.request()`/`requests.get()`) get the job-id/auth headers
+    # and proxy rerouting applied, same as in the real service loop.
+    set_context(lambda: svc_ctxt.job_context)
     if args.test_file is not None:
         from .utils import file_to_json
 
@@ -429,7 +434,6 @@ def start_batch_service(
         elif getattr(args, "with_telemetry", False):
             effective_with_telemetry = True
         otel_instrument(effective_with_telemetry, None, logger)
-        set_context(lambda: svc_ctxt.job_context)
         wait_for_work(svc_ctxt)
 
 

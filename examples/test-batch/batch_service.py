@@ -2,8 +2,10 @@ import math
 import os
 import sys
 import time
+from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+import httpx
+from pydantic import BaseModel, Field, HttpUrl
 
 from ivcap_service import (
     JobContext,
@@ -36,6 +38,48 @@ service = Service(
 )
 
 
+class CallTester(BaseModel):
+    method: str = Field(
+        ...,
+        description="The HTTP method to use (GET, POST, PUT, DELETE, etc.).",
+        pattern="^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)$",  # Only allow valid methods
+    )
+    url: HttpUrl = Field(..., description="The full URL of the API endpoint.")
+    params: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Optional dictionary of query parameters to be appended to the URL.",
+    )
+    data: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Optional JSON payload to be sent in the request body (for POST/PUT).",
+    )
+    headers: Optional[Dict[str, str]] = Field(
+        None, description="Optional dictionary of headers to include in the request."
+    )
+    timeout: int = Field(
+        5,
+        description="The timeout duration for the request in seconds.",
+        ge=1,  # Minimum value of 1 second to prevent infinite waiting
+    )
+
+
+class ChatMessage(BaseModel):
+    content: str = Field(..., description="The content of this message.")
+    role: str = Field(..., description="The role of the messages author.")
+    name: Optional[str] = Field(
+        None, description="An optional name for the participant."
+    )
+
+
+class LlmTester(BaseModel):
+    messages: List[ChatMessage] = Field(
+        ..., description="A list of messages to be passed to the LLM."
+    )
+    model: Optional[str] = Field(
+        "sciansa-default", description="The LLM model to use [gpt-3.5-turbo]."
+    )
+
+
 @with_schema("urn:sd:schema:batch-tester.request.1")
 class Request(BaseModel):
     duration_seconds: int | None = Field(10, description="seconds this job should run")
@@ -49,12 +93,24 @@ class Request(BaseModel):
     create_oom_error_at_end: bool | None = Field(
         False, description="force an OOM error at end of run"
     )
+    echo: Optional[str] = Field(None, description="a string to echo in result")
+    call: Optional[CallTester] = Field(None, description="Optionally call a service")
+    llm: Optional[LlmTester] = Field(
+        None, description="Optionally callan LLM's completion service"
+    )
 
 
 @with_schema("urn:sd:schema:batch-tester.1")
 class Result(BaseModel):
     msg: str | None = Field(None, description="some message")
     run_time: float = Field(description="time in seconds this job took")
+    echo: Optional[str] = Field(None, description="echos string from request")
+    call_result: Optional[Dict] = Field(
+        None, description="result of executing the 'call'"
+    )
+    llm_result: Optional[Dict] = Field(
+        None, description="result of executing the 'llm'"
+    )
 
 
 def consume_compute(req: Request, ctxt: JobContext) -> Result:
@@ -137,7 +193,81 @@ def consume_compute(req: Request, ctxt: JobContext) -> Result:
                 data.append(" " * 10_000_000)
 
         ectxt.finished(actual_duration=run_time, loops=loop_count)
-        return Result(msg=msg, run_time=run_time)
+
+        result = Result(msg=msg, run_time=run_time)
+
+        if req.echo is not None:
+            result.echo = req.echo
+
+        if req.call is not None:
+            result.call_result = make_request(req.call, ctxt)
+
+        if req.llm is not None:
+            result.llm_result = completion(req.llm)
+
+        return result
+
+
+def make_request(req: CallTester, ctxt: JobContext) -> Any:
+    """
+    Makes a generic HTTP request.
+
+    :param req: CallTester object containing request details.
+    :return: JSON response or error message.
+    """
+    with ctxt.report.step(
+        "make_call",
+        f"Making HTTP call to {req.url}",
+        url=req.url,
+        method=req.method,
+        params=req.params,
+        data=req.data,
+        headers=req.headers,
+        timeout=req.timeout,
+    ):
+        try:
+            url = str(req.url)
+            response = httpx.request(
+                method=req.method.upper(),
+                url=url,
+                params=req.params,
+                json=req.data,
+                headers=req.headers,
+                timeout=req.timeout,
+            )
+            response.raise_for_status()  # Raise HTTPError for bad responses (4xx, 5xx)
+            return response.json()
+
+        except httpx.HTTPError as e:
+            return {"error": str(e)}
+
+
+def completion(req: LlmTester):
+    import openai
+
+    try:
+        client = create_openai_client(openai.OpenAI)
+        response = client.chat.completions.create(
+            model=req.model, messages=[m.model_dump() for m in req.messages]
+        )
+        return format_llm_response(response)
+    except Exception as ex:
+        logger.warning(f"llm execution failed - {ex}")
+        raise ex
+
+
+def format_llm_response(response):
+    messages = [c.message.model_dump() for c in response.choices]
+    usage = response.usage.model_dump()
+    return {"messages": messages, "usage": usage}
+
+
+def create_openai_client(f):
+    base_url = os.getenv("LITELLM_PROXY")
+    if base_url is None:
+        return f()
+    else:
+        return f(base_url=f"{base_url}/v1", api_key="not-needed")
 
 
 if __name__ == "__main__":

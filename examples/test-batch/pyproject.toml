@@ -13,7 +13,9 @@ package-mode = false
 python = ">=3.11,<4.0"
 pydantic = ">=2.11.4,<3.0.0"
 #ivcap_service = { path = "../.." }
-ivcap_service = "0.6.23"
+ivcap_service = "0.6.24"
+httpx = ">=0.28.1,<0.29.0"
+openai = ">=1.0.0,<2.0.0"
 
 [tool.poetry-plugin-ivcap]
 service-file = "batch_service.py"
