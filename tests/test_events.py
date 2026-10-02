@@ -90,6 +90,46 @@ class TestEventSerialization:
         assert data["context"] is None
         assert data["stacktrace"] is None
 
+    def test_model_dump_serialises_http_url_option(self):
+        """Non-JSON-native types (e.g. pydantic.HttpUrl) passed in options
+        must be turned into plain JSON-serialisable values rather than
+        raising/crashing (regression test for options containing e.g.
+        a pydantic.HttpUrl)."""
+        from pydantic import HttpUrl
+
+        event = GenericEvent(name="make_call", options={"url": HttpUrl("http://example.com")})
+        data = event.model_dump()
+        assert data["options"]["url"] == "http://example.com/"
+        assert isinstance(data["options"]["url"], str)
+
+    def test_model_dump_json_serialises_http_url_option(self):
+        """model_dump_json() must not raise when options contain an
+        HttpUrl (this used to raise
+        `TypeError: Object of type HttpUrl is not JSON serializable`)."""
+        from pydantic import HttpUrl
+
+        event = GenericEvent(name="make_call", options={"url": HttpUrl("http://example.com")})
+        json_str = event.model_dump_json()
+        parsed = json.loads(json_str)
+        assert parsed["options"]["url"] == "http://example.com/"
+
+    def test_model_dump_falls_back_to_repr_for_unknown_types(self):
+        """Arbitrary objects Pydantic has no serializer for must fall back
+        to `repr()` instead of raising a PydanticSerializationError."""
+
+        class Custom:
+            def __repr__(self):
+                return "CustomObj-repr"
+
+        event = GenericEvent(name="test", options={"x": Custom()})
+        data = event.model_dump()
+        assert data["options"]["x"] == "CustomObj-repr"
+
+        # Must also round-trip through model_dump_json() without raising.
+        json_str = event.model_dump_json()
+        parsed = json.loads(json_str)
+        assert parsed["options"]["x"] == "CustomObj-repr"
+
 
 class TestEventReporter:
     """Tests for EventReporter class."""
@@ -139,6 +179,20 @@ class TestEventReporter:
             pass
         # After exiting the context, finished should have been called
         # We can't directly verify this without mocking, but we ensure no exception
+
+    def test_event_reporter_step_with_http_url_kwarg_runs_body(self):
+        """Regression test: passing a non-JSON-native value (e.g.
+        pydantic.HttpUrl) as a step kwarg must not raise, and the body of
+        the `with` block must still execute (previously `step()` raised a
+        TypeError while eagerly reporting the step-start event, before the
+        context manager was even entered, so the wrapped body never ran)."""
+        from pydantic import HttpUrl
+
+        reporter = EventReporter(job_id="job-123", job_authorization=None)
+        body_executed = False
+        with reporter.step("make_call", url=HttpUrl("http://example.com")):
+            body_executed = True
+        assert body_executed
 
 
 class TestEventFactory:

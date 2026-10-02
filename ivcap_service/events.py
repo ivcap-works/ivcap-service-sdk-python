@@ -26,6 +26,16 @@ class BaseEvent(BaseModel):
             raise TypeError(f"{cls.__name__} must define a class constant 'SCHEMA'")
 
     def model_dump(self, *args, **kwargs):
+        # Default to JSON-safe serialisation so that well-known
+        # non-trivial types (HttpUrl, UUID, datetime, ...) are turned
+        # into plain JSON-serialisable values, and fall back to `repr()`
+        # for anything else Pydantic doesn't know how to serialise.
+        # This prevents a caller passing e.g. an `HttpUrl` into step
+        # options/kwargs from crashing event reporting (and thus
+        # blocking the step body it wraps) with a
+        # `PydanticSerializationError`/`TypeError`.
+        kwargs.setdefault("mode", "json")
+        kwargs.setdefault("fallback", repr)
         d = super().model_dump(*args, **kwargs)
         d["$schema"] = self.__class__.SCHEMA  # ty:ignore[unresolved-attribute]
         return d
