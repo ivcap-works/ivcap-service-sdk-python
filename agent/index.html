@@ -196,7 +196,7 @@
     ivcap-service-sdk-python
     <ul class="md-source__facts">
       <li class="md-source__fact md-source__fact--version">
-        v0.6.21
+        v0.6.25
       </li>
     </ul>
   </div>
@@ -422,7 +422,7 @@
     ivcap-service-sdk-python
     <ul class="md-source__facts">
       <li class="md-source__fact md-source__fact--version">
-        v0.6.21
+        v0.6.25
       </li>
     </ul>
   </div>
@@ -2086,12 +2086,32 @@ and any context-scanning agents can find it automatically.</p>
 - <code>worker_fn</code> - The worker function to call for each job
 - <code>custom_args</code> (optional) - Function to add custom command-line arguments
 - <code>run_opts</code> (optional) - Additional runtime options
-- <code>with_telemetry</code> (optional) - Enable OpenTelemetry instrumentation</p>
+- <code>with_telemetry</code> (optional, tri-state) - Controls OpenTelemetry
+  instrumentation of outbound <code>requests</code>/<code>httpx</code> calls:
+  - <code>None</code> (default) - auto-enable whenever <code>OTEL_EXPORTER_OTLP_ENDPOINT</code>
+    is configured; no-op otherwise. This is almost always what you want:
+    if you've configured an OTLP endpoint, your outbound HTTP calls get
+    traced automatically without any extra flag.
+  - <code>True</code> - force-enable (warns if no endpoint is configured).
+  - <code>False</code> - force-disable, even if an endpoint is configured.
+  - The <code>--with-telemetry</code> / <code>--without-telemetry</code> CLI flags (see below)
+    override this parameter at runtime.</p>
 <p><strong>Command-Line Options (automatic):</strong>
 - <code>--print-service-description</code> - Print service metadata
 - <code>--print-tool-description</code> - Print tool schema
 - <code>--test-file &lt;path&gt;</code> - Test service with a job file (useful for debugging)
-- <code>--with-telemetry</code> - Enable OpenTelemetry tracing</p>
+- <code>--test-without-sidecar</code> - Silently drop any attempt to deliver events or
+  results to the sidecar (no HTTP calls, no retries, no warnings). Useful
+  when running locally/in a container without a reachable
+  <code>IVCAP_BASE_URL</code>/sidecar - typically combined with <code>--test-file</code>.
+- <code>--with-telemetry</code> - Force-enable OpenTelemetry instrumentation of outbound
+  <code>requests</code>/<code>httpx</code> calls, even if no <code>OTEL_EXPORTER_OTLP_ENDPOINT</code> is
+  configured yet (logs a warning in that case). Not normally needed:
+  instrumentation is auto-enabled whenever an OTLP endpoint is configured.
+- <code>--without-telemetry</code> - Force-disable OpenTelemetry instrumentation of
+  outbound <code>requests</code>/<code>httpx</code> calls, even if an OTLP endpoint is configured.
+  Mutually exclusive with <code>--with-telemetry</code>. Log/metric export to
+  OpenObserve is unaffected by this flag.</p>
 <h3 id="12-testing">12. Testing<a class="headerlink" href="#12-testing" title="Permanent link">&para;</a></h3>
 <p>Test your service locally using a job file:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="p">{</span>
@@ -2130,20 +2150,30 @@ and any context-scanning agents can find it automatically.</p>
 <li><code>OTEL_EXPORTER_OTLP_ENDPOINT</code> - OpenTelemetry endpoint</li>
 </ul>
 <h3 id="logging-to-openobserve">Logging to OpenObserve<a class="headerlink" href="#logging-to-openobserve" title="Permanent link">&para;</a></h3>
-<p>The SDK automatically exports logs and metrics to OpenObserve when configured:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OPENOBSERVE_URL</span><span class="o">=</span><span class="s2">&quot;https://observe.example.com&quot;</span>
-<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OPENOBSERVE_ORG</span><span class="o">=</span><span class="s2">&quot;myorg&quot;</span>
-<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OPENOBSERVE_USERNAME</span><span class="o">=</span><span class="s2">&quot;user@example.com&quot;</span>
-<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OPENOBSERVE_TOKEN</span><span class="o">=</span><span class="s2">&quot;token&quot;</span>
+<p>The SDK automatically exports logs, metrics, and traces via OTLP/HTTP once a
+usable endpoint can be resolved. A plain, standard OTEL endpoint is
+sufficient on its own - no OpenObserve-specific env vars are required:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OTEL_EXPORTER_OTLP_ENDPOINT</span><span class="o">=</span><span class="s2">&quot;http://openobserve.example.com/api/default&quot;</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OTEL_EXPORTER_OTLP_PROTOCOL</span><span class="o">=</span><span class="s2">&quot;http/protobuf&quot;</span>
+</code></pre></div>
+<p><code>OPENOBSERVE_*</code> variables are optional and only ever <em>add</em> extra information
+on top (auth, stream-name routing, org/URL-derived endpoints) - they never
+gate whether export happens:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OPENOBSERVE_URL</span><span class="o">=</span><span class="s2">&quot;https://observe.example.com&quot;</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OPENOBSERVE_ORG</span><span class="o">=</span><span class="s2">&quot;myorg&quot;</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OPENOBSERVE_USERNAME</span><span class="o">=</span><span class="s2">&quot;user@example.com&quot;</span>
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OPENOBSERVE_TOKEN</span><span class="o">=</span><span class="s2">&quot;token&quot;</span>
 </code></pre></div>
 <p>All logs via <code>getLogger()</code> are automatically sent to OpenObserve.</p>
 <h3 id="opentelemetry-support">OpenTelemetry Support<a class="headerlink" href="#opentelemetry-support" title="Permanent link">&para;</a></h3>
-<p>For distributed tracing, enable with:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>python<span class="w"> </span>my_service.py<span class="w"> </span>--with-telemetry
-</code></pre></div>
-<p>And configure the OTEL endpoint:</p>
+<p>For distributed tracing, just configure the OTEL endpoint:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OTEL_EXPORTER_OTLP_ENDPOINT</span><span class="o">=</span><span class="s2">&quot;http://otel-collector:4318&quot;</span>
 </code></pre></div>
+<p>Instrumentation of outbound <code>requests</code>/<code>httpx</code> calls (as well as job/step
+span creation) is <strong>auto-enabled</strong> as soon as this endpoint is configured -
+no extra flag needed. Use <code>--without-telemetry</code> if you want to suppress
+HTTP instrumentation while still exporting logs/metrics via OpenObserve, or
+<code>--with-telemetry</code> to force-enable it even before an endpoint is set.</p>
 <p>The SDK automatically:
 - Creates spans for each job execution
 - Records job outcomes (success/error)

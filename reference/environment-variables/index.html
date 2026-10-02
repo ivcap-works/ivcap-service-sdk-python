@@ -196,7 +196,7 @@
     ivcap-service-sdk-python
     <ul class="md-source__facts">
       <li class="md-source__fact md-source__fact--version">
-        v0.6.21
+        v0.6.25
       </li>
     </ul>
   </div>
@@ -422,7 +422,7 @@
     ivcap-service-sdk-python
     <ul class="md-source__facts">
       <li class="md-source__fact md-source__fact--version">
-        v0.6.21
+        v0.6.25
       </li>
     </ul>
   </div>
@@ -1390,16 +1390,126 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#openobserve-integration" class="md-nav__link">
+  <a href="#opentelemetry-openobserve-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        OpenObserve Integration
+        OpenTelemetry / OpenObserve Configuration
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="OpenObserve Integration">
+    <nav class="md-nav" aria-label="OpenTelemetry / OpenObserve Configuration">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#standard-opentelemetry-variables-sufficient-on-their-own" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Standard OpenTelemetry variables (sufficient on their own)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#otel_exporter_otlp_endpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OTEL_EXPORTER_OTLP_ENDPOINT
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#otel_exporter_otlp_protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OTEL_EXPORTER_OTLP_PROTOCOL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#otel_exporter_otlp_headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OTEL_EXPORTER_OTLP_HEADERS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#otel_exporter_otlp_logs_headers-otel_exporter_otlp_metrics_headers-otel_exporter_otlp_traces_headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OTEL_EXPORTER_OTLP_LOGS_HEADERS / OTEL_EXPORTER_OTLP_METRICS_HEADERS / OTEL_EXPORTER_OTLP_TRACES_HEADERS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#otel_service_name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OTEL_SERVICE_NAME
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ivcap_service_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IVCAP_SERVICE_ID
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#command-line-flags-with-telemetry-without-telemetry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command-line flags: --with-telemetry / --without-telemetry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openobserve-specific-variables-all-optional-add-extras-on-top" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenObserve-specific variables (all optional; add extras on top)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openobserve_enabled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OPENOBSERVE_ENABLED
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#openobserve_url" class="md-nav__link">
@@ -1417,6 +1527,28 @@
     <span class="md-ellipsis">
       
         OPENOBSERVE_ORG
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openobserve_otlp_endpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OPENOBSERVE_OTLP_ENDPOINT
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openobserve_auth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OPENOBSERVE_AUTH
       
     </span>
   </a>
@@ -1446,10 +1578,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#openobserve_enable_logs" class="md-nav__link">
+  <a href="#openobserve_headers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        OPENOBSERVE_ENABLE_LOGS
+        OPENOBSERVE_HEADERS
       
     </span>
   </a>
@@ -1457,10 +1589,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#openobserve_enable_metrics" class="md-nav__link">
+  <a href="#openobserve_enable_logs-openobserve_enable_metrics-openobserve_enable_traces" class="md-nav__link">
     <span class="md-ellipsis">
       
-        OPENOBSERVE_ENABLE_METRICS
+        OPENOBSERVE_ENABLE_LOGS / OPENOBSERVE_ENABLE_METRICS / OPENOBSERVE_ENABLE_TRACES
       
     </span>
   </a>
@@ -1478,28 +1610,11 @@
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#opentelemetry-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        OpenTelemetry Configuration
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="OpenTelemetry Configuration">
-      <ul class="md-nav__list">
-        
           <li class="md-nav__item">
-  <a href="#otel_exporter_otlp_endpoint" class="md-nav__link">
+  <a href="#openobserve_logs_stream_name-openobserve_metrics_stream_name-openobserve_traces_stream_name" class="md-nav__link">
     <span class="md-ellipsis">
       
-        OTEL_EXPORTER_OTLP_ENDPOINT
+        OPENOBSERVE_LOGS_STREAM_NAME / OPENOBSERVE_METRICS_STREAM_NAME / OPENOBSERVE_TRACES_STREAM_NAME
       
     </span>
   </a>
@@ -1507,10 +1622,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#otel_exporter_otlp_headers" class="md-nav__link">
+  <a href="#openobserve_add_stream_name_header" class="md-nav__link">
     <span class="md-ellipsis">
       
-        OTEL_EXPORTER_OTLP_HEADERS
+        OPENOBSERVE_ADD_STREAM_NAME_HEADER
       
     </span>
   </a>
@@ -1522,6 +1637,45 @@
     <span class="md-ellipsis">
       
         OPENOBSERVE_USE_UNIFIED_OTLP_ENDPOINT
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sidecar-communication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sidecar Communication
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sidecar Communication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ivcap_base_url" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IVCAP_BASE_URL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#command-line-flag-test-without-sidecar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command-line flag: --test-without-sidecar
       
     </span>
   </a>
@@ -1935,16 +2089,126 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#openobserve-integration" class="md-nav__link">
+  <a href="#opentelemetry-openobserve-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        OpenObserve Integration
+        OpenTelemetry / OpenObserve Configuration
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="OpenObserve Integration">
+    <nav class="md-nav" aria-label="OpenTelemetry / OpenObserve Configuration">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#standard-opentelemetry-variables-sufficient-on-their-own" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Standard OpenTelemetry variables (sufficient on their own)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#otel_exporter_otlp_endpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OTEL_EXPORTER_OTLP_ENDPOINT
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#otel_exporter_otlp_protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OTEL_EXPORTER_OTLP_PROTOCOL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#otel_exporter_otlp_headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OTEL_EXPORTER_OTLP_HEADERS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#otel_exporter_otlp_logs_headers-otel_exporter_otlp_metrics_headers-otel_exporter_otlp_traces_headers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OTEL_EXPORTER_OTLP_LOGS_HEADERS / OTEL_EXPORTER_OTLP_METRICS_HEADERS / OTEL_EXPORTER_OTLP_TRACES_HEADERS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#otel_service_name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OTEL_SERVICE_NAME
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ivcap_service_id" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IVCAP_SERVICE_ID
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#command-line-flags-with-telemetry-without-telemetry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command-line flags: --with-telemetry / --without-telemetry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openobserve-specific-variables-all-optional-add-extras-on-top" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenObserve-specific variables (all optional; add extras on top)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openobserve_enabled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OPENOBSERVE_ENABLED
+      
+    </span>
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#openobserve_url" class="md-nav__link">
@@ -1962,6 +2226,28 @@
     <span class="md-ellipsis">
       
         OPENOBSERVE_ORG
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openobserve_otlp_endpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OPENOBSERVE_OTLP_ENDPOINT
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openobserve_auth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OPENOBSERVE_AUTH
       
     </span>
   </a>
@@ -1991,10 +2277,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#openobserve_enable_logs" class="md-nav__link">
+  <a href="#openobserve_headers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        OPENOBSERVE_ENABLE_LOGS
+        OPENOBSERVE_HEADERS
       
     </span>
   </a>
@@ -2002,10 +2288,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#openobserve_enable_metrics" class="md-nav__link">
+  <a href="#openobserve_enable_logs-openobserve_enable_metrics-openobserve_enable_traces" class="md-nav__link">
     <span class="md-ellipsis">
       
-        OPENOBSERVE_ENABLE_METRICS
+        OPENOBSERVE_ENABLE_LOGS / OPENOBSERVE_ENABLE_METRICS / OPENOBSERVE_ENABLE_TRACES
       
     </span>
   </a>
@@ -2023,28 +2309,11 @@
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#opentelemetry-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        OpenTelemetry Configuration
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="OpenTelemetry Configuration">
-      <ul class="md-nav__list">
-        
           <li class="md-nav__item">
-  <a href="#otel_exporter_otlp_endpoint" class="md-nav__link">
+  <a href="#openobserve_logs_stream_name-openobserve_metrics_stream_name-openobserve_traces_stream_name" class="md-nav__link">
     <span class="md-ellipsis">
       
-        OTEL_EXPORTER_OTLP_ENDPOINT
+        OPENOBSERVE_LOGS_STREAM_NAME / OPENOBSERVE_METRICS_STREAM_NAME / OPENOBSERVE_TRACES_STREAM_NAME
       
     </span>
   </a>
@@ -2052,10 +2321,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#otel_exporter_otlp_headers" class="md-nav__link">
+  <a href="#openobserve_add_stream_name_header" class="md-nav__link">
     <span class="md-ellipsis">
       
-        OTEL_EXPORTER_OTLP_HEADERS
+        OPENOBSERVE_ADD_STREAM_NAME_HEADER
       
     </span>
   </a>
@@ -2067,6 +2336,45 @@
     <span class="md-ellipsis">
       
         OPENOBSERVE_USE_UNIFIED_OTLP_ENDPOINT
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sidecar-communication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sidecar Communication
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Sidecar Communication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ivcap_base_url" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IVCAP_BASE_URL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#command-line-flag-test-without-sidecar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command-line flag: --test-without-sidecar
       
     </span>
   </a>
@@ -2236,43 +2544,138 @@
 <li><strong>Description</strong>: API key for IVCAP authentication</li>
 <li><strong>Example</strong>: <code>sk_prod_...</code></li>
 </ul>
-<h2 id="openobserve-integration">OpenObserve Integration<a class="headerlink" href="#openobserve-integration" title="Permanent link">&para;</a></h2>
+<h2 id="opentelemetry-openobserve-configuration">OpenTelemetry / OpenObserve Configuration<a class="headerlink" href="#opentelemetry-openobserve-configuration" title="Permanent link">&para;</a></h2>
+<p>Telemetry export (logs, metrics, traces via OTLP/HTTP) is enabled implicitly
+as soon as a usable OTLP endpoint can be resolved - from <em>either</em> a plain,
+standard <code>OTEL_EXPORTER_OTLP_ENDPOINT</code> <em>or</em> OpenObserve-specific config
+(<code>OPENOBSERVE_URL</code> / <code>OPENOBSERVE_OTLP_ENDPOINT</code>). <strong>A plain OTEL endpoint is
+sufficient on its own; none of the <code>OPENOBSERVE_*</code> variables below are
+required just to turn export on.</strong> They are all optional and only ever <em>add</em>
+extra information on top (auth, stream-name routing, org/URL-derived
+endpoint shaping).</p>
+<h3 id="standard-opentelemetry-variables-sufficient-on-their-own">Standard OpenTelemetry variables (sufficient on their own)<a class="headerlink" href="#standard-opentelemetry-variables-sufficient-on-their-own" title="Permanent link">&para;</a></h3>
+<h3 id="otel_exporter_otlp_endpoint">OTEL_EXPORTER_OTLP_ENDPOINT<a class="headerlink" href="#otel_exporter_otlp_endpoint" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: String</li>
+<li><strong>Description</strong>: OTLP endpoint for logs, metrics and traces. Setting this
+  alone is sufficient to enable telemetry export.</li>
+<li><strong>Example</strong>: <code>http://otel-collector:4318</code></li>
+</ul>
+<h3 id="otel_exporter_otlp_protocol">OTEL_EXPORTER_OTLP_PROTOCOL<a class="headerlink" href="#otel_exporter_otlp_protocol" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: String</li>
+<li><strong>Description</strong>: OTLP wire protocol. The SDK uses the OTLP/HTTP exporters,
+  so this should be <code>http/protobuf</code>.</li>
+<li><strong>Example</strong>: <code>http/protobuf</code></li>
+</ul>
+<h3 id="otel_exporter_otlp_headers">OTEL_EXPORTER_OTLP_HEADERS<a class="headerlink" href="#otel_exporter_otlp_headers" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: String</li>
+<li><strong>Description</strong>: Generic custom headers applied to all OTLP exports (comma
+  or semicolon separated <code>k=v</code> pairs)</li>
+<li><strong>Example</strong>: <code>Authorization=Bearer &lt;token&gt;,x-scope=service</code></li>
+</ul>
+<h3 id="otel_exporter_otlp_logs_headers-otel_exporter_otlp_metrics_headers-otel_exporter_otlp_traces_headers">OTEL_EXPORTER_OTLP_LOGS_HEADERS / OTEL_EXPORTER_OTLP_METRICS_HEADERS / OTEL_EXPORTER_OTLP_TRACES_HEADERS<a class="headerlink" href="#otel_exporter_otlp_logs_headers-otel_exporter_otlp_metrics_headers-otel_exporter_otlp_traces_headers" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: String</li>
+<li><strong>Description</strong>: Signal-specific headers; each overrides
+  <code>OTEL_EXPORTER_OTLP_HEADERS</code> for its respective signal only. Useful for
+  OpenObserve's <code>stream-name</code> routing header.</li>
+<li><strong>Example</strong>: <code>stream-name=default</code></li>
+</ul>
+<h3 id="otel_service_name">OTEL_SERVICE_NAME<a class="headerlink" href="#otel_service_name" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: String</li>
+<li><strong>Description</strong>: Standard OTel resource attribute <code>service.name</code>, applied
+  to all exported telemetry. Often set automatically by deployment
+  platforms/auto-instrumentation wrappers.</li>
+<li><strong>Example</strong>: <code>my-batch-service</code></li>
+</ul>
+<h3 id="ivcap_service_id">IVCAP_SERVICE_ID<a class="headerlink" href="#ivcap_service_id" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: String</li>
+<li><strong>Description</strong>: This service's IVCAP URN. Tagged as <code>ivcap.service_id</code> on
+  job/step spans and as a resource attribute on exported telemetry (constant
+  across all jobs handled by this service instance).</li>
+<li><strong>Example</strong>: <code>urn:ivcap:service:3678e5f1-8fb7-5ad6-b65b-8bd8c23c0948</code></li>
+</ul>
+<h3 id="command-line-flags-with-telemetry-without-telemetry">Command-line flags: <code>--with-telemetry</code> / <code>--without-telemetry</code><a class="headerlink" href="#command-line-flags-with-telemetry-without-telemetry" title="Permanent link">&para;</a></h3>
+<p>OpenTelemetry auto-instrumentation of outbound <code>requests</code>/<code>httpx</code> calls is
+<strong>auto-enabled</strong> whenever <code>OTEL_EXPORTER_OTLP_ENDPOINT</code> is configured - no
+flag is needed in the common case. These mutually-exclusive flags override
+that default:</p>
+<ul>
+<li><code>--with-telemetry</code> - force-enable instrumentation, even if no endpoint is
+  configured yet (logs a warning in that case).</li>
+<li><code>--without-telemetry</code> - force-disable instrumentation, even if an
+  endpoint is configured. Log/metric export via OpenObserve is unaffected.</li>
+</ul>
+<h3 id="openobserve-specific-variables-all-optional-add-extras-on-top">OpenObserve-specific variables (all optional; add extras on top)<a class="headerlink" href="#openobserve-specific-variables-all-optional-add-extras-on-top" title="Permanent link">&para;</a></h3>
+<h3 id="openobserve_enabled">OPENOBSERVE_ENABLED<a class="headerlink" href="#openobserve_enabled" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: Boolean</li>
+<li><strong>Description</strong>: Force enable (<code>true</code>, requires a resolvable endpoint - or
+  raises an error) or force disable (<code>false</code>, even if an endpoint is
+  configured) telemetry export. Never required just to enable export when a
+  plain OTEL endpoint is present.</li>
+<li><strong>Values</strong>: <code>true</code>, <code>false</code>, <code>1</code>, <code>0</code></li>
+</ul>
 <h3 id="openobserve_url">OPENOBSERVE_URL<a class="headerlink" href="#openobserve_url" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Type</strong>: String</li>
-<li><strong>Description</strong>: Base URL for OpenObserve instance</li>
+<li><strong>Description</strong>: Base URL for OpenObserve instance (used to derive the
+  OTLP endpoint if <code>OTEL_EXPORTER_OTLP_ENDPOINT</code> is not set)</li>
 <li><strong>Example</strong>: <code>https://observe.example.com</code></li>
 </ul>
 <h3 id="openobserve_org">OPENOBSERVE_ORG<a class="headerlink" href="#openobserve_org" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Type</strong>: String</li>
-<li><strong>Description</strong>: OpenObserve organization name</li>
+<li><strong>Default</strong>: <code>default</code></li>
+<li><strong>Description</strong>: OpenObserve organization name, combined with
+  <code>OPENOBSERVE_URL</code> to derive the endpoint (<code>&lt;url&gt;/api/&lt;org&gt;</code>)</li>
 <li><strong>Example</strong>: <code>production</code></li>
+</ul>
+<h3 id="openobserve_otlp_endpoint">OPENOBSERVE_OTLP_ENDPOINT<a class="headerlink" href="#openobserve_otlp_endpoint" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: String</li>
+<li><strong>Description</strong>: Full OTLP endpoint URL, overriding the URL derived from
+  <code>OPENOBSERVE_URL</code>/<code>OPENOBSERVE_ORG</code></li>
+<li><strong>Example</strong>: <code>https://observe.example.com/api/production</code></li>
+</ul>
+<h3 id="openobserve_auth">OPENOBSERVE_AUTH<a class="headerlink" href="#openobserve_auth" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: String</li>
+<li><strong>Description</strong>: Full value for the <code>Authorization</code> header (use this for a
+  Bearer token)</li>
+<li><strong>Example</strong>: <code>Bearer zo_prod_...</code></li>
 </ul>
 <h3 id="openobserve_username">OPENOBSERVE_USERNAME<a class="headerlink" href="#openobserve_username" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Type</strong>: String</li>
-<li><strong>Description</strong>: OpenObserve username for authentication</li>
+<li><strong>Description</strong>: OpenObserve username for authentication. Must be set
+  together with <code>OPENOBSERVE_TOKEN</code> (or leave both unset if a proxy injects
+  auth)</li>
 <li><strong>Example</strong>: <code>service@example.com</code></li>
 </ul>
 <h3 id="openobserve_token">OPENOBSERVE_TOKEN<a class="headerlink" href="#openobserve_token" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Type</strong>: String</li>
-<li><strong>Description</strong>: OpenObserve API token</li>
+<li><strong>Description</strong>: Convenience: combined with <code>OPENOBSERVE_USERNAME</code> into an
+  <code>Authorization: Basic &lt;base64(user:token)&gt;</code> header</li>
 <li><strong>Example</strong>: <code>zo_prod_...</code></li>
 </ul>
-<h3 id="openobserve_enable_logs">OPENOBSERVE_ENABLE_LOGS<a class="headerlink" href="#openobserve_enable_logs" title="Permanent link">&para;</a></h3>
+<h3 id="openobserve_headers">OPENOBSERVE_HEADERS<a class="headerlink" href="#openobserve_headers" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Type</strong>: Boolean</li>
-<li><strong>Default</strong>: <code>true</code></li>
-<li><strong>Description</strong>: Enable log export to OpenObserve</li>
-<li><strong>Values</strong>: <code>true</code>, <code>false</code>, <code>1</code>, <code>0</code></li>
+<li><strong>Type</strong>: String</li>
+<li><strong>Description</strong>: OpenObserve-specific headers, merged on top of
+  <code>OTEL_EXPORTER_OTLP_HEADERS</code></li>
+<li><strong>Example</strong>: <code>x-scope=service</code></li>
 </ul>
-<h3 id="openobserve_enable_metrics">OPENOBSERVE_ENABLE_METRICS<a class="headerlink" href="#openobserve_enable_metrics" title="Permanent link">&para;</a></h3>
+<h3 id="openobserve_enable_logs-openobserve_enable_metrics-openobserve_enable_traces">OPENOBSERVE_ENABLE_LOGS / OPENOBSERVE_ENABLE_METRICS / OPENOBSERVE_ENABLE_TRACES<a class="headerlink" href="#openobserve_enable_logs-openobserve_enable_metrics-openobserve_enable_traces" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Type</strong>: Boolean</li>
 <li><strong>Default</strong>: <code>true</code></li>
-<li><strong>Description</strong>: Enable metrics export to OpenObserve</li>
+<li><strong>Description</strong>: Enable/disable export of the respective signal</li>
 <li><strong>Values</strong>: <code>true</code>, <code>false</code>, <code>1</code>, <code>0</code></li>
 </ul>
 <h3 id="openobserve_metrics_interval">OPENOBSERVE_METRICS_INTERVAL<a class="headerlink" href="#openobserve_metrics_interval" title="Permanent link">&para;</a></h3>
@@ -2282,26 +2685,44 @@
 <li><strong>Description</strong>: Metrics collection interval in seconds</li>
 <li><strong>Example</strong>: <code>30</code></li>
 </ul>
-<h2 id="opentelemetry-configuration">OpenTelemetry Configuration<a class="headerlink" href="#opentelemetry-configuration" title="Permanent link">&para;</a></h2>
-<h3 id="otel_exporter_otlp_endpoint">OTEL_EXPORTER_OTLP_ENDPOINT<a class="headerlink" href="#otel_exporter_otlp_endpoint" title="Permanent link">&para;</a></h3>
+<h3 id="openobserve_logs_stream_name-openobserve_metrics_stream_name-openobserve_traces_stream_name">OPENOBSERVE_LOGS_STREAM_NAME / OPENOBSERVE_METRICS_STREAM_NAME / OPENOBSERVE_TRACES_STREAM_NAME<a class="headerlink" href="#openobserve_logs_stream_name-openobserve_metrics_stream_name-openobserve_traces_stream_name" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Type</strong>: String</li>
-<li><strong>Description</strong>: Custom OTLP endpoint for metrics and traces</li>
-<li><strong>Example</strong>: <code>http://otel-collector:4318</code></li>
+<li><strong>Default</strong>: <code>default</code></li>
+<li><strong>Description</strong>: Stream name added via the <code>stream-name</code> header (only
+  applies when the endpoint originates from OpenObserve-specific config, not
+  a plain <code>OTEL_EXPORTER_OTLP_ENDPOINT</code> - use the
+  <code>OTEL_EXPORTER_OTLP_*_HEADERS</code> variables above for that case)</li>
 </ul>
-<h3 id="otel_exporter_otlp_headers">OTEL_EXPORTER_OTLP_HEADERS<a class="headerlink" href="#otel_exporter_otlp_headers" title="Permanent link">&para;</a></h3>
+<h3 id="openobserve_add_stream_name_header">OPENOBSERVE_ADD_STREAM_NAME_HEADER<a class="headerlink" href="#openobserve_add_stream_name_header" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Type</strong>: String</li>
-<li><strong>Description</strong>: Custom headers for OTLP exports</li>
-<li><strong>Example</strong>: <code>Authorization=Bearer &lt;token&gt;,x-scope=service</code></li>
+<li><strong>Type</strong>: Boolean</li>
+<li><strong>Default</strong>: <code>true</code></li>
+<li><strong>Description</strong>: Add the <code>stream-name</code> header automatically (see above)</li>
+<li><strong>Values</strong>: <code>true</code>, <code>false</code></li>
 </ul>
 <h3 id="openobserve_use_unified_otlp_endpoint">OPENOBSERVE_USE_UNIFIED_OTLP_ENDPOINT<a class="headerlink" href="#openobserve_use_unified_otlp_endpoint" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Type</strong>: Boolean</li>
 <li><strong>Default</strong>: <code>false</code></li>
-<li><strong>Description</strong>: Use OpenObserve unified OTLP endpoint</li>
+<li><strong>Description</strong>: Use OpenObserve's unified <code>/v1/otlp</code> endpoint for all
+  signals instead of signal-specific paths (<code>/v1/logs</code>, <code>/v1/metrics</code>,
+  <code>/v1/traces</code>)</li>
 <li><strong>Values</strong>: <code>true</code>, <code>false</code></li>
 </ul>
+<h2 id="sidecar-communication">Sidecar Communication<a class="headerlink" href="#sidecar-communication" title="Permanent link">&para;</a></h2>
+<h3 id="ivcap_base_url">IVCAP_BASE_URL<a class="headerlink" href="#ivcap_base_url" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: String</li>
+<li><strong>Description</strong>: Base URL of the IVCAP sidecar, used for fetching jobs and
+  delivering events/results. If unset, the SDK still runs locally but
+  sidecar communication is disabled.</li>
+<li><strong>Example</strong>: <code>http://ivcap.local</code></li>
+</ul>
+<h3 id="command-line-flag-test-without-sidecar">Command-line flag: <code>--test-without-sidecar</code><a class="headerlink" href="#command-line-flag-test-without-sidecar" title="Permanent link">&para;</a></h3>
+<p>Silently drops any attempt to deliver events or results to the sidecar (no
+HTTP calls, no retries, no warnings). Useful for local testing (typically
+combined with <code>--test-file</code>) without a reachable <code>IVCAP_BASE_URL</code>/sidecar.</p>
 <h2 id="logging-configuration">Logging Configuration<a class="headerlink" href="#logging-configuration" title="Permanent link">&para;</a></h2>
 <h3 id="ivcap_log_level">IVCAP_LOG_LEVEL<a class="headerlink" href="#ivcap_log_level" title="Permanent link">&para;</a></h3>
 <ul>
@@ -2330,31 +2751,34 @@
 </code></pre></div>
 <h2 id="setting-variables">Setting Variables<a class="headerlink" href="#setting-variables" title="Permanent link">&para;</a></h2>
 <h3 id="docker">Docker<a class="headerlink" href="#docker" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">ENV</span><span class="w"> </span><span class="nv">OPENOBSERVE_URL</span><span class="o">=</span><span class="s2">&quot;https://observe.example.com&quot;</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">ENV</span><span class="w"> </span><span class="nv">OPENOBSERVE_ORG</span><span class="o">=</span><span class="s2">&quot;production&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">ENV</span><span class="w"> </span><span class="nv">OTEL_EXPORTER_OTLP_ENDPOINT</span><span class="o">=</span><span class="s2">&quot;http://openobserve.example.com/api/production&quot;</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">ENV</span><span class="w"> </span><span class="nv">OTEL_EXPORTER_OTLP_PROTOCOL</span><span class="o">=</span><span class="s2">&quot;http/protobuf&quot;</span>
 </code></pre></div>
 <h3 id="docker-compose">Docker Compose<a class="headerlink" href="#docker-compose" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">services</span><span class="p">:</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">my-service</span><span class="p">:</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">      </span><span class="nt">OPENOBSERVE_URL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://observe.example.com</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">      </span><span class="nt">OPENOBSERVE_ORG</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">production</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">      </span><span class="nt">OTEL_EXPORTER_OTLP_ENDPOINT</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://openobserve.example.com/api/production</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">      </span><span class="nt">OTEL_EXPORTER_OTLP_PROTOCOL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http/protobuf</span>
 </code></pre></div>
 <h3 id="kubernetes">Kubernetes<a class="headerlink" href="#kubernetes" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">containers</span><span class="p">:</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-service</span>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">env</span><span class="p">:</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OPENOBSERVE_URL</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://observe.example.com&quot;</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OPENOBSERVE_TOKEN</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="nt">valueFrom</span><span class="p">:</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">      </span><span class="nt">secretKeyRef</span><span class="p">:</span>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">observability</span>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">        </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">token</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OTEL_EXPORTER_OTLP_ENDPOINT</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://openobserve.example.com/api/production&quot;</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OTEL_EXPORTER_OTLP_PROTOCOL</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http/protobuf&quot;</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">  </span><span class="c1"># Optional: only needed for auth against a secured OpenObserve instance</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OPENOBSERVE_TOKEN</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">    </span><span class="nt">valueFrom</span><span class="p">:</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">      </span><span class="nt">secretKeyRef</span><span class="p">:</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">observability</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">        </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">token</span>
 </code></pre></div>
 <h3 id="command-line">Command Line<a class="headerlink" href="#command-line" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OPENOBSERVE_URL</span><span class="o">=</span><span class="s2">&quot;https://observe.example.com&quot;</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OPENOBSERVE_ORG</span><span class="o">=</span><span class="s2">&quot;production&quot;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OTEL_EXPORTER_OTLP_ENDPOINT</span><span class="o">=</span><span class="s2">&quot;http://openobserve.example.com/api/production&quot;</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">export</span><span class="w"> </span><span class="nv">OTEL_EXPORTER_OTLP_PROTOCOL</span><span class="o">=</span><span class="s2">&quot;http/protobuf&quot;</span>
 <a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>python<span class="w"> </span>my_service.py
 </code></pre></div>
 <h2 id="see-also">See Also<a class="headerlink" href="#see-also" title="Permanent link">&para;</a></h2>
