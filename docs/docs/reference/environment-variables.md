@@ -182,6 +182,62 @@ Silently drops any attempt to deliver events or results to the sidecar (no
 HTTP calls, no retries, no warnings). Useful for local testing (typically
 combined with `--test-file`) without a reachable `IVCAP_BASE_URL`/sidecar.
 
+## Networking / Proxying
+
+The SDK can patch outbound `requests`/`httpx` calls made from inside your
+worker function to propagate job context and, optionally, route external
+calls through a proxy. This is installed automatically by the runtime (via
+`ivcap_service.context.set_context(...)`) for both `requests.Session.send`
+and `httpx.Client.send`/`AsyncClient.send`.
+
+For every outbound request, the SDK first classifies the destination
+hostname as **local** or **external**:
+
+- **Local** - hostname ends with `.local`, `.minikube`, or `.ivcap.net`
+  (i.e. it targets the IVCAP platform/sidecar or other in-cluster
+  services). Local requests get an `Authorization: <job_authorization>`
+  header added automatically (using the job's own authorization token), and
+  are **not** routed through `IVCAP_PROXY_URL`. (OTEL collector endpoints -
+  URLs matching `OTEL_EXPORTER_OTLP_ENDPOINT` - are exempt from the
+  `Authorization` header even if otherwise local.)
+- **External** - any other hostname (e.g. a third-party API). External
+  requests do **not** get an `Authorization` header, but are rerouted
+  through `IVCAP_PROXY_URL` if it is set (see below).
+
+In both cases, an `Ivcap-Job-Id: <job_id>` header is added so downstream
+services/proxies can correlate the call with the originating job.
+
+### IVCAP_PROXY_URL
+- **Type**: String
+- **Default**: unset - external calls are left untouched (no rerouting)
+- **Description**: When set, every outbound request to an **external**
+  (non-local) hostname is rewritten to target this URL instead of its
+  original destination. The original, full destination URL (including query
+  parameters) is preserved in the `Ivcap-Forward-Url` request header, so
+  whatever is listening at `IVCAP_PROXY_URL` is expected to read that header
+  and forward the request on to the real destination (e.g. for egress
+  auditing, access control, or network isolation of the job sandbox). This
+  is typically set by the IVCAP runtime/container environment rather than
+  by service authors; for local testing you can point it at a local proxy
+  process.
+- **Example**: `http://127.0.0.1:8888`
+
+**Example outbound request to `https://example.com/api?x=1`, with
+`IVCAP_PROXY_URL=http://127.0.0.1:8888`:**
+
+```
+GET http://127.0.0.1:8888
+Ivcap-Forward-Url: https://example.com/api?x=1
+Ivcap-Job-Id: urn:ivcap:job:51d29d96-fa70-4125-84ba-4628fda220c3
+```
+
+> **Troubleshooting**: if the proxy at `IVCAP_PROXY_URL` responds with
+> `431 Request Header Fields Too Large`, check that it can handle the
+> `Ivcap-Forward-Url` header (which may contain a long URL with query
+> parameters) and that it implements the expected forward-by-header
+> protocol - a generic HTTP forward/CONNECT proxy is **not** a drop-in
+> replacement.
+
 ## Logging Configuration
 
 ### IVCAP_LOG_LEVEL
