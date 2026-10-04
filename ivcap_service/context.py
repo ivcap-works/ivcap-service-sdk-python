@@ -174,6 +174,40 @@ def _is_otel_endpoint(url: URLx | str) -> bool:
         return False
 
 
+def _inject_trace_context(url: URLx | str, headers: Any, logger: Logger):
+    """Best-effort propagation of the current OTEL trace context (W3C
+    `traceparent`/`tracestate` headers) onto an outbound request.
+
+    This is intentionally decoupled from `RequestsInstrumentor`/
+    `HTTPXClientInstrumentor` (see `otel_instrument()`): those are only
+    installed when telemetry is enabled/forced (`--with-telemetry` or an
+    `OTEL_EXPORTER_OTLP_ENDPOINT` being configured) and are what *creates*
+    the client-side HTTP spans. But the SDK already wraps every outbound
+    `requests`/`httpx` call via `_modify_request()` (to add job-id/auth
+    headers and handle proxy rerouting), regardless of whether telemetry is
+    enabled. Since job/step spans (see `service.py::_job_span` and
+    `events.py::EventContext`) are created unconditionally whenever the
+    `opentelemetry` package is importable - even if nothing exports them -
+    we should also unconditionally propagate the current trace context here
+    so that downstream services (reachable through the sidecar/proxy or
+    directly) can continue the same trace, instead of only doing so when
+    HTTP auto-instrumentation happens to be active.
+
+    Never raises - must not break outbound calls when OTEL isn't
+    installed/configured.
+    """
+    if _is_otel_endpoint(url):
+        # Don't attach trace context to calls made to the OTEL collector
+        # itself (those are export calls, not part of the traced workload).
+        return
+    try:
+        from opentelemetry import propagate
+
+        propagate.inject(headers)
+    except Exception:
+        logger.debug("failed to inject OTEL trace context", exc_info=True)
+
+
 def _modify_request(request: Any, ctxt: JobContext | None, logger: Logger):
     headers = request.headers
     url = cast(URLx | str, request.url)
@@ -193,6 +227,7 @@ def _modify_request(request: Any, ctxt: JobContext | None, logger: Logger):
     if auth is not None and is_local_url and not _is_otel_endpoint(url):
         logger.debug(f"Adding 'Authorization' header to `{request.url}'")
         headers["Authorization"] = auth
+    _inject_trace_context(request.url, headers, logger)
 
 
 def _get_hostname(url: URLx | str) -> str:

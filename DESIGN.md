@@ -271,6 +271,21 @@ The SDK can “patch” outbound HTTP clients to propagate job context:
 * adds `Ivcap-Job-Id: <job_id>`
 * adds `Authorization: <job_authorization>` for “local” URLs
 * optionally routes external calls via a proxy URL
+* injects the current OTEL trace context (W3C `traceparent`/`tracestate`
+  headers, via `opentelemetry.propagate.inject()`) so downstream services
+  can continue the same trace
+
+The trace-context injection happens unconditionally (best-effort, a no-op if
+`opentelemetry` isn't installed or there's no active span) - it does **not**
+require `--with-telemetry`/`OTEL_EXPORTER_OTLP_ENDPOINT` to be configured, nor
+does it depend on `RequestsInstrumentor`/`HTTPXClientInstrumentor` being
+installed via `otel_instrument()`. This matters because job/step spans
+(`service.py::_job_span`, `events.py::EventContext`) are created whenever the
+`opentelemetry` package is importable, independent of whether HTTP
+auto-instrumentation is enabled; without this, calls made from inside a job
+(including those routed through the sidecar/proxy) would silently break trace
+continuity whenever `otel_instrument()` wasn't invoked. Calls to the OTEL
+collector endpoint itself are excluded, to avoid tracing the export pipeline.
 
 This is enabled by the runtime calling:
 
