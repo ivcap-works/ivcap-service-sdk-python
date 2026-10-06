@@ -86,6 +86,7 @@ def test_create_service_definition_basic(service_description, monkeypatch):
     assert sd.description == "Echoes the given message back."
     assert sd.policy == DEF_POLICY
     assert sd.contact.name == "Jane Doe"
+    assert sd.license is not None
     assert sd.license.name == "MIT"
     assert sd.controller_schema == BATCH_CONTROLLER_SCHEMA
     assert sd.request_schema is not None

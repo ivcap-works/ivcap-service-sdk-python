@@ -113,10 +113,12 @@ class ServiceLicense(BaseModel):
 class Service(BaseModel):
     name: str = Field(description="name of the service")
     version: str | None = Field(
-        os.environ.get("VERSION", "???"), description="version of the service"
+        default=os.environ.get("VERSION", "???"), description="version of the service"
     )
     contact: ServiceContact = Field(description="contact details of the service")
-    license: ServiceLicense | None = Field(None, description="license of the service")
+    license: ServiceLicense | None = Field(
+        default=None, description="license of the service"
+    )
 
 
 # Number of attempt to request a new job before giving up
