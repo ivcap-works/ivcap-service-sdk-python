@@ -19,7 +19,7 @@ Explicitly report errors within named steps:
 
 ```python
 def process_job(req: Request, ctxt: JobContext) -> Result:
-    with ctxt.report.step("processing", msg="Processing") as step:
+    with ctxt.report.step("processing", message="Processing") as step:
         try:
             result = process(req)
         except ValueError as e:
@@ -44,15 +44,15 @@ from ivcap_client.exception import ResourceNotFound, IvcapApiError
 def process_job(req: Request, ctxt: JobContext) -> Result:
     ivcap = ctxt.ivcap
 
-    with ctxt.report.step("download", msg="Downloading artifact") as step:
+    with ctxt.report.step("download", message="Downloading artifact") as step:
         try:
             artifact = ivcap.get_artifact(req.artifact_urn)
             with artifact.as_local_file() as path:
                 data = path.read_bytes()
-            step.finished(msg=f"Downloaded {len(data)} bytes")
+            step.finished(message=f"Downloaded {len(data)} bytes")
         except ResourceNotFound:
             logger.warning(f"Artifact not found: {req.artifact_urn}, using default data")
-            step.finished(msg="Using default data")
+            step.finished(message="Using default data")
             data = DEFAULT_DATA
         except IvcapApiError as e:
             logger.error(f"Platform API error [{e.status_code}]: {e}")
@@ -75,9 +75,9 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
 
     for attempt in range(max_retries):
         try:
-            with ctxt.report.step(f"attempt-{attempt+1}", msg=f"Attempt {attempt+1}") as step:
+            with ctxt.report.step(f"attempt-{attempt+1}", message=f"Attempt {attempt+1}") as step:
                 job = downstream.request_job(DownstreamReq(data=req.data), timeout=120)
-                step.finished(msg="Succeeded")
+                step.finished(message="Succeeded")
                 return Result(result=job.result)
         except Exception as e:
             if attempt < max_retries - 1:
@@ -99,13 +99,13 @@ from ivcap_client.exception import ResourceNotFound, IvcapApiError
 def process_job(req: Request, ctxt: JobContext) -> Result:
     ivcap = ctxt.ivcap
 
-    with ctxt.report.step("process", msg="Processing") as step:
+    with ctxt.report.step("process", message="Processing") as step:
         try:
             hq_svc = ivcap.get_service_by_name("hq-processor")
             HqReq = hq_svc.request_model
             job = hq_svc.request_job(HqReq(data=req.data), timeout=120)
             result = job.result
-            step.finished(msg="High-quality processing complete")
+            step.finished(message="High-quality processing complete")
         except (ResourceNotFound, IvcapApiError) as e:
             logger.warning(f"HQ service unavailable ({e}), using fallback")
             step.info(event={"fallback": True})
@@ -114,7 +114,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
             FallbackReq = fallback_svc.request_model
             job = fallback_svc.request_job(FallbackReq(data=req.data), timeout=60)
             result = job.result
-            step.finished(msg="Fallback processing complete")
+            step.finished(message="Fallback processing complete")
 
     return Result(result=result)
 ```
@@ -196,7 +196,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
     results = []
     errors = []
 
-    with ctxt.report.step("batch_processing", msg="Processing batch") as step:
+    with ctxt.report.step("batch_processing", message="Processing batch") as step:
         for i, item in enumerate(req.items):
             try:
                 result = process_item(item)
@@ -209,7 +209,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
                 })
                 logger.warning(f"Failed to process item {i}: {e}")
 
-        step.finished(msg=f"Processed {len(results)}/{len(req.items)} items successfully")
+        step.finished(message=f"Processed {len(results)}/{len(req.items)} items successfully")
 
     return Result(
         results=results,

@@ -57,7 +57,6 @@ The `JobContext` provides essential information and APIs:
 def process_job(req: Request, ctx: JobContext) -> Result:
     # Job identifiers
     print(f"Job: {ctx.job_id}")
-    print(f"Request: {ctx.request_id}")
 
     # Progress reporting
     with ctx.report.step("processing") as step:
@@ -80,16 +79,16 @@ Report multi-step workflows using the event system:
 ```python
 def process_job(req: Request, ctx: JobContext) -> Result:
     # Step 1: Validate
-    with ctx.report.step("validate", msg="Validating input") as step:
+    with ctx.report.step("validate", message="Validating input") as step:
         if not is_valid(req):
             raise ValueError("Invalid input")
-        step.finished(msg="Validation passed")
+        step.finished(message="Validation passed")
 
     # Step 2: Process
-    with ctx.report.step("process", msg="Processing") as step:
+    with ctx.report.step("process", message="Processing") as step:
         result = process(req)
         step.info(event={"progress": 50})  # Send events
-        step.finished(msg="Done")
+        step.finished(message="Done")
 
     return Result(result=result)
 ```
@@ -97,14 +96,14 @@ def process_job(req: Request, ctx: JobContext) -> Result:
 ### Step Lifecycle
 
 ```python
-with ctx.report.step("step_name", msg="Description") as step:
+with ctx.report.step("step_name", message="Description") as step:
     # Step started automatically
 
     # Send progress events
     step.info(event={"key": "value"})
 
     # Mark completion
-    step.finished(msg="Complete")
+    step.finished(message="Complete")
 
     # Errors automatically reported on exception
 ```
@@ -131,19 +130,19 @@ def process_job(req: Request, ctx: JobContext) -> Result:
 
 ```python
 def process_job(req: Request, ctx: JobContext) -> Result:
-    with ctx.report.step("load", msg="Loading data") as s:
+    with ctx.report.step("load", message="Loading data") as s:
         data = load(req.source)
         s.finished()
 
-    with ctx.report.step("transform", msg="Transforming") as s:
+    with ctx.report.step("transform", message="Transforming") as s:
         transformed = transform(data)
-        s.finished(msg=f"Transformed {len(data)} items")
+        s.finished(message=f"Transformed {len(data)} items")
 
-    with ctx.report.step("validate", msg="Validating") as s:
+    with ctx.report.step("validate", message="Validating") as s:
         validate(transformed)
         s.finished()
 
-    with ctx.report.step("save", msg="Saving") as s:
+    with ctx.report.step("save", message="Saving") as s:
         save(transformed)
         s.finished()
 
@@ -157,7 +156,7 @@ def process_job(req: Request, ctx: JobContext) -> Result:
     items = load_items(req.source)
     results = []
 
-    with ctx.report.step("processing", msg="Processing items") as step:
+    with ctx.report.step("processing", message="Processing items") as step:
         for i, item in enumerate(items):
             result = process_item(item)
             results.append(result)
@@ -170,7 +169,7 @@ def process_job(req: Request, ctx: JobContext) -> Result:
                     "percentage": (i / len(items)) * 100
                 })
 
-        step.finished(msg=f"Processed {len(items)} items")
+        step.finished(message=f"Processed {len(items)} items")
 
     return Result(results=results)
 ```
@@ -183,7 +182,7 @@ def process_job(req: Request, ctx: JobContext) -> Result:
     batch_size = 32
     results = []
 
-    with ctx.report.step("batching", msg="Processing in batches") as step:
+    with ctx.report.step("batching", message="Processing in batches") as step:
         for batch_idx in range(0, len(items), batch_size):
             batch = items[batch_idx:batch_idx + batch_size]
             batch_results = process_batch(batch)

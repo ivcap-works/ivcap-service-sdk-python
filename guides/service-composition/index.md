@@ -101,13 +101,13 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
     downstream = ivcap.get_service_by_name("my-service")
     DownstreamReq = downstream.request_model
 
-    with ctxt.report.step("call_service", msg="Calling downstream service") as step:
+    with ctxt.report.step("call_service", message="Calling downstream service") as step:
         try:
             job = downstream.request_job(
                 DownstreamReq(data=req.data),
                 timeout=120,
             )
-            step.finished(msg=f"Service completed with status: {job.status()}")
+            step.finished(message=f"Service completed with status: {job.status()}")
         except Exception as e:
             logger.error(f"Service call failed: {e}")
             raise
@@ -129,24 +129,24 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
     transform_svc = ivcap.get_service_by_name("transform-service")
     enrich_svc = ivcap.get_service_by_name("enrich-service")
 
-    with ctxt.report.step("validate", msg="Validating") as s:
+    with ctxt.report.step("validate", message="Validating") as s:
         ValidateReq = validate_svc.request_model
         validated_job = validate_svc.request_job(ValidateReq(data=req.data), timeout=60)
-        s.finished(msg="Validation complete")
+        s.finished(message="Validation complete")
 
-    with ctxt.report.step("transform", msg="Transforming") as s:
+    with ctxt.report.step("transform", message="Transforming") as s:
         TransformReq = transform_svc.request_model
         transformed_job = transform_svc.request_job(
             TransformReq(data=validated_job.result), timeout=120
         )
-        s.finished(msg="Transform complete")
+        s.finished(message="Transform complete")
 
-    with ctxt.report.step("enrich", msg="Enriching") as s:
+    with ctxt.report.step("enrich", message="Enriching") as s:
         EnrichReq = enrich_svc.request_model
         enriched_job = enrich_svc.request_job(
             EnrichReq(data=transformed_job.result), timeout=120
         )
-        s.finished(msg="Enrichment complete")
+        s.finished(message="Enrichment complete")
 
     return Result(result=enriched_job.result)
 ```
@@ -174,7 +174,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
 
     # Poll until all jobs finish
     completed = []
-    with ctxt.report.step("wait_for_jobs", msg="Waiting for results") as step:
+    with ctxt.report.step("wait_for_jobs", message="Waiting for results") as step:
         while len(completed) < len(jobs):
             for job in jobs:
                 if job not in completed:
@@ -186,7 +186,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
                 step.info(event={"completed": len(completed), "total": len(jobs)})
                 time.sleep(5)
 
-        step.finished(msg=f"All {len(jobs)} jobs finished")
+        step.finished(message=f"All {len(jobs)} jobs finished")
 
     results = [j.result for j in jobs if j.succeeded]
     return Result(results=results, all_succeeded=all(j.succeeded for j in jobs))
@@ -211,9 +211,9 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
     svc = ivcap.get_service_by_name(svc_name)
     SvcReq = svc.request_model
 
-    with ctxt.report.step("process", msg=f"Using {svc_name}") as step:
+    with ctxt.report.step("process", message=f"Using {svc_name}") as step:
         job = svc.request_job(SvcReq(data=req.data), timeout=600)
-        step.finished(msg=f"Completed via {svc_name}")
+        step.finished(message=f"Completed via {svc_name}")
 
     return Result(result=job.result)
 ```
@@ -228,12 +228,12 @@ from ivcap_client.exception import ResourceNotFound, IvcapApiError
 def process_job(req: Request, ctxt: JobContext) -> Result:
     ivcap = ctxt.ivcap
 
-    with ctxt.report.step("process", msg="Processing") as step:
+    with ctxt.report.step("process", message="Processing") as step:
         try:
             hq_svc = ivcap.get_service_by_name("hq-processor")
             HqReq = hq_svc.request_model
             job = hq_svc.request_job(HqReq(data=req.data), timeout=120)
-            step.finished(msg="High-quality processing complete")
+            step.finished(message="High-quality processing complete")
         except (ResourceNotFound, IvcapApiError) as e:
             logger.warning(f"HQ service unavailable ({e}), using fallback")
             step.info(event={"fallback": True})
@@ -241,7 +241,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
             fallback_svc = ivcap.get_service_by_name("fallback-processor")
             FallbackReq = fallback_svc.request_model
             job = fallback_svc.request_job(FallbackReq(data=req.data), timeout=60)
-            step.finished(msg="Fallback processing complete")
+            step.finished(message="Fallback processing complete")
 
     return Result(result=job.result)
 ```
@@ -277,7 +277,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
     mapped_results = [j.result for j in map_jobs if j.succeeded]
 
     # Reduce phase
-    with ctxt.report.step("reduce", msg="Reducing results") as step:
+    with ctxt.report.step("reduce", message="Reducing results") as step:
         reduce_job = reducer.request_job(ReducerReq(items=mapped_results), timeout=120)
         step.finished()
 

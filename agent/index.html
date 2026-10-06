@@ -196,7 +196,7 @@
     ivcap-service-sdk-python
     <ul class="md-source__facts">
       <li class="md-source__fact md-source__fact--version">
-        v0.6.25
+        latest
       </li>
     </ul>
   </div>
@@ -422,7 +422,7 @@
     ivcap-service-sdk-python
     <ul class="md-source__facts">
       <li class="md-source__fact md-source__fact--version">
-        v0.6.25
+        latest
       </li>
     </ul>
   </div>
@@ -1754,16 +1754,16 @@ and any context-scanning agents can find it automatically.</p>
 <a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing </span><span class="si">{</span><span class="n">job_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
 <a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span class="c1"># Create a named execution step with reporting</span>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span class="k">with</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="s2">&quot;data_preparation&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Starting data prep&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">step</span><span class="p">:</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span class="k">with</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="s2">&quot;data_preparation&quot;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Starting data prep&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">step</span><span class="p">:</span>
 <a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>        <span class="c1"># Do work here</span>
 <a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>        <span class="n">prepare_data</span><span class="p">()</span>
 <a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>        <span class="c1"># Update step with completion message</span>
-<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>        <span class="n">step</span><span class="o">.</span><span class="n">finished</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Data preparation complete&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>        <span class="n">step</span><span class="o">.</span><span class="n">finished</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="s2">&quot;Data preparation complete&quot;</span><span class="p">)</span>
 <a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>
 <a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>    <span class="c1"># Create another step</span>
-<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>    <span class="k">with</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="s2">&quot;processing&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Processing data&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">step</span><span class="p">:</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>    <span class="k">with</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="s2">&quot;processing&quot;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Processing data&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">step</span><span class="p">:</span>
 <a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>        <span class="n">result</span> <span class="o">=</span> <span class="n">process_data</span><span class="p">()</span>
-<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>        <span class="n">step</span><span class="o">.</span><span class="n">finished</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Processing complete&quot;</span><span class="p">)</span>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>        <span class="n">step</span><span class="o">.</span><span class="n">finished</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="s2">&quot;Processing complete&quot;</span><span class="p">)</span>
 <a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>
 <a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>    <span class="k">return</span> <span class="n">Result</span><span class="p">(</span><span class="n">result</span><span class="o">=</span><span class="n">result</span><span class="p">)</span>
 </code></pre></div>
@@ -1777,44 +1777,47 @@ and any context-scanning agents can find it automatically.</p>
 <ol>
 <li><strong>Step Context Manager (recommended for progress tracking)</strong></li>
 <li>
-<p><code>step(name, msg)</code> - Create a named step context manager for progress tracking</p>
+<p><code>step(name, message=None, **kwargs)</code> - Create a named step context manager for progress tracking</p>
 <ul>
-<li>Returns a context manager that yields a step object</li>
-<li>Call <code>step.finished(msg)</code> to mark completion within the context</li>
+<li>Returns a context manager that yields a step object (an <code>EventContext</code>)</li>
+<li>Call <code>step.info(event)</code> to report an informational update within the step</li>
+<li>Call <code>step.error(err, context=None)</code> to explicitly report an error (also done automatically on an uncaught exception)</li>
+<li>Call <code>step.finished(message=None, **kwargs)</code> to mark completion within the context</li>
 <li>Use for long-running operations to provide progress updates</li>
 <li>Events are automatically reported when entering/exiting the context</li>
 </ul>
 </li>
 <li>
-<p><strong>Direct Event Issuance (for immediate notifications)</strong></p>
+<p><strong>Direct Event Issuance (for immediate notifications, outside a <code>with</code> block)</strong></p>
 </li>
-<li><code>step_started(name, msg)</code> - Report that a step has started</li>
-<li><code>step_info(name, msg)</code> - Report an informational update for a step</li>
-<li><code>step_error(name, error, context)</code> - Report an error in a step</li>
-<li><code>step_finished(name, msg)</code> - Report that a step has finished</li>
+<li><code>step_started(step_name, message=None, **kwargs)</code> - Report that a step has started</li>
+<li><code>step_finished(step_name, message=None, **kwargs)</code> - Report that a step has finished</li>
+<li><code>emit(event)</code> - Emit any <code>BaseEvent</code> instance directly (e.g. <code>GenericEvent</code>, <code>GenericErrorEvent</code>)</li>
 <li>Use these methods when you need to issue events outside a context manager</li>
 <li>Useful for conditional reporting or async operations</li>
 </ol>
 <p><strong>Example with direct event issuance:</strong></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">process_job</span><span class="p">(</span><span class="n">req</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">ctxt</span><span class="p">:</span> <span class="n">JobContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Result</span><span class="p">:</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span class="n">report</span> <span class="o">=</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">report</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="c1"># Start a step directly</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span class="n">report</span><span class="o">.</span><span class="n">step_started</span><span class="p">(</span><span class="s2">&quot;initialization&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Starting initialization&quot;</span><span class="p">)</span>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>        <span class="n">result</span> <span class="o">=</span> <span class="n">initialize_system</span><span class="p">()</span>
-<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>        <span class="c1"># Report progress updates</span>
-<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>        <span class="n">report</span><span class="o">.</span><span class="n">step_info</span><span class="p">(</span><span class="s2">&quot;initialization&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Init progress: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
-<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>        <span class="c1"># Report errors directly</span>
-<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>        <span class="n">report</span><span class="o">.</span><span class="n">step_error</span><span class="p">(</span><span class="s2">&quot;initialization&quot;</span><span class="p">,</span> <span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="n">context</span><span class="o">=</span><span class="s2">&quot;Failed to initialize&quot;</span><span class="p">)</span>
-<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>        <span class="k">raise</span>
-<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>    <span class="k">finally</span><span class="p">:</span>
-<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>        <span class="c1"># Finish the step</span>
-<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>        <span class="n">report</span><span class="o">.</span><span class="n">step_finished</span><span class="p">(</span><span class="s2">&quot;initialization&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Initialization complete&quot;</span><span class="p">)</span>
-<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>
-<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>    <span class="k">return</span> <span class="n">Result</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">ivcap_service.events</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenericErrorEvent</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">process_job</span><span class="p">(</span><span class="n">req</span><span class="p">:</span> <span class="n">Request</span><span class="p">,</span> <span class="n">ctxt</span><span class="p">:</span> <span class="n">JobContext</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Result</span><span class="p">:</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span class="n">report</span> <span class="o">=</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">report</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span class="c1"># Start a step directly</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span class="n">report</span><span class="o">.</span><span class="n">step_started</span><span class="p">(</span><span class="s2">&quot;initialization&quot;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Starting initialization&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>        <span class="n">result</span> <span class="o">=</span> <span class="n">initialize_system</span><span class="p">()</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>        <span class="c1"># Report progress updates via a plain event</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>        <span class="n">report</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">GenericErrorEvent</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Init progress: </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">))</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>        <span class="c1"># Report errors directly</span>
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>        <span class="n">report</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">GenericErrorEvent</span><span class="p">(</span><span class="n">error</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="n">context</span><span class="o">=</span><span class="s2">&quot;Failed to initialize&quot;</span><span class="p">))</span>
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>        <span class="k">raise</span>
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>    <span class="k">finally</span><span class="p">:</span>
+<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>        <span class="c1"># Finish the step</span>
+<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>        <span class="n">report</span><span class="o">.</span><span class="n">step_finished</span><span class="p">(</span><span class="s2">&quot;initialization&quot;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Initialization complete&quot;</span><span class="p">)</span>
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>
+<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>    <span class="k">return</span> <span class="n">Result</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 </code></pre></div>
 <p>This direct approach is particularly useful when:
 - Step duration is unknown or highly variable
@@ -2213,9 +2216,9 @@ HTTP instrumentation while still exporting logs/metrics via OpenObserve, or
 <a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="n">description</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;My batch service&quot;</span>
 <a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a>
 <a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="k">[project.dependencies]</span>
-<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="n">python</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&gt;=3.10,&lt;4.0&quot;</span>
+<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="n">python</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&gt;=3.11,&lt;4.0&quot;</span>
 <a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a><span class="n">pydantic</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&gt;=2.0&quot;</span>
-<a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a><span class="n">ivcap_service</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;^0.6.3&quot;</span>
+<a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a><span class="n">ivcap_service</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;^0.7.0&quot;</span>
 <a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a>
 <a id="__codelineno-28-11" name="__codelineno-28-11" href="#__codelineno-28-11"></a><span class="k">[tool.poetry-plugin-ivcap]</span>
 <a id="__codelineno-28-12" name="__codelineno-28-12" href="#__codelineno-28-12"></a><span class="n">service-file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;my_service.py&quot;</span>

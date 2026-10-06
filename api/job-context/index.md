@@ -15,9 +15,9 @@ def process_job(req: MyRequest, ctxt: JobContext) -> MyResult:
     logger.info(f"Processing job {ctxt.job_id}")
 
     # Progress reporting
-    with ctxt.report.step("analysis", msg="Analysing input") as step:
+    with ctxt.report.step("analysis", message="Analysing input") as step:
         result = analyse(req.data)
-        step.finished(msg="Analysis complete")
+        step.finished(message="Analysis complete")
 
     # Platform access
     artifact = ctxt.ivcap.get_artifact(req.input_urn)
@@ -51,17 +51,19 @@ The reporter uses the platform sidecar when running on IVCAP, and falls back to 
 
 ```python
 # Context-manager style (recommended)
-with ctxt.report.step("load", msg="Loading data") as step:
+with ctxt.report.step("load", message="Loading data") as step:
     data = load(req.source)
-    step.finished(msg=f"Loaded {len(data)} records")
+    step.info({"progress_percent": 50})   # (1)
+    step.finished(message=f"Loaded {len(data)} records")
 
-# Direct-call style (for async or conditional reporting)
-ctxt.report.step_started("analysis", msg="Starting analysis")
-ctxt.report.step_info("analysis", msg="50% done")       # (1)
-ctxt.report.step_finished("analysis", msg="Done")
+# Direct-call style (for async or conditional reporting, outside a `with` block)
+ctxt.report.step_started("analysis", message="Starting analysis")
+ctxt.report.step_finished("analysis", message="Done")
 ```
 
-1. `step_info` is called `step_info` in the `EventReporter`; it takes `step_name` and `msg`.
+1. `step.info(...)` is a method on the step object returned by `ctxt.report.step(...)`
+   (inside the `with` block), not on the `EventReporter` itself. It accepts either a raw
+   `dict` (wrapped into a `GenericEvent`) or any `BaseEvent` instance.
 
 For full details on event types, the `EventContext` step object, and custom reporters see
 **[Events & Reporting API →](events.md)**

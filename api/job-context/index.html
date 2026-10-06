@@ -196,7 +196,7 @@
     ivcap-service-sdk-python
     <ul class="md-source__facts">
       <li class="md-source__fact md-source__fact--version">
-        v0.6.25
+        latest
       </li>
     </ul>
   </div>
@@ -422,7 +422,7 @@
     ivcap-service-sdk-python
     <ul class="md-source__facts">
       <li class="md-source__fact md-source__fact--version">
-        v0.6.25
+        latest
       </li>
     </ul>
   </div>
@@ -1813,9 +1813,9 @@ It is passed automatically as the second argument to every worker function and p
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing job </span><span class="si">{</span><span class="n">ctxt</span><span class="o">.</span><span class="n">job_id</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="c1"># Progress reporting</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="k">with</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="s2">&quot;analysis&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Analysing input&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">step</span><span class="p">:</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="k">with</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="s2">&quot;analysis&quot;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Analysing input&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">step</span><span class="p">:</span>
 <a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        <span class="n">result</span> <span class="o">=</span> <span class="n">analyse</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        <span class="n">step</span><span class="o">.</span><span class="n">finished</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Analysis complete&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        <span class="n">step</span><span class="o">.</span><span class="n">finished</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="s2">&quot;Analysis complete&quot;</span><span class="p">)</span>
 <a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
 <a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="c1"># Platform access</span>
 <a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>    <span class="n">artifact</span> <span class="o">=</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">ivcap</span><span class="o">.</span><span class="n">get_artifact</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">input_urn</span><span class="p">)</span>
@@ -1837,17 +1837,19 @@ Use this in log messages and when correlating events or results.</p>
 The reporter uses the platform sidecar when running on IVCAP, and falls back to structured logging locally.</p>
 <p><strong>Quick reference:</strong></p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Context-manager style (recommended)</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">with</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="s2">&quot;load&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Loading data&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">step</span><span class="p">:</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">with</span> <span class="n">ctxt</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="s2">&quot;load&quot;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Loading data&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">step</span><span class="p">:</span>
 <a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">data</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">step</span><span class="o">.</span><span class="n">finished</span><span class="p">(</span><span class="n">msg</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="si">}</span><span class="s2"> records&quot;</span><span class="p">)</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="c1"># Direct-call style (for async or conditional reporting)</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">ctxt</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">step_started</span><span class="p">(</span><span class="s2">&quot;analysis&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Starting analysis&quot;</span><span class="p">)</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">ctxt</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">step_info</span><span class="p">(</span><span class="s2">&quot;analysis&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;50</span><span class="si">% d</span><span class="s2">one&quot;</span><span class="p">)</span>       <span class="c1"># (1)</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="n">ctxt</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">step_finished</span><span class="p">(</span><span class="s2">&quot;analysis&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Done&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">step</span><span class="o">.</span><span class="n">info</span><span class="p">({</span><span class="s2">&quot;progress_percent&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">})</span>   <span class="c1"># (1)</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">step</span><span class="o">.</span><span class="n">finished</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="si">}</span><span class="s2"> records&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># Direct-call style (for async or conditional reporting, outside a `with` block)</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="n">ctxt</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">step_started</span><span class="p">(</span><span class="s2">&quot;analysis&quot;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Starting analysis&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="n">ctxt</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">step_finished</span><span class="p">(</span><span class="s2">&quot;analysis&quot;</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;Done&quot;</span><span class="p">)</span>
 </code></pre></div>
 <ol>
-<li><code>step_info</code> is called <code>step_info</code> in the <code>EventReporter</code>; it takes <code>step_name</code> and <code>msg</code>.</li>
+<li><code>step.info(...)</code> is a method on the step object returned by <code>ctxt.report.step(...)</code>
+   (inside the <code>with</code> block), not on the <code>EventReporter</code> itself. It accepts either a raw
+   <code>dict</code> (wrapped into a <code>GenericEvent</code>) or any <code>BaseEvent</code> instance.</li>
 </ol>
 <p>For full details on event types, the <code>EventContext</code> step object, and custom reporters see
 <strong><a href="../events/">Events &amp; Reporting API →</a></strong></p>

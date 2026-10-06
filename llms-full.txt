@@ -18,7 +18,7 @@ logs and metrics to OpenObserve and OpenTelemetry.
 
 ## Prerequisites
 
-- Python 3.10 or higher
+- Python 3.11 or higher
 - pip or poetry package manager
 
 ## From PyPI
@@ -91,9 +91,9 @@ Check your Python version:
 python --version
 ```
 
-The SDK requires Python 3.10+. If you have multiple Python versions installed, use:
+The SDK requires Python 3.11+. If you have multiple Python versions installed, use:
 ```bash
-python3.10 -m pip install ivcap_service
+python3.11 -m pip install ivcap_service
 ```
 
 ### Permission Denied
@@ -159,9 +159,9 @@ def process_job(request: TextRequest, context: JobContext) -> TextResult:
     """Convert input text to uppercase."""
     logger.info(f"Processing job {context.job_id}")
 
-    with context.report.step("converting", msg="Converting text...") as step:
+    with context.report.step("converting", message="Converting text...") as step:
         result = request.text.upper()
-        step.finished(msg=f"Converted: {request.text}")
+        step.finished(message=f"Converted: {request.text}")
 
     return TextResult(uppercase_text=result)
 
@@ -172,12 +172,19 @@ if __name__ == "__main__":
 
 ## 3. Test Your Service
 
-Test it locally with a JSON file. Create `test_request.json`:
+Test it locally with a JSON file. The SDK expects a job "envelope" with an
+`id`, `in-content-type`, and `in-content` (the actual request payload, which
+must include the `$schema` matching your `Request` model). Create
+`test_request.json`:
 
 ```json
 {
-    "$schema": "urn:sd:schema:my_service.request.1",
-    "text": "hello world"
+    "id": "urn:ivcap:job:test-1",
+    "in-content-type": "application/json",
+    "in-content": {
+        "$schema": "urn:sd:schema:my_service.request.1",
+        "text": "hello world"
+    }
 }
 ```
 
@@ -188,11 +195,11 @@ python my_service.py --test-file test_request.json
 ```
 
 You should see:
-```
-Processing job test-job-id
-...
-Converted: hello world
-uppercase_text: HELLO WORLD
+```json
+{
+  "$schema": "urn:sd:schema:my_service.result.1",
+  "uppercase_text": "HELLO WORLD"
+}
 ```
 
 ## 4. Print Service Metadata
@@ -227,7 +234,6 @@ The service will start and wait for jobs. In production, this runs in a containe
 ```python
 def process_job(request: TextRequest, context: JobContext) -> TextResult:
     print(f"Job ID: {context.job_id}")
-    print(f"Request ID: {context.request_id}")
     # More in JobContext API...
 ```
 
@@ -236,11 +242,11 @@ def process_job(request: TextRequest, context: JobContext) -> TextResult:
 ```python
 with context.report.step("step1") as step:
     # Do work...
-    step.finished(msg="Completed step 1")
+    step.finished(message="Completed step 1")
 
 with context.report.step("step2") as step:
     # Do more work...
-    step.info(event={"key": "value"})  # Send info event
+    step.info({"key": "value"})  # Send an info event
     step.finished()
 ```
 
@@ -252,7 +258,10 @@ def process_job(request: TextRequest, context: JobContext) -> TextResult:
         # Process...
         pass
     except Exception as e:
-        context.report.step("error").error(e)
+        # Errors raised inside a `with context.report.step(...)` block are
+        # reported automatically; call `step.error(e)` explicitly if you need
+        # to report one without letting it propagate out of the `with` block.
+        logger.error(f"Processing failed: {e}", exc_info=True)
         raise
 ```
 
@@ -296,8 +305,8 @@ version = "0.1.0"
 description = "IVCAP service for processing images"
 
 [tool.poetry.dependencies]
-python = "^3.10"
-ivcap_service = "^0.6.0"
+python = "^3.11"
+ivcap_service = "^0.7.0"
 pillow = "^10.0.0"
 pydantic = "^2.0"
 
@@ -358,16 +367,16 @@ def process_job(request: ImageRequest, context: JobContext) -> ImageResult:
     ivcap = context.ivcap  # property — no parentheses; always available in platform jobs
 
     # Step 1: Download the image
-    with context.report.step("download", msg="Downloading image") as step:
+    with context.report.step("download", message="Downloading image") as step:
         logger.info(f"Downloading artifact {request.image_artifact_id}")
         artifact = ivcap.get_artifact(request.image_artifact_id)
         # as_local_file() streams to a temp file and auto-deletes on exit
         with artifact.as_local_file() as path:
             image_bytes = path.read_bytes()
-        step.finished(msg=f"Downloaded {len(image_bytes)} bytes")
+        step.finished(message=f"Downloaded {len(image_bytes)} bytes")
 
     # Step 2: Process the image
-    with context.report.step("process", msg="Resizing image") as step:
+    with context.report.step("process", message="Resizing image") as step:
         from PIL import Image
         import io
 
@@ -391,10 +400,10 @@ def process_job(request: ImageRequest, context: JobContext) -> ImageResult:
             "final_dimensions": final_size,
             "bytes": len(processed_data)
         })
-        step.finished(msg="Image resized")
+        step.finished(message="Image resized")
 
     # Step 3: Upload the result
-    with context.report.step("upload", msg="Uploading result") as step:
+    with context.report.step("upload", message="Uploading result") as step:
         result_artifact = ivcap.upload_artifact(
             name="resized-image.jpg",
             io_stream=io.BytesIO(processed_data),
@@ -402,7 +411,7 @@ def process_job(request: ImageRequest, context: JobContext) -> ImageResult:
             content_size=len(processed_data),
         )
         logger.info(f"Uploaded result: {result_artifact.id}")
-        step.finished(msg=f"Uploaded: {result_artifact.id}")
+        step.finished(message=f"Uploaded: {result_artifact.id}")
 
     return ImageResult(
         processed_image_id=result_artifact.id,
@@ -628,7 +637,6 @@ The `JobContext` provides essential information and APIs:
 def process_job(req: Request, ctx: JobContext) -> Result:
     # Job identifiers
     print(f"Job: {ctx.job_id}")
-    print(f"Request: {ctx.request_id}")
 
     # Progress reporting
     with ctx.report.step("processing") as step:
@@ -651,16 +659,16 @@ Report multi-step workflows using the event system:
 ```python
 def process_job(req: Request, ctx: JobContext) -> Result:
     # Step 1: Validate
-    with ctx.report.step("validate", msg="Validating input") as step:
+    with ctx.report.step("validate", message="Validating input") as step:
         if not is_valid(req):
             raise ValueError("Invalid input")
-        step.finished(msg="Validation passed")
+        step.finished(message="Validation passed")
 
     # Step 2: Process
-    with ctx.report.step("process", msg="Processing") as step:
+    with ctx.report.step("process", message="Processing") as step:
         result = process(req)
         step.info(event={"progress": 50})  # Send events
-        step.finished(msg="Done")
+        step.finished(message="Done")
 
     return Result(result=result)
 ```
@@ -668,14 +676,14 @@ def process_job(req: Request, ctx: JobContext) -> Result:
 ### Step Lifecycle
 
 ```python
-with ctx.report.step("step_name", msg="Description") as step:
+with ctx.report.step("step_name", message="Description") as step:
     # Step started automatically
 
     # Send progress events
     step.info(event={"key": "value"})
 
     # Mark completion
-    step.finished(msg="Complete")
+    step.finished(message="Complete")
 
     # Errors automatically reported on exception
 ```
@@ -702,19 +710,19 @@ def process_job(req: Request, ctx: JobContext) -> Result:
 
 ```python
 def process_job(req: Request, ctx: JobContext) -> Result:
-    with ctx.report.step("load", msg="Loading data") as s:
+    with ctx.report.step("load", message="Loading data") as s:
         data = load(req.source)
         s.finished()
 
-    with ctx.report.step("transform", msg="Transforming") as s:
+    with ctx.report.step("transform", message="Transforming") as s:
         transformed = transform(data)
-        s.finished(msg=f"Transformed {len(data)} items")
+        s.finished(message=f"Transformed {len(data)} items")
 
-    with ctx.report.step("validate", msg="Validating") as s:
+    with ctx.report.step("validate", message="Validating") as s:
         validate(transformed)
         s.finished()
 
-    with ctx.report.step("save", msg="Saving") as s:
+    with ctx.report.step("save", message="Saving") as s:
         save(transformed)
         s.finished()
 
@@ -728,7 +736,7 @@ def process_job(req: Request, ctx: JobContext) -> Result:
     items = load_items(req.source)
     results = []
 
-    with ctx.report.step("processing", msg="Processing items") as step:
+    with ctx.report.step("processing", message="Processing items") as step:
         for i, item in enumerate(items):
             result = process_item(item)
             results.append(result)
@@ -741,7 +749,7 @@ def process_job(req: Request, ctx: JobContext) -> Result:
                     "percentage": (i / len(items)) * 100
                 })
 
-        step.finished(msg=f"Processed {len(items)} items")
+        step.finished(message=f"Processed {len(items)} items")
 
     return Result(results=results)
 ```
@@ -754,7 +762,7 @@ def process_job(req: Request, ctx: JobContext) -> Result:
     batch_size = 32
     results = []
 
-    with ctx.report.step("batching", msg="Processing in batches") as step:
+    with ctx.report.step("batching", message="Processing in batches") as step:
         for batch_idx in range(0, len(items), batch_size):
             batch = items[batch_idx:batch_idx + batch_size]
             batch_results = process_batch(batch)
@@ -1073,21 +1081,21 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
 def process_job(req: Request, ctxt: JobContext) -> Result:
     ivcap = ctxt.ivcap
 
-    with ctxt.report.step("load", msg="Downloading input") as s:
+    with ctxt.report.step("load", message="Downloading input") as s:
         artifact = ivcap.get_artifact(req.input_urn)
         with artifact.as_local_file() as path:
             data = path.read_bytes()
-        s.finished(msg=f"Downloaded {len(data)} bytes")
+        s.finished(message=f"Downloaded {len(data)} bytes")
 
-    with ctxt.report.step("transform", msg="Transforming") as s:
+    with ctxt.report.step("transform", message="Transforming") as s:
         transformed = transform(data)
-        s.finished(msg=f"Transformed {len(data)} bytes")
+        s.finished(message=f"Transformed {len(data)} bytes")
 
-    with ctxt.report.step("validate", msg="Validating") as s:
+    with ctxt.report.step("validate", message="Validating") as s:
         validate(transformed)
         s.finished()
 
-    with ctxt.report.step("save", msg="Uploading result") as s:
+    with ctxt.report.step("save", message="Uploading result") as s:
         import io
         output_artifact = ivcap.upload_artifact(
             name="result.bin",
@@ -1095,7 +1103,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
             content_type="application/octet-stream",
             content_size=len(transformed),
         )
-        s.finished(msg=f"Uploaded {output_artifact.id}")
+        s.finished(message=f"Uploaded {output_artifact.id}")
 
     return Result(output_urn=output_artifact.id)
 ```
@@ -1110,7 +1118,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
     collection_id = "urn:ivcap:collection:batch-results"
     artifact_urns = []
 
-    with ctxt.report.step("batch_processing", msg="Processing items") as step:
+    with ctxt.report.step("batch_processing", message="Processing items") as step:
         for i, item in enumerate(req.items):
             processed = process(item)
             artifact = ivcap.upload_artifact(
@@ -1125,7 +1133,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
             if i % 100 == 0:
                 step.info(event={"processed": i, "total": len(req.items)})
 
-        step.finished(msg=f"Uploaded {len(artifact_urns)} artifacts")
+        step.finished(message=f"Uploaded {len(artifact_urns)} artifacts")
 
     return Result(artifact_urns=artifact_urns)
 ```
@@ -1143,7 +1151,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
 
     artifact = ivcap.get_artifact(req.input_urn)
 
-    with ctxt.report.step("process", msg="Streaming large file") as step:
+    with ctxt.report.step("process", message="Streaming large file") as step:
         processed_chunks = []
         bytes_read = 0
 
@@ -1155,9 +1163,9 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
             if bytes_read % (10 * 1024 * 1024) == 0:  # every 10 MB
                 step.info(event={"bytes_read": bytes_read})
 
-        step.finished(msg=f"Processed {bytes_read} bytes")
+        step.finished(message=f"Processed {bytes_read} bytes")
 
-    with ctxt.report.step("upload", msg="Uploading result") as step:
+    with ctxt.report.step("upload", message="Uploading result") as step:
         final_data = b"".join(processed_chunks)
         result_artifact = ivcap.upload_artifact(
             name="processed-output.bin",
@@ -1165,7 +1173,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
             content_type="application/octet-stream",
             content_size=len(final_data),
         )
-        step.finished(msg=f"Uploaded {result_artifact.id}")
+        step.finished(message=f"Uploaded {result_artifact.id}")
 
     return Result(artifact_urn=result_artifact.id)
 ```
@@ -1178,21 +1186,21 @@ from ivcap_client.exception import ResourceNotFound, IvcapApiError
 def process_job(req: Request, ctxt: JobContext) -> Result:
     ivcap = ctxt.ivcap
 
-    with ctxt.report.step("download", msg="Downloading") as step:
+    with ctxt.report.step("download", message="Downloading") as step:
         try:
             artifact = ivcap.get_artifact(req.input_urn)
             with artifact.as_local_file() as path:
                 data = path.read_bytes()
-            step.finished(msg=f"Downloaded {len(data)} bytes")
+            step.finished(message=f"Downloaded {len(data)} bytes")
         except ResourceNotFound:
             logger.warning(f"Artifact not found: {req.input_urn}, using default data")
-            step.finished(msg="Using default data")
+            step.finished(message="Using default data")
             data = DEFAULT_DATA
         except IvcapApiError as e:
             logger.error(f"Platform API error [{e.status_code}]: {e}")
             raise
 
-    with ctxt.report.step("upload", msg="Uploading") as step:
+    with ctxt.report.step("upload", message="Uploading") as step:
         try:
             import io
             result_artifact = ivcap.upload_artifact(
@@ -1200,7 +1208,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
                 io_stream=io.BytesIO(process(data)),
                 content_type="application/octet-stream",
             )
-            step.finished(msg=f"Uploaded {result_artifact.id}")
+            step.finished(message=f"Uploaded {result_artifact.id}")
         except IvcapApiError as e:
             logger.error(f"Upload failed [{e.status_code}]: {e}")
             raise
@@ -1321,13 +1329,13 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
     downstream = ivcap.get_service_by_name("my-service")
     DownstreamReq = downstream.request_model
 
-    with ctxt.report.step("call_service", msg="Calling downstream service") as step:
+    with ctxt.report.step("call_service", message="Calling downstream service") as step:
         try:
             job = downstream.request_job(
                 DownstreamReq(data=req.data),
                 timeout=120,
             )
-            step.finished(msg=f"Service completed with status: {job.status()}")
+            step.finished(message=f"Service completed with status: {job.status()}")
         except Exception as e:
             logger.error(f"Service call failed: {e}")
             raise
@@ -1349,24 +1357,24 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
     transform_svc = ivcap.get_service_by_name("transform-service")
     enrich_svc = ivcap.get_service_by_name("enrich-service")
 
-    with ctxt.report.step("validate", msg="Validating") as s:
+    with ctxt.report.step("validate", message="Validating") as s:
         ValidateReq = validate_svc.request_model
         validated_job = validate_svc.request_job(ValidateReq(data=req.data), timeout=60)
-        s.finished(msg="Validation complete")
+        s.finished(message="Validation complete")
 
-    with ctxt.report.step("transform", msg="Transforming") as s:
+    with ctxt.report.step("transform", message="Transforming") as s:
         TransformReq = transform_svc.request_model
         transformed_job = transform_svc.request_job(
             TransformReq(data=validated_job.result), timeout=120
         )
-        s.finished(msg="Transform complete")
+        s.finished(message="Transform complete")
 
-    with ctxt.report.step("enrich", msg="Enriching") as s:
+    with ctxt.report.step("enrich", message="Enriching") as s:
         EnrichReq = enrich_svc.request_model
         enriched_job = enrich_svc.request_job(
             EnrichReq(data=transformed_job.result), timeout=120
         )
-        s.finished(msg="Enrichment complete")
+        s.finished(message="Enrichment complete")
 
     return Result(result=enriched_job.result)
 ```
@@ -1394,7 +1402,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
 
     # Poll until all jobs finish
     completed = []
-    with ctxt.report.step("wait_for_jobs", msg="Waiting for results") as step:
+    with ctxt.report.step("wait_for_jobs", message="Waiting for results") as step:
         while len(completed) < len(jobs):
             for job in jobs:
                 if job not in completed:
@@ -1406,7 +1414,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
                 step.info(event={"completed": len(completed), "total": len(jobs)})
                 time.sleep(5)
 
-        step.finished(msg=f"All {len(jobs)} jobs finished")
+        step.finished(message=f"All {len(jobs)} jobs finished")
 
     results = [j.result for j in jobs if j.succeeded]
     return Result(results=results, all_succeeded=all(j.succeeded for j in jobs))
@@ -1431,9 +1439,9 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
     svc = ivcap.get_service_by_name(svc_name)
     SvcReq = svc.request_model
 
-    with ctxt.report.step("process", msg=f"Using {svc_name}") as step:
+    with ctxt.report.step("process", message=f"Using {svc_name}") as step:
         job = svc.request_job(SvcReq(data=req.data), timeout=600)
-        step.finished(msg=f"Completed via {svc_name}")
+        step.finished(message=f"Completed via {svc_name}")
 
     return Result(result=job.result)
 ```
@@ -1448,12 +1456,12 @@ from ivcap_client.exception import ResourceNotFound, IvcapApiError
 def process_job(req: Request, ctxt: JobContext) -> Result:
     ivcap = ctxt.ivcap
 
-    with ctxt.report.step("process", msg="Processing") as step:
+    with ctxt.report.step("process", message="Processing") as step:
         try:
             hq_svc = ivcap.get_service_by_name("hq-processor")
             HqReq = hq_svc.request_model
             job = hq_svc.request_job(HqReq(data=req.data), timeout=120)
-            step.finished(msg="High-quality processing complete")
+            step.finished(message="High-quality processing complete")
         except (ResourceNotFound, IvcapApiError) as e:
             logger.warning(f"HQ service unavailable ({e}), using fallback")
             step.info(event={"fallback": True})
@@ -1461,7 +1469,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
             fallback_svc = ivcap.get_service_by_name("fallback-processor")
             FallbackReq = fallback_svc.request_model
             job = fallback_svc.request_job(FallbackReq(data=req.data), timeout=60)
-            step.finished(msg="Fallback processing complete")
+            step.finished(message="Fallback processing complete")
 
     return Result(result=job.result)
 ```
@@ -1497,7 +1505,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
     mapped_results = [j.result for j in map_jobs if j.succeeded]
 
     # Reduce phase
-    with ctxt.report.step("reduce", msg="Reducing results") as step:
+    with ctxt.report.step("reduce", message="Reducing results") as step:
         reduce_job = reducer.request_job(ReducerReq(items=mapped_results), timeout=120)
         step.finished()
 
@@ -1541,7 +1549,7 @@ def process_job(req: Request, ctx: JobContext) -> Result:
     # Get job-specific logger
     logger = getLogger(f"job-{ctx.job_id}")
 
-    logger.info(f"Processing request {ctx.request_id}")
+    logger.info(f"Processing job {ctx.job_id}")
 
     with ctx.report.step("processing") as step:
         logger.debug("Starting processing step")
@@ -1636,7 +1644,7 @@ Use the event system for progress tracking:
 
 ```python
 def process_job(req: Request, ctx: JobContext) -> Result:
-    with ctx.report.step("processing", msg="Processing data") as step:
+    with ctx.report.step("processing", message="Processing data") as step:
         # Send progress updates
         for i, item in enumerate(items):
             process_item(item)
@@ -1647,7 +1655,7 @@ def process_job(req: Request, ctx: JobContext) -> Result:
                     "items_processed": i
                 })
 
-        step.finished(msg=f"Processed {len(items)} items")
+        step.finished(message=f"Processed {len(items)} items")
 
     return Result(result=result)
 ```
@@ -1730,7 +1738,7 @@ Explicitly report errors within named steps:
 
 ```python
 def process_job(req: Request, ctxt: JobContext) -> Result:
-    with ctxt.report.step("processing", msg="Processing") as step:
+    with ctxt.report.step("processing", message="Processing") as step:
         try:
             result = process(req)
         except ValueError as e:
@@ -1755,15 +1763,15 @@ from ivcap_client.exception import ResourceNotFound, IvcapApiError
 def process_job(req: Request, ctxt: JobContext) -> Result:
     ivcap = ctxt.ivcap
 
-    with ctxt.report.step("download", msg="Downloading artifact") as step:
+    with ctxt.report.step("download", message="Downloading artifact") as step:
         try:
             artifact = ivcap.get_artifact(req.artifact_urn)
             with artifact.as_local_file() as path:
                 data = path.read_bytes()
-            step.finished(msg=f"Downloaded {len(data)} bytes")
+            step.finished(message=f"Downloaded {len(data)} bytes")
         except ResourceNotFound:
             logger.warning(f"Artifact not found: {req.artifact_urn}, using default data")
-            step.finished(msg="Using default data")
+            step.finished(message="Using default data")
             data = DEFAULT_DATA
         except IvcapApiError as e:
             logger.error(f"Platform API error [{e.status_code}]: {e}")
@@ -1786,9 +1794,9 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
 
     for attempt in range(max_retries):
         try:
-            with ctxt.report.step(f"attempt-{attempt+1}", msg=f"Attempt {attempt+1}") as step:
+            with ctxt.report.step(f"attempt-{attempt+1}", message=f"Attempt {attempt+1}") as step:
                 job = downstream.request_job(DownstreamReq(data=req.data), timeout=120)
-                step.finished(msg="Succeeded")
+                step.finished(message="Succeeded")
                 return Result(result=job.result)
         except Exception as e:
             if attempt < max_retries - 1:
@@ -1810,13 +1818,13 @@ from ivcap_client.exception import ResourceNotFound, IvcapApiError
 def process_job(req: Request, ctxt: JobContext) -> Result:
     ivcap = ctxt.ivcap
 
-    with ctxt.report.step("process", msg="Processing") as step:
+    with ctxt.report.step("process", message="Processing") as step:
         try:
             hq_svc = ivcap.get_service_by_name("hq-processor")
             HqReq = hq_svc.request_model
             job = hq_svc.request_job(HqReq(data=req.data), timeout=120)
             result = job.result
-            step.finished(msg="High-quality processing complete")
+            step.finished(message="High-quality processing complete")
         except (ResourceNotFound, IvcapApiError) as e:
             logger.warning(f"HQ service unavailable ({e}), using fallback")
             step.info(event={"fallback": True})
@@ -1825,7 +1833,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
             FallbackReq = fallback_svc.request_model
             job = fallback_svc.request_job(FallbackReq(data=req.data), timeout=60)
             result = job.result
-            step.finished(msg="Fallback processing complete")
+            step.finished(message="Fallback processing complete")
 
     return Result(result=result)
 ```
@@ -1907,7 +1915,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
     results = []
     errors = []
 
-    with ctxt.report.step("batch_processing", msg="Processing batch") as step:
+    with ctxt.report.step("batch_processing", message="Processing batch") as step:
         for i, item in enumerate(req.items):
             try:
                 result = process_item(item)
@@ -1920,7 +1928,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
                 })
                 logger.warning(f"Failed to process item {i}: {e}")
 
-        step.finished(msg=f"Processed {len(results)}/{len(req.items)} items successfully")
+        step.finished(message=f"Processed {len(results)}/{len(req.items)} items successfully")
 
     return Result(
         results=results,
@@ -2031,8 +2039,10 @@ python my_service.py --test-file job.json --test-without-sidecar
 Set environment variables in your deployment:
 
 ```bash
-# Service configuration
-export IVCAP_URL="https://ivcap.example.com"
+# Service configuration (IVCAP_BASE_URL is normally injected by the
+# platform runtime; set it yourself only when running outside a
+# platform-managed container)
+export IVCAP_BASE_URL="http://ivcap.local"
 export IVCAP_SERVICE_ID="urn:ivcap:service:..."
 
 # Observability - a plain OTEL endpoint is sufficient on its own
@@ -2125,20 +2135,21 @@ def process_job(req: Request, ctx: JobContext) -> Result:
 
 ### Resource Requirements
 
-Specify resource needs in your service definition. The platform uses this for scheduling:
+Resource requests/limits are **not** part of the `Service(...)` constructor.
+Instead, the SDK reads them from a `resources.json` file (or the file named
+by `IVCAP_RESOURCES_FILE`) next to your service entry point when generating
+the service definition:
 
-```python
-from ivcap_service import ResourceRequirements
-
-service = Service(
-    name="GPU-Intensive Service",
-    resources=ResourceRequirements(
-        cpu=2,
-        memory="4Gi",
-        gpu=1  # Request GPU
-    )
-)
+```json
+{
+  "limits": {"cpu": "2", "memory": "4Gi"},
+  "requests": {"cpu": "1", "memory": "2Gi"}
+}
 ```
+
+See the [Service Definition Schema](../reference/service-definition.md) and
+[`IVCAP_RESOURCES_FILE`](../reference/environment-variables.md#ivcap_resources_file)
+reference for details.
 
 ## Monitoring
 
@@ -2574,9 +2585,9 @@ def process_job(req: MyRequest, ctxt: JobContext) -> MyResult:
     logger.info(f"Processing job {ctxt.job_id}")
 
     # Progress reporting
-    with ctxt.report.step("analysis", msg="Analysing input") as step:
+    with ctxt.report.step("analysis", message="Analysing input") as step:
         result = analyse(req.data)
-        step.finished(msg="Analysis complete")
+        step.finished(message="Analysis complete")
 
     # Platform access
     artifact = ctxt.ivcap.get_artifact(req.input_urn)
@@ -2610,17 +2621,19 @@ The reporter uses the platform sidecar when running on IVCAP, and falls back to 
 
 ```python
 # Context-manager style (recommended)
-with ctxt.report.step("load", msg="Loading data") as step:
+with ctxt.report.step("load", message="Loading data") as step:
     data = load(req.source)
-    step.finished(msg=f"Loaded {len(data)} records")
+    step.info({"progress_percent": 50})   # (1)
+    step.finished(message=f"Loaded {len(data)} records")
 
-# Direct-call style (for async or conditional reporting)
-ctxt.report.step_started("analysis", msg="Starting analysis")
-ctxt.report.step_info("analysis", msg="50% done")       # (1)
-ctxt.report.step_finished("analysis", msg="Done")
+# Direct-call style (for async or conditional reporting, outside a `with` block)
+ctxt.report.step_started("analysis", message="Starting analysis")
+ctxt.report.step_finished("analysis", message="Done")
 ```
 
-1. `step_info` is called `step_info` in the `EventReporter`; it takes `step_name` and `msg`.
+1. `step.info(...)` is a method on the step object returned by `ctxt.report.step(...)`
+   (inside the `with` block), not on the `EventReporter` itself. It accepts either a raw
+   `dict` (wrapped into a `GenericEvent`) or any `BaseEvent` instance.
 
 For full details on event types, the `EventContext` step object, and custom reporters see
 **[Events & Reporting API →](events.md)**
@@ -2794,14 +2807,14 @@ def process_job(req: BatchRequest, ctx: JobContext) -> BatchResult:
     results = []
 
     # Step 1: Validate inputs
-    with ctx.report.step("validate", msg="Validating inputs") as step:
+    with ctx.report.step("validate", message="Validating inputs") as step:
         for item in req.items:
             if not item.text.strip():
                 raise ValueError(f"Item {item.id}: empty text")
-        step.finished(msg=f"Validated {len(req.items)} items")
+        step.finished(message=f"Validated {len(req.items)} items")
 
     # Step 2: Process items
-    with ctx.report.step("process", msg="Processing items") as step:
+    with ctx.report.step("process", message="Processing items") as step:
         for i, item in enumerate(req.items):
             # Transform
             processed_text = item.text.upper() if req.uppercase else item.text
@@ -2822,7 +2835,7 @@ def process_job(req: BatchRequest, ctx: JobContext) -> BatchResult:
                     "percentage": ((i + 1) / len(req.items)) * 100
                 })
 
-        step.finished(msg=f"Processed {len(results)} items")
+        step.finished(message=f"Processed {len(results)} items")
 
     # Step 3: Summary
     duration = time.time() - start_time
@@ -2910,19 +2923,19 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
     transform_svc = ivcap.get_service_by_name("transform-service")
     enrich_svc   = ivcap.get_service_by_name("enrich-service")
 
-    with ctxt.report.step("validate", msg="Validating") as s:
+    with ctxt.report.step("validate", message="Validating") as s:
         ValidateReq = validate_svc.request_model
         validated_job = validate_svc.request_job(ValidateReq(data=req.data), timeout=60)
         s.finished()
 
-    with ctxt.report.step("transform", msg="Transforming") as s:
+    with ctxt.report.step("transform", message="Transforming") as s:
         TransformReq = transform_svc.request_model
         transformed_job = transform_svc.request_job(
             TransformReq(data=validated_job.result), timeout=120
         )
         s.finished()
 
-    with ctxt.report.step("enrich", msg="Enriching") as s:
+    with ctxt.report.step("enrich", message="Enriching") as s:
         EnrichReq = enrich_svc.request_model
         enriched_job = enrich_svc.request_job(
             EnrichReq(data=transformed_job.result), timeout=120
@@ -2954,7 +2967,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
 
     # Poll until all finish
     completed = 0
-    with ctxt.report.step("parallel_processing", msg="Waiting for parallel jobs") as step:
+    with ctxt.report.step("parallel_processing", message="Waiting for parallel jobs") as step:
         while completed < len(jobs):
             for item_id, job in jobs.items():
                 if item_id not in results and job.finished:
@@ -2967,7 +2980,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
                 step.info(event={"completed": completed, "total": len(jobs)})
                 time.sleep(3)
 
-        step.finished(msg=f"Completed {len(results)} jobs")
+        step.finished(message=f"Completed {len(results)} jobs")
 
     return Result(results=results)
 ```
@@ -2985,7 +2998,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
 
     artifact = ivcap.get_artifact(req.input_urn)
 
-    with ctxt.report.step("process", msg="Streaming and processing") as step:
+    with ctxt.report.step("process", message="Streaming and processing") as step:
         processed_chunks = []
         bytes_processed = 0
 
@@ -2997,9 +3010,9 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
             if bytes_processed % (10 * 1024 * 1024) == 0:  # Every 10 MB
                 step.info(event={"bytes_processed": bytes_processed})
 
-        step.finished(msg=f"Processed {bytes_processed} bytes")
+        step.finished(message=f"Processed {bytes_processed} bytes")
 
-    with ctxt.report.step("upload", msg="Uploading result") as step:
+    with ctxt.report.step("upload", message="Uploading result") as step:
         final_data = b"".join(processed_chunks)
         result_artifact = ivcap.upload_artifact(
             name="processed-output.bin",
@@ -3007,7 +3020,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
             content_type="application/octet-stream",
             content_size=len(final_data),
         )
-        step.finished(msg=f"Uploaded {result_artifact.id}")
+        step.finished(message=f"Uploaded {result_artifact.id}")
 
     return Result(artifact_urn=result_artifact.id)
 ```
@@ -3020,7 +3033,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
 
     artifact = ivcap.get_artifact(req.input_urn)
 
-    with ctxt.report.step("process", msg="Processing large file") as step:
+    with ctxt.report.step("process", message="Processing large file") as step:
         # as_local_file() streams the artifact to a temp file — no memory spike
         with artifact.as_local_file() as path:
             result = process_large_file(path)  # path is a pathlib.Path
@@ -3055,7 +3068,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
     downstream = ivcap.get_service_by_name("flaky-service")
     DownstreamReq = downstream.request_model
 
-    with ctxt.report.step("call_service", msg="Calling service with retry") as step:
+    with ctxt.report.step("call_service", message="Calling service with retry") as step:
         job = retry_with_backoff(
             lambda: downstream.request_job(DownstreamReq(data=req.data), timeout=60)
         )
@@ -3080,7 +3093,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
     for name, param in svc.parameters.items():
         logger.debug(f"  {name}: {param.type}, optional={param.is_optional}")
 
-    with ctxt.report.step("process", msg=f"Using {req.processor_service_name}") as step:
+    with ctxt.report.step("process", message=f"Using {req.processor_service_name}") as step:
         job = svc.request_job(SvcReq(data=req.data), timeout=300)
         step.finished()
 
@@ -3105,7 +3118,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
     svc = ivcap.get_service_by_name(svc_name)
     SvcReq = svc.request_model
 
-    with ctxt.report.step("process", msg=f"Using {svc_name}") as step:
+    with ctxt.report.step("process", message=f"Using {svc_name}") as step:
         job = svc.request_job(SvcReq(data=req.data), timeout=300)
         step.finished()
 
@@ -3135,7 +3148,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
         return Result(result=result_cache[input_hash])
 
     # Process
-    with ctxt.report.step("process", msg="Processing") as step:
+    with ctxt.report.step("process", message="Processing") as step:
         model = get_cached_model(req.model_id)
         result = model.predict(req.data)
         step.finished()
