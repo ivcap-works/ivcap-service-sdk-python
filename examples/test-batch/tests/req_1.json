@@ -1,4 +1,6 @@
 {
-  "duration_seconds": 2,
-  "target_cpu_percent": 60
+  "consume_cpu": {
+    "duration_seconds": 2,
+    "target_cpu_percent": 60
+  }
 }

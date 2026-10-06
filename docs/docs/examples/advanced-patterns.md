@@ -16,19 +16,19 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
     transform_svc = ivcap.get_service_by_name("transform-service")
     enrich_svc   = ivcap.get_service_by_name("enrich-service")
 
-    with ctxt.report.step("validate", msg="Validating") as s:
+    with ctxt.report.step("validate", message="Validating") as s:
         ValidateReq = validate_svc.request_model
         validated_job = validate_svc.request_job(ValidateReq(data=req.data), timeout=60)
         s.finished()
 
-    with ctxt.report.step("transform", msg="Transforming") as s:
+    with ctxt.report.step("transform", message="Transforming") as s:
         TransformReq = transform_svc.request_model
         transformed_job = transform_svc.request_job(
             TransformReq(data=validated_job.result), timeout=120
         )
         s.finished()
 
-    with ctxt.report.step("enrich", msg="Enriching") as s:
+    with ctxt.report.step("enrich", message="Enriching") as s:
         EnrichReq = enrich_svc.request_model
         enriched_job = enrich_svc.request_job(
             EnrichReq(data=transformed_job.result), timeout=120
@@ -60,7 +60,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
 
     # Poll until all finish
     completed = 0
-    with ctxt.report.step("parallel_processing", msg="Waiting for parallel jobs") as step:
+    with ctxt.report.step("parallel_processing", message="Waiting for parallel jobs") as step:
         while completed < len(jobs):
             for item_id, job in jobs.items():
                 if item_id not in results and job.finished:
@@ -73,7 +73,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
                 step.info(event={"completed": completed, "total": len(jobs)})
                 time.sleep(3)
 
-        step.finished(msg=f"Completed {len(results)} jobs")
+        step.finished(message=f"Completed {len(results)} jobs")
 
     return Result(results=results)
 ```
@@ -91,7 +91,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
 
     artifact = ivcap.get_artifact(req.input_urn)
 
-    with ctxt.report.step("process", msg="Streaming and processing") as step:
+    with ctxt.report.step("process", message="Streaming and processing") as step:
         processed_chunks = []
         bytes_processed = 0
 
@@ -103,9 +103,9 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
             if bytes_processed % (10 * 1024 * 1024) == 0:  # Every 10 MB
                 step.info(event={"bytes_processed": bytes_processed})
 
-        step.finished(msg=f"Processed {bytes_processed} bytes")
+        step.finished(message=f"Processed {bytes_processed} bytes")
 
-    with ctxt.report.step("upload", msg="Uploading result") as step:
+    with ctxt.report.step("upload", message="Uploading result") as step:
         final_data = b"".join(processed_chunks)
         result_artifact = ivcap.upload_artifact(
             name="processed-output.bin",
@@ -113,7 +113,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
             content_type="application/octet-stream",
             content_size=len(final_data),
         )
-        step.finished(msg=f"Uploaded {result_artifact.id}")
+        step.finished(message=f"Uploaded {result_artifact.id}")
 
     return Result(artifact_urn=result_artifact.id)
 ```
@@ -126,7 +126,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
 
     artifact = ivcap.get_artifact(req.input_urn)
 
-    with ctxt.report.step("process", msg="Processing large file") as step:
+    with ctxt.report.step("process", message="Processing large file") as step:
         # as_local_file() streams the artifact to a temp file — no memory spike
         with artifact.as_local_file() as path:
             result = process_large_file(path)  # path is a pathlib.Path
@@ -161,7 +161,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
     downstream = ivcap.get_service_by_name("flaky-service")
     DownstreamReq = downstream.request_model
 
-    with ctxt.report.step("call_service", msg="Calling service with retry") as step:
+    with ctxt.report.step("call_service", message="Calling service with retry") as step:
         job = retry_with_backoff(
             lambda: downstream.request_job(DownstreamReq(data=req.data), timeout=60)
         )
@@ -186,7 +186,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
     for name, param in svc.parameters.items():
         logger.debug(f"  {name}: {param.type}, optional={param.is_optional}")
 
-    with ctxt.report.step("process", msg=f"Using {req.processor_service_name}") as step:
+    with ctxt.report.step("process", message=f"Using {req.processor_service_name}") as step:
         job = svc.request_job(SvcReq(data=req.data), timeout=300)
         step.finished()
 
@@ -211,7 +211,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
     svc = ivcap.get_service_by_name(svc_name)
     SvcReq = svc.request_model
 
-    with ctxt.report.step("process", msg=f"Using {svc_name}") as step:
+    with ctxt.report.step("process", message=f"Using {svc_name}") as step:
         job = svc.request_job(SvcReq(data=req.data), timeout=300)
         step.finished()
 
@@ -241,7 +241,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
         return Result(result=result_cache[input_hash])
 
     # Process
-    with ctxt.report.step("process", msg="Processing") as step:
+    with ctxt.report.step("process", message="Processing") as step:
         model = get_cached_model(req.model_id)
         result = model.predict(req.data)
         step.finished()

@@ -45,9 +45,9 @@ def process_job(request: TextRequest, context: JobContext) -> TextResult:
     """Convert input text to uppercase."""
     logger.info(f"Processing job {context.job_id}")
 
-    with context.report.step("converting", msg="Converting text...") as step:
+    with context.report.step("converting", message="Converting text...") as step:
         result = request.text.upper()
-        step.finished(msg=f"Converted: {request.text}")
+        step.finished(message=f"Converted: {request.text}")
 
     return TextResult(uppercase_text=result)
 
@@ -58,12 +58,19 @@ if __name__ == "__main__":
 
 ## 3. Test Your Service
 
-Test it locally with a JSON file. Create `test_request.json`:
+Test it locally with a JSON file. The SDK expects a job "envelope" with an
+`id`, `in-content-type`, and `in-content` (the actual request payload, which
+must include the `$schema` matching your `Request` model). Create
+`test_request.json`:
 
 ```json
 {
-    "$schema": "urn:sd:schema:my_service.request.1",
-    "text": "hello world"
+    "id": "urn:ivcap:job:test-1",
+    "in-content-type": "application/json",
+    "in-content": {
+        "$schema": "urn:sd:schema:my_service.request.1",
+        "text": "hello world"
+    }
 }
 ```
 
@@ -74,11 +81,11 @@ python my_service.py --test-file test_request.json
 ```
 
 You should see:
-```
-Processing job test-job-id
-...
-Converted: hello world
-uppercase_text: HELLO WORLD
+```json
+{
+  "$schema": "urn:sd:schema:my_service.result.1",
+  "uppercase_text": "HELLO WORLD"
+}
 ```
 
 ## 4. Print Service Metadata
@@ -113,7 +120,6 @@ The service will start and wait for jobs. In production, this runs in a containe
 ```python
 def process_job(request: TextRequest, context: JobContext) -> TextResult:
     print(f"Job ID: {context.job_id}")
-    print(f"Request ID: {context.request_id}")
     # More in JobContext API...
 ```
 
@@ -122,11 +128,11 @@ def process_job(request: TextRequest, context: JobContext) -> TextResult:
 ```python
 with context.report.step("step1") as step:
     # Do work...
-    step.finished(msg="Completed step 1")
+    step.finished(message="Completed step 1")
 
 with context.report.step("step2") as step:
     # Do more work...
-    step.info(event={"key": "value"})  # Send info event
+    step.info({"key": "value"})  # Send an info event
     step.finished()
 ```
 
@@ -138,7 +144,10 @@ def process_job(request: TextRequest, context: JobContext) -> TextResult:
         # Process...
         pass
     except Exception as e:
-        context.report.step("error").error(e)
+        # Errors raised inside a `with context.report.step(...)` block are
+        # reported automatically; call `step.error(e)` explicitly if you need
+        # to report one without letting it propagate out of the `with` block.
+        logger.error(f"Processing failed: {e}", exc_info=True)
         raise
 ```
 

@@ -211,21 +211,21 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
 def process_job(req: Request, ctxt: JobContext) -> Result:
     ivcap = ctxt.ivcap
 
-    with ctxt.report.step("load", msg="Downloading input") as s:
+    with ctxt.report.step("load", message="Downloading input") as s:
         artifact = ivcap.get_artifact(req.input_urn)
         with artifact.as_local_file() as path:
             data = path.read_bytes()
-        s.finished(msg=f"Downloaded {len(data)} bytes")
+        s.finished(message=f"Downloaded {len(data)} bytes")
 
-    with ctxt.report.step("transform", msg="Transforming") as s:
+    with ctxt.report.step("transform", message="Transforming") as s:
         transformed = transform(data)
-        s.finished(msg=f"Transformed {len(data)} bytes")
+        s.finished(message=f"Transformed {len(data)} bytes")
 
-    with ctxt.report.step("validate", msg="Validating") as s:
+    with ctxt.report.step("validate", message="Validating") as s:
         validate(transformed)
         s.finished()
 
-    with ctxt.report.step("save", msg="Uploading result") as s:
+    with ctxt.report.step("save", message="Uploading result") as s:
         import io
         output_artifact = ivcap.upload_artifact(
             name="result.bin",
@@ -233,7 +233,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
             content_type="application/octet-stream",
             content_size=len(transformed),
         )
-        s.finished(msg=f"Uploaded {output_artifact.id}")
+        s.finished(message=f"Uploaded {output_artifact.id}")
 
     return Result(output_urn=output_artifact.id)
 ```
@@ -248,7 +248,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
     collection_id = "urn:ivcap:collection:batch-results"
     artifact_urns = []
 
-    with ctxt.report.step("batch_processing", msg="Processing items") as step:
+    with ctxt.report.step("batch_processing", message="Processing items") as step:
         for i, item in enumerate(req.items):
             processed = process(item)
             artifact = ivcap.upload_artifact(
@@ -263,7 +263,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
             if i % 100 == 0:
                 step.info(event={"processed": i, "total": len(req.items)})
 
-        step.finished(msg=f"Uploaded {len(artifact_urns)} artifacts")
+        step.finished(message=f"Uploaded {len(artifact_urns)} artifacts")
 
     return Result(artifact_urns=artifact_urns)
 ```
@@ -281,7 +281,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
 
     artifact = ivcap.get_artifact(req.input_urn)
 
-    with ctxt.report.step("process", msg="Streaming large file") as step:
+    with ctxt.report.step("process", message="Streaming large file") as step:
         processed_chunks = []
         bytes_read = 0
 
@@ -293,9 +293,9 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
             if bytes_read % (10 * 1024 * 1024) == 0:  # every 10 MB
                 step.info(event={"bytes_read": bytes_read})
 
-        step.finished(msg=f"Processed {bytes_read} bytes")
+        step.finished(message=f"Processed {bytes_read} bytes")
 
-    with ctxt.report.step("upload", msg="Uploading result") as step:
+    with ctxt.report.step("upload", message="Uploading result") as step:
         final_data = b"".join(processed_chunks)
         result_artifact = ivcap.upload_artifact(
             name="processed-output.bin",
@@ -303,7 +303,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
             content_type="application/octet-stream",
             content_size=len(final_data),
         )
-        step.finished(msg=f"Uploaded {result_artifact.id}")
+        step.finished(message=f"Uploaded {result_artifact.id}")
 
     return Result(artifact_urn=result_artifact.id)
 ```
@@ -316,21 +316,21 @@ from ivcap_client.exception import ResourceNotFound, IvcapApiError
 def process_job(req: Request, ctxt: JobContext) -> Result:
     ivcap = ctxt.ivcap
 
-    with ctxt.report.step("download", msg="Downloading") as step:
+    with ctxt.report.step("download", message="Downloading") as step:
         try:
             artifact = ivcap.get_artifact(req.input_urn)
             with artifact.as_local_file() as path:
                 data = path.read_bytes()
-            step.finished(msg=f"Downloaded {len(data)} bytes")
+            step.finished(message=f"Downloaded {len(data)} bytes")
         except ResourceNotFound:
             logger.warning(f"Artifact not found: {req.input_urn}, using default data")
-            step.finished(msg="Using default data")
+            step.finished(message="Using default data")
             data = DEFAULT_DATA
         except IvcapApiError as e:
             logger.error(f"Platform API error [{e.status_code}]: {e}")
             raise
 
-    with ctxt.report.step("upload", msg="Uploading") as step:
+    with ctxt.report.step("upload", message="Uploading") as step:
         try:
             import io
             result_artifact = ivcap.upload_artifact(
@@ -338,7 +338,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
                 io_stream=io.BytesIO(process(data)),
                 content_type="application/octet-stream",
             )
-            step.finished(msg=f"Uploaded {result_artifact.id}")
+            step.finished(message=f"Uploaded {result_artifact.id}")
         except IvcapApiError as e:
             logger.error(f"Upload failed [{e.status_code}]: {e}")
             raise

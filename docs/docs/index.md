@@ -31,9 +31,9 @@ class Result(BaseModel):
     output_data: str = Field(description="Processing result")
 
 def process_job(req: Request, ctxt: JobContext) -> Result:
-    with ctxt.report.step("processing", msg="Starting work") as step:
+    with ctxt.report.step("processing", message="Starting work") as step:
         result = req.input_data.upper()
-        step.finished(msg="Done!")
+        step.finished(message="Done!")
     return Result(output_data=result)
 
 if __name__ == "__main__":

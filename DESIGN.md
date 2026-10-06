@@ -484,8 +484,20 @@ documented above to deliver work to the container.
 
 ## Reference: example implementation
 
-* `examples/test-batch/batch_service.py` implements:
-  * `Request` + `Result` Pydantic models
-  * a worker function `consume_compute(req, ctxt)`
+* `examples/test-batch/batch_service.py` wires up the service and starts it via
+  `start_batch_service(service, process_job)`.
+* `ivcap_service/testkit/` implements the actual business logic. It lives in the
+  installable `ivcap_service` package (rather than under `examples/`) so it can be
+  imported and reused/tested from other projects (e.g. the `ivcap-lambda` SDK) via
+  `from ivcap_service.testkit import ...`, without pulling in the service-bootstrap
+  code. It is a package with one module per concern, wired back together in
+  `__init__.py`:
+  * `models.py` - `Request` + `Result` (and nested) Pydantic models
+  * `__init__.py` - the general worker function `process_job(req, ctxt)` that
+    dispatches to whichever optional sub-tests are present in the request
+    (none are mandatory), and re-exports the public symbols below
+    * `consume_compute.py` - `consume_compute(req, ctxt)` - CPU load test (`req.consume_cpu`)
+    * `call.py` - `make_request(req, ctxt)` - generic HTTP call (`req.call`)
+    * `llm.py` - `completion(req)` - LLM completion call (`req.llm`)
+    * `artifact.py` - `handle_artifact(req, ctxt)` - artifact download/upload (`req.artifact`)
   * progress reporting via `ctxt.report.step(...)`
-  * startup via `start_batch_service(service, consume_compute)`

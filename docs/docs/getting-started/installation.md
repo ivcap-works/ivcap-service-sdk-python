@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Python 3.10 or higher
+- Python 3.11 or higher
 - pip or poetry package manager
 
 ## From PyPI
@@ -75,9 +75,9 @@ Check your Python version:
 python --version
 ```
 
-The SDK requires Python 3.10+. If you have multiple Python versions installed, use:
+The SDK requires Python 3.11+. If you have multiple Python versions installed, use:
 ```bash
-python3.10 -m pip install ivcap_service
+python3.11 -m pip install ivcap_service
 ```
 
 ### Permission Denied

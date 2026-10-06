@@ -57,8 +57,10 @@ python my_service.py --test-file job.json --test-without-sidecar
 Set environment variables in your deployment:
 
 ```bash
-# Service configuration
-export IVCAP_URL="https://ivcap.example.com"
+# Service configuration (IVCAP_BASE_URL is normally injected by the
+# platform runtime; set it yourself only when running outside a
+# platform-managed container)
+export IVCAP_BASE_URL="http://ivcap.local"
 export IVCAP_SERVICE_ID="urn:ivcap:service:..."
 
 # Observability - a plain OTEL endpoint is sufficient on its own
@@ -151,20 +153,21 @@ def process_job(req: Request, ctx: JobContext) -> Result:
 
 ### Resource Requirements
 
-Specify resource needs in your service definition. The platform uses this for scheduling:
+Resource requests/limits are **not** part of the `Service(...)` constructor.
+Instead, the SDK reads them from a `resources.json` file (or the file named
+by `IVCAP_RESOURCES_FILE`) next to your service entry point when generating
+the service definition:
 
-```python
-from ivcap_service import ResourceRequirements
-
-service = Service(
-    name="GPU-Intensive Service",
-    resources=ResourceRequirements(
-        cpu=2,
-        memory="4Gi",
-        gpu=1  # Request GPU
-    )
-)
+```json
+{
+  "limits": {"cpu": "2", "memory": "4Gi"},
+  "requests": {"cpu": "1", "memory": "2Gi"}
+}
 ```
+
+See the [Service Definition Schema](../reference/service-definition.md) and
+[`IVCAP_RESOURCES_FILE`](../reference/environment-variables.md#ivcap_resources_file)
+reference for details.
 
 ## Monitoring
 

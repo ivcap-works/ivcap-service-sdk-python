@@ -4,16 +4,56 @@ Complete reference of all environment variables used by the IVCAP Service SDK.
 
 ## Service Configuration
 
-### IVCAP_URL
+### IVCAP_BASE_URL
 - **Type**: String
-- **Default**: Auto-detected from environment
-- **Description**: Base URL for the IVCAP platform
-- **Example**: `https://ivcap.example.com`
+- **Default**: unset - the service will still run locally, but sidecar
+  communication (fetching jobs, pushing results/events) is disabled; use
+  `--test-file` for local testing in that case
+- **Description**: Base URL of the IVCAP sidecar this service instance talks
+  to for fetching jobs and pushing results/events. Set automatically by the
+  IVCAP runtime when the service runs as a deployed batch container
+- **Example**: `http://ivcap.local`
 
-### IVCAP_API_KEY
+### IVCAP_SERVICE_ID
 - **Type**: String
-- **Description**: API key for IVCAP authentication
-- **Example**: `sk_prod_...`
+- **Description**: This service's IVCAP URN. Used as the `$id` in the
+  generated service definition (`--print-service-description`). Also used for
+  OpenTelemetry tagging - see [below](#ivcap_service_id)
+- **Example**: `urn:ivcap:service:3678e5f1-8fb7-5ad6-b65b-8bd8c23c0948`
+
+### IVCAP_SERVICE_NAME
+- **Type**: String
+- **Default**: the `name` passed to the `Service(...)` constructor
+- **Description**: Overrides the service name used in the generated service
+  definition
+- **Example**: `my-batch-service`
+
+### IVCAP_POLICY_URN
+- **Type**: String
+- **Default**: `urn:ivcap:policy:ivcap.open.service`
+- **Description**: Access policy URN included in the generated service
+  definition
+
+### IVCAP_RESOURCES_FILE
+- **Type**: String
+- **Default**: `resources.json`
+- **Description**: Path to a JSON file describing CPU/memory resource
+  requests and limits, included in the generated service definition. See
+  [Service Definition Schema](service-definition.md)
+
+### DOCKER_IMG
+- **Type**: String
+- **Description**: Docker image reference included as the controller `image`
+  in the generated service definition (`--print-service-description`).
+  Typically set by the CI/build pipeline, not by service authors
+
+### ENTRYPOINT / DOCKERFILE
+- **Type**: String
+- **Description**: Used by `--print-service-description` to determine the
+  container entrypoint command. `ENTRYPOINT` (a Python list literal, e.g.
+  `["python", "my_service.py"]`) takes precedence; otherwise the SDK parses
+  the `ENTRYPOINT` line out of the file named by `DOCKERFILE` (default
+  `Dockerfile`)
 
 ## OpenTelemetry / OpenObserve Configuration
 

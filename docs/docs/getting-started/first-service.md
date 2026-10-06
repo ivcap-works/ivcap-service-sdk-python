@@ -20,8 +20,8 @@ version = "0.1.0"
 description = "IVCAP service for processing images"
 
 [tool.poetry.dependencies]
-python = "^3.10"
-ivcap_service = "^0.6.0"
+python = "^3.11"
+ivcap_service = "^0.7.0"
 pillow = "^10.0.0"
 pydantic = "^2.0"
 
@@ -82,16 +82,16 @@ def process_job(request: ImageRequest, context: JobContext) -> ImageResult:
     ivcap = context.ivcap  # property — no parentheses; always available in platform jobs
 
     # Step 1: Download the image
-    with context.report.step("download", msg="Downloading image") as step:
+    with context.report.step("download", message="Downloading image") as step:
         logger.info(f"Downloading artifact {request.image_artifact_id}")
         artifact = ivcap.get_artifact(request.image_artifact_id)
         # as_local_file() streams to a temp file and auto-deletes on exit
         with artifact.as_local_file() as path:
             image_bytes = path.read_bytes()
-        step.finished(msg=f"Downloaded {len(image_bytes)} bytes")
+        step.finished(message=f"Downloaded {len(image_bytes)} bytes")
 
     # Step 2: Process the image
-    with context.report.step("process", msg="Resizing image") as step:
+    with context.report.step("process", message="Resizing image") as step:
         from PIL import Image
         import io
 
@@ -115,10 +115,10 @@ def process_job(request: ImageRequest, context: JobContext) -> ImageResult:
             "final_dimensions": final_size,
             "bytes": len(processed_data)
         })
-        step.finished(msg="Image resized")
+        step.finished(message="Image resized")
 
     # Step 3: Upload the result
-    with context.report.step("upload", msg="Uploading result") as step:
+    with context.report.step("upload", message="Uploading result") as step:
         result_artifact = ivcap.upload_artifact(
             name="resized-image.jpg",
             io_stream=io.BytesIO(processed_data),
@@ -126,7 +126,7 @@ def process_job(request: ImageRequest, context: JobContext) -> ImageResult:
             content_size=len(processed_data),
         )
         logger.info(f"Uploaded result: {result_artifact.id}")
-        step.finished(msg=f"Uploaded: {result_artifact.id}")
+        step.finished(message=f"Uploaded: {result_artifact.id}")
 
     return ImageResult(
         processed_image_id=result_artifact.id,

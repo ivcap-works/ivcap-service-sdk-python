@@ -62,14 +62,14 @@ def process_job(req: BatchRequest, ctx: JobContext) -> BatchResult:
     results = []
 
     # Step 1: Validate inputs
-    with ctx.report.step("validate", msg="Validating inputs") as step:
+    with ctx.report.step("validate", message="Validating inputs") as step:
         for item in req.items:
             if not item.text.strip():
                 raise ValueError(f"Item {item.id}: empty text")
-        step.finished(msg=f"Validated {len(req.items)} items")
+        step.finished(message=f"Validated {len(req.items)} items")
 
     # Step 2: Process items
-    with ctx.report.step("process", msg="Processing items") as step:
+    with ctx.report.step("process", message="Processing items") as step:
         for i, item in enumerate(req.items):
             # Transform
             processed_text = item.text.upper() if req.uppercase else item.text
@@ -90,7 +90,7 @@ def process_job(req: BatchRequest, ctx: JobContext) -> BatchResult:
                     "percentage": ((i + 1) / len(req.items)) * 100
                 })
 
-        step.finished(msg=f"Processed {len(results)} items")
+        step.finished(message=f"Processed {len(results)} items")
 
     # Step 3: Summary
     duration = time.time() - start_time

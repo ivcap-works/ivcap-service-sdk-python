@@ -225,16 +225,16 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
     logger.info(f"Processing {job_id}")
 
     # Create a named execution step with reporting
-    with ctxt.report.step("data_preparation", msg="Starting data prep") as step:
+    with ctxt.report.step("data_preparation", message="Starting data prep") as step:
         # Do work here
         prepare_data()
         # Update step with completion message
-        step.finished(msg="Data preparation complete")
+        step.finished(message="Data preparation complete")
 
     # Create another step
-    with ctxt.report.step("processing", msg="Processing data") as step:
+    with ctxt.report.step("processing", message="Processing data") as step:
         result = process_data()
-        step.finished(msg="Processing complete")
+        step.finished(message="Processing complete")
 
     return Result(result=result)
 ```
@@ -250,40 +250,43 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
 The `EventReporter` provides two ways to report events:
 
 1. **Step Context Manager (recommended for progress tracking)**
-   - `step(name, msg)` - Create a named step context manager for progress tracking
-     - Returns a context manager that yields a step object
-     - Call `step.finished(msg)` to mark completion within the context
+   - `step(name, message=None, **kwargs)` - Create a named step context manager for progress tracking
+     - Returns a context manager that yields a step object (an `EventContext`)
+     - Call `step.info(event)` to report an informational update within the step
+     - Call `step.error(err, context=None)` to explicitly report an error (also done automatically on an uncaught exception)
+     - Call `step.finished(message=None, **kwargs)` to mark completion within the context
      - Use for long-running operations to provide progress updates
      - Events are automatically reported when entering/exiting the context
 
-2. **Direct Event Issuance (for immediate notifications)**
-   - `step_started(name, msg)` - Report that a step has started
-   - `step_info(name, msg)` - Report an informational update for a step
-   - `step_error(name, error, context)` - Report an error in a step
-   - `step_finished(name, msg)` - Report that a step has finished
+2. **Direct Event Issuance (for immediate notifications, outside a `with` block)**
+   - `step_started(step_name, message=None, **kwargs)` - Report that a step has started
+   - `step_finished(step_name, message=None, **kwargs)` - Report that a step has finished
+   - `emit(event)` - Emit any `BaseEvent` instance directly (e.g. `GenericEvent`, `GenericErrorEvent`)
    - Use these methods when you need to issue events outside a context manager
    - Useful for conditional reporting or async operations
 
 **Example with direct event issuance:**
 
 ```python
+from ivcap_service.events import GenericErrorEvent
+
 def process_job(req: Request, ctxt: JobContext) -> Result:
     report = ctxt.report
 
     # Start a step directly
-    report.step_started("initialization", msg="Starting initialization")
+    report.step_started("initialization", message="Starting initialization")
 
     try:
         result = initialize_system()
-        # Report progress updates
-        report.step_info("initialization", msg=f"Init progress: {result}%")
+        # Report progress updates via a plain event
+        report.emit(GenericErrorEvent(error="", context=f"Init progress: {result}%"))
     except Exception as e:
         # Report errors directly
-        report.step_error("initialization", error=str(e), context="Failed to initialize")
+        report.emit(GenericErrorEvent(error=str(e), context="Failed to initialize"))
         raise
     finally:
         # Finish the step
-        report.step_finished("initialization", msg="Initialization complete")
+        report.step_finished("initialization", message="Initialization complete")
 
     return Result(...)
 ```
@@ -747,9 +750,9 @@ version = "1.0.0"
 description = "My batch service"
 
 [project.dependencies]
-python = ">=3.10,<4.0"
+python = ">=3.11,<4.0"
 pydantic = ">=2.0"
-ivcap_service = "^0.6.3"
+ivcap_service = "^0.7.0"
 
 [tool.poetry-plugin-ivcap]
 service-file = "my_service.py"

@@ -7,37 +7,25 @@
 
 **A Python library for building batch services on the IVCAP platform.**
 
-This SDK simplifies development of long-running, queue-based worker services that integrate with the IVCAP data and compute platform. With minimal boilerplate, you can build services that:
+This SDK simplifies development of long-running, queue-based worker services that integrate with the IVCAP data and compute platform: typed Pydantic request/result models, automatic error handling, artifact upload/download, service composition, progress reporting, and export of logs/metrics/traces to observability platforms.
 
-- Process jobs asynchronously with automatic error handling
-- Upload, download, and process artifacts
-- Compose with other IVCAP services dynamically
-- Report progress and metadata throughout execution
-- Export logs and metrics to observability platforms
+📖 **Full documentation: [ivcap-works.github.io/ivcap-service-sdk-python](https://ivcap-works.github.io/ivcap-service-sdk-python/)**
+🤖 **Agent/LLM quick-reference: [`AGENTS.md`](./AGENTS.md)**
 
 ## Table of Contents
 
 - [Quick Start](#quick-start)
-  - [1. Define Your Service](#1-define-your-service)
-  - [2. Run It](#2-run-it)
-- [Core Features](#core-features)
-  - [Job Processing](#job-processing)
-  - [IVCAP Platform Integration](#ivcap-platform-integration)
-  - [Observability](#observability)
 - [Examples](#examples)
-- [Comprehensive Documentation](#comprehensive-documentation)
-- [OpenObserve Integration (Logs + Metrics)](#openobserve-integration-logs--metrics)
-  - [Basic Setup](#basic-setup)
-  - [Advanced Configuration](#advanced-configuration)
 - [Template Repository](#template-repository)
-- [What This Library Provides](#what-this-library-provides)
-- [Project Structure](#project-structure)
+- [Maintenance \& Development Guide](#maintenance--development-guide)
 - [Contributing](#contributing)
 - [License](#license)
 
 ## Quick Start
 
-### 1. Define Your Service
+```bash
+pip install ivcap_service
+```
 
 ```python
 from pydantic import BaseModel, Field
@@ -69,9 +57,9 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
 
     This comprehensive description helps others understand what your service does.
     """
-    with ctxt.report.step("processing", msg="Starting work") as step:
+    with ctxt.report.step("processing", message="Starting work") as step:
         result = req.input_data.upper()  # Your logic here
-        step.finished(msg="Processing complete")
+        step.finished(message="Processing complete")
 
     return Result(output_data=result)
 
@@ -79,10 +67,9 @@ if __name__ == "__main__":
     start_batch_service(service, process_job)
 ```
 
-### 2. Run It
-
 ```bash
-# Test locally
+# Test locally (job must be wrapped in the id/in-content-type/in-content envelope,
+# see the Quick Start guide linked below)
 python my_service.py --test-file test_job.json
 
 # Print service metadata
@@ -92,25 +79,15 @@ python my_service.py --print-service-description
 python my_service.py
 ```
 
-## Core Features
+For everything else — `JobContext`, artifact management, service composition,
+error handling, observability/OpenTelemetry/OpenObserve, deployment, and best
+practices — see the full documentation:
 
-### Job Processing
-- **Request/Result Models**: Use Pydantic to define typed inputs and outputs
-- **JobContext**: Access job metadata, progress reporting, and platform APIs
-- **Error Handling**: Automatic exception capture and reporting
-- **Progress Tracking**: Report work progress with named steps
-
-### IVCAP Platform Integration
-- **Service Composition**: Call other services from within your job
-- **Artifact Management**: Upload and download files
-- **Metadata**: Attach domain-specific metadata (aspects) to artifacts
-- **Service Discovery**: Dynamically find and invoke available services
-
-### Observability
-- **Logging**: Structured logging with automatic export to OpenObserve
-- **Progress Events**: Track job steps with automatic timestamps and reporting
-- **OpenTelemetry**: Distributed tracing support for workflow monitoring
-- **Metrics**: Automatic job count and duration metrics
+- **[Quick Start](https://ivcap-works.github.io/ivcap-service-sdk-python/getting-started/quick-start/)** and **[Your First Service](https://ivcap-works.github.io/ivcap-service-sdk-python/getting-started/first-service/)**
+- **[Guides](https://ivcap-works.github.io/ivcap-service-sdk-python/guides/overview/)** — job processing, artifacts, service composition, observability, error handling, deployment, best practices
+- **[API Reference](https://ivcap-works.github.io/ivcap-service-sdk-python/api/overview/)**
+- **[Environment Variables Reference](https://ivcap-works.github.io/ivcap-service-sdk-python/reference/environment-variables/)**
+- **[`AGENTS.md`](./AGENTS.md)** — a single, comprehensive, machine-readable reference for AI coding assistants
 
 ## Examples
 
@@ -127,62 +104,6 @@ python batch_service.py --print-service-description
 python batch_service.py --test-file tests/req_1.json
 ```
 
-## Comprehensive Documentation
-
-**This README provides a quick overview. For in-depth guidance, see [`AGENTS.md`](./AGENTS.md)**, which covers:
-
-- **Step-by-step guide** to building batch services
-- **JobContext API** - progress reporting, artifact upload/download, service composition
-- **Error handling** - exception patterns and recovery
-- **Advanced features** - environment variables, OpenTelemetry, custom arguments
-- **Deployment** - Docker configuration, production patterns
-- **Best practices** - code organization, documentation, testing
-- **Troubleshooting** - common issues and solutions
-
-**`AGENTS.md` is designed for:**
-- Developers wanting deep technical understanding
-- Agents/LLMs needing detailed implementation guidance
-- Anyone building complex, multi-service workflows
-
-## OpenObserve Integration (Logs + Metrics)
-
-This SDK can export logs and metrics to **OpenObserve** via OpenTelemetry. It's **opt-in** and configured via environment variables.
-
-### Basic Setup
-
-```bash
-export OPENOBSERVE_URL="https://observe.example.com"
-export OPENOBSERVE_ORG="myorg"
-export OPENOBSERVE_USERNAME="service@example.com"
-export OPENOBSERVE_TOKEN="<service-token>"
-```
-
-When configured, the SDK automatically exports:
-- **Python logging** records
-- **Runtime metrics**:
-  - `ivcap.jobs_total` - Total jobs processed
-  - `ivcap.job_duration_seconds` - Job execution duration histogram
-
-### Advanced Configuration
-
-```bash
-# Use explicit OTLP endpoint
-export OTEL_EXPORTER_OTLP_ENDPOINT="http://otel-collector:4318"
-
-# Or use OpenObserve unified OTLP endpoint
-export OPENOBSERVE_USE_UNIFIED_OTLP_ENDPOINT=true
-
-# Custom headers
-export OTEL_EXPORTER_OTLP_HEADERS="Authorization=Bearer <token>,x-scope=service"
-
-# Control signals and streams
-export OPENOBSERVE_ENABLE_LOGS=true
-export OPENOBSERVE_ENABLE_METRICS=true
-export OPENOBSERVE_METRICS_INTERVAL=30
-```
-
-See [`AGENTS.md`](./AGENTS.md) for more configuration options.
-
 ## Template Repository
 
 Get started quickly with the community template:
@@ -192,33 +113,6 @@ git clone https://github.com/ivcap-works/ivcap-python-ai-tool-template.git
 cd ivcap-python-ai-tool-template
 # Follow the template's README
 ```
-
-## What This Library Provides
-
-| Component | Purpose |
-|-----------|---------|
-| `Service` | Describe your service metadata |
-| `JobContext` | Access job info, reporting, and IVCAP APIs |
-| `start_batch_service()` | Bootstrap the service runner |
-| `getLogger()` / `logging_init()` | Structured logging with OpenObserve export |
-| `ivcap` client (via context) | Interact with IVCAP platform |
-
-## Project Structure
-
-A typical IVCAP service project:
-
-```
-my-service/
-├── my_service.py          # Main service code
-├── pyproject.toml         # Python dependencies
-├── Dockerfile             # Container image
-├── tests/
-│   ├── request1.json      # Test job files
-│   └── request2.json
-└── README.md              # Service documentation
-```
-
-See `examples/test-batch/` for a complete working example.
 
 ## Maintenance & Development Guide
 

@@ -24,7 +24,7 @@ def process_job(req: Request, ctx: JobContext) -> Result:
     # Get job-specific logger
     logger = getLogger(f"job-{ctx.job_id}")
 
-    logger.info(f"Processing request {ctx.request_id}")
+    logger.info(f"Processing job {ctx.job_id}")
 
     with ctx.report.step("processing") as step:
         logger.debug("Starting processing step")
@@ -119,7 +119,7 @@ Use the event system for progress tracking:
 
 ```python
 def process_job(req: Request, ctx: JobContext) -> Result:
-    with ctx.report.step("processing", msg="Processing data") as step:
+    with ctx.report.step("processing", message="Processing data") as step:
         # Send progress updates
         for i, item in enumerate(items):
             process_item(item)
@@ -130,7 +130,7 @@ def process_job(req: Request, ctx: JobContext) -> Result:
                     "items_processed": i
                 })
 
-        step.finished(msg=f"Processed {len(items)} items")
+        step.finished(message=f"Processed {len(items)} items")
 
     return Result(result=result)
 ```

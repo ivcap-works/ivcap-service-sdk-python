@@ -1,6 +1,4 @@
 {
-  "duration_seconds": 1,
-  "target_cpu_percent": 10,
   "call": {
     "method": "POST",
     "url": "http://httpbin.org/post",

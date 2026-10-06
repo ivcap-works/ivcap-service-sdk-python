@@ -1,12 +1,15 @@
-[tool.poetry]
+[project]
 name = "ivcap_service"
-version = "0.6.26"
+version = "0.7.0"
 description = "SDK library for building services for the IVCAP platform"
-
-authors = ["Max Ott <max.ott@csiro.au>"]
-
+authors = [
+    {name = "Max Ott", email = "max.ott@csiro.au"}
+]
 readme = "README.md"
+requires-python = ">=3.11,<4.0"
+dynamic = ["dependencies"]
 
+[tool.poetry]
 include = ["ivcap_service/py.typed", "AGENTS.md"]
 
 [tool.poe.tasks]    # using poethepoet
@@ -71,5 +74,5 @@ ignore = ["E501"]
 quote-style = "double"
 
 [build-system]
-requires = ["poetry-core>=1.0.0"]
+requires = ["poetry-core>=2.0.0"]
 build-backend = "poetry.core.masonry.api"

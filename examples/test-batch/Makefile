@@ -22,7 +22,7 @@ run:
 
 run-with-proxy:
 	env VERSION=$(VERSION) PYTHONPATH="" \
-		PYTHONPATH=${PROJECT_DIR}/../../src \
+		PYTHONPATH=${PROJECT_DIR}/../.. \
 		IVCAP_BASE_URL="http://ivcap.local" \
 		http_proxy=${HTTP_PROXY} \
 		python ${PROJECT_DIR}/batch_service.py
@@ -44,13 +44,13 @@ test-ivcap:
 
 service-description:
 	env VERSION=$(VERSION) \
-		PYTHONPATH=${PROJECT_DIR}/../../src \
+		PYTHONPATH=${PROJECT_DIR}/../.. \
 		IVCAP_BASE_URL="http://ivcap.local" \
-		python ${PROJECT_DIR}/batch_service.py --print-service-description
+		poetry run python ${PROJECT_DIR}/batch_service.py --print-service-description
 
 tool-description:
 	env VERSION=$(VERSION) \
-		PYTHONPATH=${PROJECT_DIR}/../../src \
+		PYTHONPATH=${PROJECT_DIR}/../.. \
 		IVCAP_BASE_URL="http://ivcap.local" \
 		python ${PROJECT_DIR}/batch_service.py --print-tool-description
 

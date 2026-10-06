@@ -3,10 +3,45 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
-from io import BytesIO
+import json
+from io import BytesIO, StringIO
+from typing import Any
+from unittest.mock import MagicMock
 
 from ivcap_service.events import EventReporter
 from ivcap_service.types import BinaryResult, ExecutionError, IvcapResult, JobContext
+
+
+def create_job(ctxt: JobContext, service_id: str, props: dict[str, Any]) -> Any:
+    """Create an IVCAP job for 'service_id' with the given 'props' using the
+    IVCAP client exposed via the job context's `.ivcap` property.
+
+    This mirrors the recommended usage pattern documented in AGENTS.md:
+    look up the target service via `ctxt.ivcap.get_service(...)` and then
+    submit a job request for it with `service.request_job(...)`.
+    """
+    service = ctxt.ivcap.get_service(service_id)
+    return service.request_job(StringIO(json.dumps(props)))
+
+
+SELF_SERVICE_ID = "urn:ivcap:service:self-echo"
+
+
+def echo_job(ctxt: JobContext, props: dict[str, Any], depth: int) -> dict[str, Any]:
+    """A toy 'worker function' that echoes 'props' back.
+
+    If 'depth' is greater than 0, it recursively invokes *itself* as a
+    service (via `create_job`) with 'depth' decremented by one, and returns
+    whatever that nested job ultimately echoes back. Once 'depth' reaches 0
+    it stops recursing and simply returns 'props' unchanged - i.e. the
+    innermost call is the one that actually "echoes".
+    """
+    if depth <= 0:
+        return props
+
+    child_props = {**props, "depth": depth - 1}
+    job = create_job(ctxt, SELF_SERVICE_ID, child_props)
+    return job.result
 
 
 def test_binary_result_with_bytes():
@@ -102,3 +137,76 @@ def test_job_context_ivcap_private_attr():
     ctx = JobContext(job_id="job-123", report=report)
     # The private attribute should be initialized to None
     assert ctx._ivcap is None
+
+
+def test_create_job():
+    """Test creating an IVCAP job for a given service_id/props via ctxt.ivcap.
+
+    Uses a mocked IVCAP client (injected into the JobContext's private
+    `_ivcap` attribute) so no real network call is made. Verifies that
+    `ctxt.ivcap.get_service(service_id)` is used to look up the service and
+    that `service.request_job(...)` is invoked with the supplied props.
+    """
+    service_id = "urn:ivcap:service:1234"
+    props: dict[str, Any] = {"param1": "value1", "param2": 42}
+
+    mock_job = MagicMock(name="Job")
+    mock_service = MagicMock(name="Service")
+    mock_service.request_job.return_value = mock_job
+    mock_ivcap = MagicMock(name="IVCAP")
+    mock_ivcap.get_service.return_value = mock_service
+
+    report = EventReporter("job-123", "")
+    ctx = JobContext(job_id="job-123", report=report)
+    ctx._ivcap = mock_ivcap  # bypass lazy IVCAP() construction
+
+    job = create_job(ctx, service_id, props)
+
+    mock_ivcap.get_service.assert_called_once_with(service_id)
+    assert mock_service.request_job.call_count == 1
+    (sent_arg,), _ = mock_service.request_job.call_args
+    assert json.load(sent_arg) == props
+    assert job is mock_job
+
+
+def test_create_job_recursive_echo():
+    """Test the service recursively calling itself (via create_job) to echo.
+
+    Simulates `echo_job` invoking itself as a downstream IVCAP service
+    (`ctxt.ivcap.get_service(SELF_SERVICE_ID).request_job(...)`) a fixed
+    number of times, with each nested call reducing 'depth' by one, until
+    'depth' reaches 0 - at which point the innermost call simply echoes
+    'props' back unchanged. The mocked `request_job` re-enters `echo_job`
+    synchronously (standing in for the platform actually running the
+    recursive job) so no real network/service calls are made.
+    """
+    report = EventReporter("job-123", "")
+    mock_ivcap = MagicMock(name="IVCAP")
+    mock_service = MagicMock(name="Service")
+    mock_ivcap.get_service.return_value = mock_service
+
+    call_count = 0
+
+    def fake_request_job(data):
+        nonlocal call_count
+        call_count += 1
+        sent_props = json.load(data)
+        child_ctx = JobContext(job_id=f"job-{call_count}", report=report)
+        child_ctx._ivcap = mock_ivcap
+        result = echo_job(child_ctx, sent_props, sent_props["depth"])
+        mock_job = MagicMock(name="Job")
+        mock_job.result = result
+        return mock_job
+
+    mock_service.request_job.side_effect = fake_request_job
+
+    ctx = JobContext(job_id="job-0", report=report)
+    ctx._ivcap = mock_ivcap
+
+    props = {"msg": "hello"}
+    result = echo_job(ctx, props, depth=3)
+
+    assert result == {"msg": "hello", "depth": 0}
+    assert call_count == 3
+    assert mock_ivcap.get_service.call_count == 3
+    mock_ivcap.get_service.assert_called_with(SELF_SERVICE_ID)

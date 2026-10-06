@@ -2,8 +2,6 @@
   "id": "urn:ivcap:job:cade8076-9c81-42a2-a2f2-46e2c63e6089",
   "in-content-type": "application/json",
   "in-content": {
-    "duration_seconds": 1,
-    "target_cpu_percent": 10,
     "call": {
       "method": "GET",
       "url": "https://httpbin.org/get"
