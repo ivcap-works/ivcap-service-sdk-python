@@ -2151,6 +2151,14 @@ and any context-scanning agents can find it automatically.</p>
 <li><code>OPENOBSERVE_USERNAME</code> - OpenObserve username</li>
 <li><code>OPENOBSERVE_TOKEN</code> - OpenObserve authentication token</li>
 <li><code>OTEL_EXPORTER_OTLP_ENDPOINT</code> - OpenTelemetry endpoint</li>
+<li><code>LITELLM_PROXY</code> - base URL of a LiteLLM proxy; when set,
+  <code>JobContext.llm_client()</code> (<code>ctxt.llm_client()</code>) routes completions
+  through it instead of talking to <code>OPENAI_API_KEY</code>/<code>OPENAI_BASE_URL</code>
+  directly</li>
+<li><code>DEFAULT_LLM_MODEL</code> - overrides <code>ivcap_service.DEFAULT_LLM_MODEL</code>
+  (defaults to <code>"sciansa-default"</code>), the default LLM model name used when
+  a caller doesn't specify one explicitly (e.g.
+  <code>ivcap_service.testkit.llm.LlmTester.model</code>)</li>
 </ul>
 <h3 id="logging-to-openobserve">Logging to OpenObserve<a class="headerlink" href="#logging-to-openobserve" title="Permanent link">&para;</a></h3>
 <p>The SDK automatically exports logs, metrics, and traces via OTLP/HTTP once a

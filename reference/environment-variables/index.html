@@ -1771,6 +1771,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#llm-client-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LLM Client Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="LLM Client Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#litellm_proxy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LITELLM_PROXY
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#default_llm_model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEFAULT_LLM_MODEL
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#logging-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2553,6 +2592,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#llm-client-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LLM Client Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="LLM Client Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#litellm_proxy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LITELLM_PROXY
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#default_llm_model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEFAULT_LLM_MODEL
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#logging-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2986,6 +3064,37 @@ parameters) and that it implements the expected forward-by-header
 protocol - a generic HTTP forward/CONNECT proxy is <strong>not</strong> a drop-in
 replacement.</p>
 </blockquote>
+<h2 id="llm-client-configuration">LLM Client Configuration<a class="headerlink" href="#llm-client-configuration" title="Permanent link">&para;</a></h2>
+<p>These variables configure <code>JobContext.llm_client()</code>, which returns a
+ready-to-use <code>openai.OpenAI</code>-compatible client from inside a worker
+function (<code>ctxt.llm_client()</code>). See the
+<a href="https://github.com/ivcap-works/ivcap-service-sdk-python/blob/main/ivcap_service/testkit/llm.py"><code>ivcap_service.testkit.llm</code></a>
+module for a complete worked example.</p>
+<h3 id="litellm_proxy">LITELLM_PROXY<a class="headerlink" href="#litellm_proxy" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: String</li>
+<li><strong>Default</strong>: unset - a plain <code>openai.OpenAI()</code> client is returned,
+  relying on the standard <code>OPENAI_API_KEY</code> / <code>OPENAI_BASE_URL</code> environment
+  variables</li>
+<li><strong>Description</strong>: Base URL of a LiteLLM proxy. When set,
+  <code>JobContext.llm_client()</code> configures the returned client's <code>base_url</code> to
+  <code>{LITELLM_PROXY}/v1</code> and uses a placeholder <code>api_key</code> (the proxy itself
+  handles authentication/authorization), so your service code never needs
+  to know whether completions are routed through LiteLLM</li>
+<li><strong>Example</strong>: <code>http://litellm.local:4000</code></li>
+</ul>
+<h3 id="default_llm_model">DEFAULT_LLM_MODEL<a class="headerlink" href="#default_llm_model" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: String</li>
+<li><strong>Default</strong>: <code>sciansa-default</code></li>
+<li><strong>Description</strong>: Default LLM model name, exported as
+  <code>ivcap_service.DEFAULT_LLM_MODEL</code>. Used as the default <code>model</code> value by
+  <code>ivcap_service.testkit.llm.LlmTester</code> (and available for your own
+  request models) when a caller doesn't specify a model explicitly.
+  Setting this environment variable overrides the default for an entire
+  deployment without any code changes</li>
+<li><strong>Example</strong>: <code>gpt-4o-mini</code></li>
+</ul>
 <h2 id="logging-configuration">Logging Configuration<a class="headerlink" href="#logging-configuration" title="Permanent link">&para;</a></h2>
 <h3 id="ivcap_log_level">IVCAP_LOG_LEVEL<a class="headerlink" href="#ivcap_log_level" title="Permanent link">&para;</a></h3>
 <ul>
