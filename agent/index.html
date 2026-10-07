@@ -2159,6 +2159,12 @@ and any context-scanning agents can find it automatically.</p>
   (defaults to <code>"sciansa-default"</code>), the default LLM model name used when
   a caller doesn't specify one explicitly (e.g.
   <code>ivcap_service.testkit.llm.LlmTester.model</code>)</li>
+<li><code>OPENAI_API_KEY</code> / <code>OPENAI_BASE_URL</code> - standard OpenAI SDK variables,
+  used by <code>ctxt.llm_client()</code> when <code>LITELLM_PROXY</code> is not set. If
+  <code>OPENAI_API_KEY</code> isn't set either, <code>ctxt.llm_client()</code> falls back to
+  reading <code>~/.config/openai/api_key</code> (a plain text file containing just the
+  key), and raises a <code>RuntimeError</code> with setup instructions if that isn't
+  found either</li>
 </ul>
 <h3 id="logging-to-openobserve">Logging to OpenObserve<a class="headerlink" href="#logging-to-openobserve" title="Permanent link">&para;</a></h3>
 <p>The SDK automatically exports logs, metrics, and traces via OTLP/HTTP once a

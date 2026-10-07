@@ -1974,103 +1974,145 @@ This is used internally by the SDK to authenticate outbound HTTP calls (via the 
 
             <details class="quote">
               <summary>Source code in <code>ivcap_service/types.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-29">29</a></span>
-<span class="normal"><a href="#__codelineno-0-30">30</a></span>
-<span class="normal"><a href="#__codelineno-0-31">31</a></span>
-<span class="normal"><a href="#__codelineno-0-32">32</a></span>
-<span class="normal"><a href="#__codelineno-0-33">33</a></span>
-<span class="normal"><a href="#__codelineno-0-34">34</a></span>
-<span class="normal"><a href="#__codelineno-0-35">35</a></span>
-<span class="normal"><a href="#__codelineno-0-36">36</a></span>
-<span class="normal"><a href="#__codelineno-0-37">37</a></span>
-<span class="normal"><a href="#__codelineno-0-38">38</a></span>
-<span class="normal"><a href="#__codelineno-0-39">39</a></span>
-<span class="normal"><a href="#__codelineno-0-40">40</a></span>
-<span class="normal"><a href="#__codelineno-0-41">41</a></span>
-<span class="normal"><a href="#__codelineno-0-42">42</a></span>
-<span class="normal"><a href="#__codelineno-0-43">43</a></span>
-<span class="normal"><a href="#__codelineno-0-44">44</a></span>
-<span class="normal"><a href="#__codelineno-0-45">45</a></span>
-<span class="normal"><a href="#__codelineno-0-46">46</a></span>
-<span class="normal"><a href="#__codelineno-0-47">47</a></span>
-<span class="normal"><a href="#__codelineno-0-48">48</a></span>
-<span class="normal"><a href="#__codelineno-0-49">49</a></span>
-<span class="normal"><a href="#__codelineno-0-50">50</a></span>
-<span class="normal"><a href="#__codelineno-0-51">51</a></span>
-<span class="normal"><a href="#__codelineno-0-52">52</a></span>
-<span class="normal"><a href="#__codelineno-0-53">53</a></span>
-<span class="normal"><a href="#__codelineno-0-54">54</a></span>
-<span class="normal"><a href="#__codelineno-0-55">55</a></span>
-<span class="normal"><a href="#__codelineno-0-56">56</a></span>
-<span class="normal"><a href="#__codelineno-0-57">57</a></span>
-<span class="normal"><a href="#__codelineno-0-58">58</a></span>
-<span class="normal"><a href="#__codelineno-0-59">59</a></span>
-<span class="normal"><a href="#__codelineno-0-60">60</a></span>
-<span class="normal"><a href="#__codelineno-0-61">61</a></span>
-<span class="normal"><a href="#__codelineno-0-62">62</a></span>
-<span class="normal"><a href="#__codelineno-0-63">63</a></span>
-<span class="normal"><a href="#__codelineno-0-64">64</a></span>
-<span class="normal"><a href="#__codelineno-0-65">65</a></span>
-<span class="normal"><a href="#__codelineno-0-66">66</a></span>
-<span class="normal"><a href="#__codelineno-0-67">67</a></span>
-<span class="normal"><a href="#__codelineno-0-68">68</a></span>
-<span class="normal"><a href="#__codelineno-0-69">69</a></span>
-<span class="normal"><a href="#__codelineno-0-70">70</a></span>
-<span class="normal"><a href="#__codelineno-0-71">71</a></span>
-<span class="normal"><a href="#__codelineno-0-72">72</a></span>
-<span class="normal"><a href="#__codelineno-0-73">73</a></span>
-<span class="normal"><a href="#__codelineno-0-74">74</a></span>
-<span class="normal"><a href="#__codelineno-0-75">75</a></span>
-<span class="normal"><a href="#__codelineno-0-76">76</a></span>
-<span class="normal"><a href="#__codelineno-0-77">77</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span class="k">class</span><span class="w"> </span><span class="nc">JobContext</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
-<a id="__codelineno-0-30" name="__codelineno-0-30"></a>    <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-0-31" name="__codelineno-0-31"></a>    <span class="n">report</span><span class="p">:</span> <span class="n">EventReporter</span>
-<a id="__codelineno-0-32" name="__codelineno-0-32"></a>    <span class="n">job_authorization</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<a id="__codelineno-0-33" name="__codelineno-0-33"></a>
-<a id="__codelineno-0-34" name="__codelineno-0-34"></a>    <span class="n">_ivcap</span><span class="p">:</span> <span class="n">IVCAP</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">PrivateAttr</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-<a id="__codelineno-0-35" name="__codelineno-0-35"></a>
-<a id="__codelineno-0-36" name="__codelineno-0-36"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">arbitrary_types_allowed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<a id="__codelineno-0-37" name="__codelineno-0-37"></a>
-<a id="__codelineno-0-38" name="__codelineno-0-38"></a>    <span class="nd">@property</span>
-<a id="__codelineno-0-39" name="__codelineno-0-39"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">ivcap</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IVCAP</span><span class="p">:</span>
-<a id="__codelineno-0-40" name="__codelineno-0-40"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ivcap</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-41" name="__codelineno-0-41"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_ivcap</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">IVCAP</span><span class="p">,</span> <span class="n">IVCAP</span><span class="p">())</span>
-<a id="__codelineno-0-42" name="__codelineno-0-42"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ivcap</span>
-<a id="__codelineno-0-43" name="__codelineno-0-43"></a>
-<a id="__codelineno-0-44" name="__codelineno-0-44"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">llm_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;openai.OpenAI&quot;</span><span class="p">:</span>
-<a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return an OpenAI-compatible client, ready to use.</span>
-<a id="__codelineno-0-46" name="__codelineno-0-46"></a>
-<a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">        This hides the details of how/whether to route completions through a</span>
-<a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">        LiteLLM proxy from the service code: if the &#39;LITELLM_PROXY&#39;</span>
-<a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">        environment variable is set, the returned client is configured with</span>
-<a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">        &#39;base_url&#39; pointing at that proxy&#39;s &#39;/v1&#39; endpoint and a placeholder</span>
-<a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">        &#39;api_key&#39; (the proxy itself handles authentication/authorization);</span>
-<a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">        otherwise a plain &#39;openai.OpenAI()&#39; client is returned, relying on</span>
-<a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">        the usual &#39;OPENAI_API_KEY&#39;/&#39;OPENAI_BASE_URL&#39; environment variables.</span>
-<a id="__codelineno-0-54" name="__codelineno-0-54"></a>
-<a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">        Any &#39;kwargs&#39; passed in are forwarded to &#39;openai.OpenAI(...)&#39; and take</span>
-<a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">        precedence over the LiteLLM-proxy defaults (e.g. pass &#39;api_key=...&#39;</span>
-<a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">        to override the placeholder key).</span>
-<a id="__codelineno-0-58" name="__codelineno-0-58"></a>
-<a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">        See also &#39;DEFAULT_LLM_MODEL&#39; for the default model name to pass to</span>
-<a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="sd">        e.g. &#39;client.chat.completions.create(model=..., ...)&#39; when the</span>
-<a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">        caller/request doesn&#39;t specify one.</span>
-<a id="__codelineno-0-62" name="__codelineno-0-62"></a>
-<a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">        Requires the optional &#39;openai&#39; package to be installed.</span>
-<a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">        &quot;&quot;&quot;</span>
-<a id="__codelineno-0-65" name="__codelineno-0-65"></a>        <span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-0-66" name="__codelineno-0-66"></a>            <span class="kn">import</span><span class="w"> </span><span class="nn">openai</span>
-<a id="__codelineno-0-67" name="__codelineno-0-67"></a>        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-0-68" name="__codelineno-0-68"></a>            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
-<a id="__codelineno-0-69" name="__codelineno-0-69"></a>                <span class="s2">&quot;The &#39;openai&#39; package is required to use JobContext.llm_client(). &quot;</span>
-<a id="__codelineno-0-70" name="__codelineno-0-70"></a>                <span class="s2">&quot;Install it with e.g. &#39;pip install openai&#39;.&quot;</span>
-<a id="__codelineno-0-71" name="__codelineno-0-71"></a>            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
-<a id="__codelineno-0-72" name="__codelineno-0-72"></a>
-<a id="__codelineno-0-73" name="__codelineno-0-73"></a>        <span class="n">base_url</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;LITELLM_PROXY&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-74" name="__codelineno-0-74"></a>        <span class="k">if</span> <span class="n">base_url</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-75" name="__codelineno-0-75"></a>            <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;base_url&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_url</span><span class="si">}</span><span class="s2">/v1&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-76" name="__codelineno-0-76"></a>            <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;api_key&quot;</span><span class="p">,</span> <span class="s2">&quot;not-needed&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-77" name="__codelineno-0-77"></a>        <span class="k">return</span> <span class="n">openai</span><span class="o">.</span><span class="n">OpenAI</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-49"> 49</a></span>
+<span class="normal"><a href="#__codelineno-0-50"> 50</a></span>
+<span class="normal"><a href="#__codelineno-0-51"> 51</a></span>
+<span class="normal"><a href="#__codelineno-0-52"> 52</a></span>
+<span class="normal"><a href="#__codelineno-0-53"> 53</a></span>
+<span class="normal"><a href="#__codelineno-0-54"> 54</a></span>
+<span class="normal"><a href="#__codelineno-0-55"> 55</a></span>
+<span class="normal"><a href="#__codelineno-0-56"> 56</a></span>
+<span class="normal"><a href="#__codelineno-0-57"> 57</a></span>
+<span class="normal"><a href="#__codelineno-0-58"> 58</a></span>
+<span class="normal"><a href="#__codelineno-0-59"> 59</a></span>
+<span class="normal"><a href="#__codelineno-0-60"> 60</a></span>
+<span class="normal"><a href="#__codelineno-0-61"> 61</a></span>
+<span class="normal"><a href="#__codelineno-0-62"> 62</a></span>
+<span class="normal"><a href="#__codelineno-0-63"> 63</a></span>
+<span class="normal"><a href="#__codelineno-0-64"> 64</a></span>
+<span class="normal"><a href="#__codelineno-0-65"> 65</a></span>
+<span class="normal"><a href="#__codelineno-0-66"> 66</a></span>
+<span class="normal"><a href="#__codelineno-0-67"> 67</a></span>
+<span class="normal"><a href="#__codelineno-0-68"> 68</a></span>
+<span class="normal"><a href="#__codelineno-0-69"> 69</a></span>
+<span class="normal"><a href="#__codelineno-0-70"> 70</a></span>
+<span class="normal"><a href="#__codelineno-0-71"> 71</a></span>
+<span class="normal"><a href="#__codelineno-0-72"> 72</a></span>
+<span class="normal"><a href="#__codelineno-0-73"> 73</a></span>
+<span class="normal"><a href="#__codelineno-0-74"> 74</a></span>
+<span class="normal"><a href="#__codelineno-0-75"> 75</a></span>
+<span class="normal"><a href="#__codelineno-0-76"> 76</a></span>
+<span class="normal"><a href="#__codelineno-0-77"> 77</a></span>
+<span class="normal"><a href="#__codelineno-0-78"> 78</a></span>
+<span class="normal"><a href="#__codelineno-0-79"> 79</a></span>
+<span class="normal"><a href="#__codelineno-0-80"> 80</a></span>
+<span class="normal"><a href="#__codelineno-0-81"> 81</a></span>
+<span class="normal"><a href="#__codelineno-0-82"> 82</a></span>
+<span class="normal"><a href="#__codelineno-0-83"> 83</a></span>
+<span class="normal"><a href="#__codelineno-0-84"> 84</a></span>
+<span class="normal"><a href="#__codelineno-0-85"> 85</a></span>
+<span class="normal"><a href="#__codelineno-0-86"> 86</a></span>
+<span class="normal"><a href="#__codelineno-0-87"> 87</a></span>
+<span class="normal"><a href="#__codelineno-0-88"> 88</a></span>
+<span class="normal"><a href="#__codelineno-0-89"> 89</a></span>
+<span class="normal"><a href="#__codelineno-0-90"> 90</a></span>
+<span class="normal"><a href="#__codelineno-0-91"> 91</a></span>
+<span class="normal"><a href="#__codelineno-0-92"> 92</a></span>
+<span class="normal"><a href="#__codelineno-0-93"> 93</a></span>
+<span class="normal"><a href="#__codelineno-0-94"> 94</a></span>
+<span class="normal"><a href="#__codelineno-0-95"> 95</a></span>
+<span class="normal"><a href="#__codelineno-0-96"> 96</a></span>
+<span class="normal"><a href="#__codelineno-0-97"> 97</a></span>
+<span class="normal"><a href="#__codelineno-0-98"> 98</a></span>
+<span class="normal"><a href="#__codelineno-0-99"> 99</a></span>
+<span class="normal"><a href="#__codelineno-0-100">100</a></span>
+<span class="normal"><a href="#__codelineno-0-101">101</a></span>
+<span class="normal"><a href="#__codelineno-0-102">102</a></span>
+<span class="normal"><a href="#__codelineno-0-103">103</a></span>
+<span class="normal"><a href="#__codelineno-0-104">104</a></span>
+<span class="normal"><a href="#__codelineno-0-105">105</a></span>
+<span class="normal"><a href="#__codelineno-0-106">106</a></span>
+<span class="normal"><a href="#__codelineno-0-107">107</a></span>
+<span class="normal"><a href="#__codelineno-0-108">108</a></span>
+<span class="normal"><a href="#__codelineno-0-109">109</a></span>
+<span class="normal"><a href="#__codelineno-0-110">110</a></span>
+<span class="normal"><a href="#__codelineno-0-111">111</a></span>
+<span class="normal"><a href="#__codelineno-0-112">112</a></span>
+<span class="normal"><a href="#__codelineno-0-113">113</a></span>
+<span class="normal"><a href="#__codelineno-0-114">114</a></span>
+<span class="normal"><a href="#__codelineno-0-115">115</a></span>
+<span class="normal"><a href="#__codelineno-0-116">116</a></span>
+<span class="normal"><a href="#__codelineno-0-117">117</a></span>
+<span class="normal"><a href="#__codelineno-0-118">118</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="k">class</span><span class="w"> </span><span class="nc">JobContext</span><span class="p">(</span><span class="n">BaseModel</span><span class="p">):</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50"></a>    <span class="n">job_id</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51"></a>    <span class="n">report</span><span class="p">:</span> <span class="n">EventReporter</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52"></a>    <span class="n">job_authorization</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53"></a>
+<a id="__codelineno-0-54" name="__codelineno-0-54"></a>    <span class="n">_ivcap</span><span class="p">:</span> <span class="n">IVCAP</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="n">PrivateAttr</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+<a id="__codelineno-0-55" name="__codelineno-0-55"></a>
+<a id="__codelineno-0-56" name="__codelineno-0-56"></a>    <span class="n">model_config</span> <span class="o">=</span> <span class="n">ConfigDict</span><span class="p">(</span><span class="n">arbitrary_types_allowed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<a id="__codelineno-0-57" name="__codelineno-0-57"></a>
+<a id="__codelineno-0-58" name="__codelineno-0-58"></a>    <span class="nd">@property</span>
+<a id="__codelineno-0-59" name="__codelineno-0-59"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">ivcap</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IVCAP</span><span class="p">:</span>
+<a id="__codelineno-0-60" name="__codelineno-0-60"></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ivcap</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-61" name="__codelineno-0-61"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_ivcap</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">IVCAP</span><span class="p">,</span> <span class="n">IVCAP</span><span class="p">())</span>
+<a id="__codelineno-0-62" name="__codelineno-0-62"></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ivcap</span>
+<a id="__codelineno-0-63" name="__codelineno-0-63"></a>
+<a id="__codelineno-0-64" name="__codelineno-0-64"></a>    <span class="k">def</span><span class="w"> </span><span class="nf">llm_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;openai.OpenAI&quot;</span><span class="p">:</span>
+<a id="__codelineno-0-65" name="__codelineno-0-65"></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Return an OpenAI-compatible client, ready to use.</span>
+<a id="__codelineno-0-66" name="__codelineno-0-66"></a>
+<a id="__codelineno-0-67" name="__codelineno-0-67"></a><span class="sd">        This hides the details of how/whether to route completions through a</span>
+<a id="__codelineno-0-68" name="__codelineno-0-68"></a><span class="sd">        LiteLLM proxy from the service code, and resolves the API key in the</span>
+<a id="__codelineno-0-69" name="__codelineno-0-69"></a><span class="sd">        following order (first match wins):</span>
+<a id="__codelineno-0-70" name="__codelineno-0-70"></a>
+<a id="__codelineno-0-71" name="__codelineno-0-71"></a><span class="sd">        1. An explicit &#39;api_key&#39; kwarg passed in here.</span>
+<a id="__codelineno-0-72" name="__codelineno-0-72"></a><span class="sd">        2. &#39;LITELLM_PROXY&#39; environment variable - if set, &#39;base_url&#39; is</span>
+<a id="__codelineno-0-73" name="__codelineno-0-73"></a><span class="sd">           pointed at that proxy&#39;s &#39;/v1&#39; endpoint and a placeholder</span>
+<a id="__codelineno-0-74" name="__codelineno-0-74"></a><span class="sd">           &#39;api_key&#39; is used (the proxy itself handles</span>
+<a id="__codelineno-0-75" name="__codelineno-0-75"></a><span class="sd">           authentication/authorization), so no real key is needed.</span>
+<a id="__codelineno-0-76" name="__codelineno-0-76"></a><span class="sd">        3. &#39;OPENAI_API_KEY&#39; environment variable - the usual variable read</span>
+<a id="__codelineno-0-77" name="__codelineno-0-77"></a><span class="sd">           by a plain &#39;openai.OpenAI()&#39; client (&#39;OPENAI_BASE_URL&#39; is used</span>
+<a id="__codelineno-0-78" name="__codelineno-0-78"></a><span class="sd">           the same way for the endpoint).</span>
+<a id="__codelineno-0-79" name="__codelineno-0-79"></a><span class="sd">        4. &#39;~/.config/openai/api_key&#39; - a plain text file containing just</span>
+<a id="__codelineno-0-80" name="__codelineno-0-80"></a><span class="sd">           the key, as a local-development fallback for when you don&#39;t want</span>
+<a id="__codelineno-0-81" name="__codelineno-0-81"></a><span class="sd">           to export environment variables.</span>
+<a id="__codelineno-0-82" name="__codelineno-0-82"></a>
+<a id="__codelineno-0-83" name="__codelineno-0-83"></a><span class="sd">        If none of the above yields a key (and &#39;LITELLM_PROXY&#39; isn&#39;t set,</span>
+<a id="__codelineno-0-84" name="__codelineno-0-84"></a><span class="sd">        since no key is needed in that case), a &#39;RuntimeError&#39; is raised</span>
+<a id="__codelineno-0-85" name="__codelineno-0-85"></a><span class="sd">        with guidance on how to configure one.</span>
+<a id="__codelineno-0-86" name="__codelineno-0-86"></a>
+<a id="__codelineno-0-87" name="__codelineno-0-87"></a><span class="sd">        Any &#39;kwargs&#39; passed in are forwarded to &#39;openai.OpenAI(...)&#39; and take</span>
+<a id="__codelineno-0-88" name="__codelineno-0-88"></a><span class="sd">        precedence over everything above (e.g. pass &#39;base_url=...&#39; to</span>
+<a id="__codelineno-0-89" name="__codelineno-0-89"></a><span class="sd">        override the endpoint too).</span>
+<a id="__codelineno-0-90" name="__codelineno-0-90"></a>
+<a id="__codelineno-0-91" name="__codelineno-0-91"></a><span class="sd">        See also &#39;DEFAULT_LLM_MODEL&#39; for the default model name to pass to</span>
+<a id="__codelineno-0-92" name="__codelineno-0-92"></a><span class="sd">        e.g. &#39;client.chat.completions.create(model=..., ...)&#39; when the</span>
+<a id="__codelineno-0-93" name="__codelineno-0-93"></a><span class="sd">        caller/request doesn&#39;t specify one.</span>
+<a id="__codelineno-0-94" name="__codelineno-0-94"></a>
+<a id="__codelineno-0-95" name="__codelineno-0-95"></a><span class="sd">        Requires the optional &#39;openai&#39; package to be installed.</span>
+<a id="__codelineno-0-96" name="__codelineno-0-96"></a><span class="sd">        &quot;&quot;&quot;</span>
+<a id="__codelineno-0-97" name="__codelineno-0-97"></a>        <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-98" name="__codelineno-0-98"></a>            <span class="kn">import</span><span class="w"> </span><span class="nn">openai</span>
+<a id="__codelineno-0-99" name="__codelineno-0-99"></a>        <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100"></a>            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+<a id="__codelineno-0-101" name="__codelineno-0-101"></a>                <span class="s2">&quot;The &#39;openai&#39; package is required to use JobContext.llm_client(). &quot;</span>
+<a id="__codelineno-0-102" name="__codelineno-0-102"></a>                <span class="s2">&quot;Install it with e.g. &#39;pip install openai&#39;.&quot;</span>
+<a id="__codelineno-0-103" name="__codelineno-0-103"></a>            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+<a id="__codelineno-0-104" name="__codelineno-0-104"></a>
+<a id="__codelineno-0-105" name="__codelineno-0-105"></a>        <span class="n">base_url</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;LITELLM_PROXY&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106"></a>        <span class="k">if</span> <span class="n">base_url</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-107" name="__codelineno-0-107"></a>            <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;base_url&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_url</span><span class="si">}</span><span class="s2">/v1&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-108" name="__codelineno-0-108"></a>            <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;api_key&quot;</span><span class="p">,</span> <span class="s2">&quot;not-needed&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-109" name="__codelineno-0-109"></a>        <span class="k">elif</span> <span class="s2">&quot;api_key&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;OPENAI_API_KEY&quot;</span><span class="p">):</span>
+<a id="__codelineno-0-110" name="__codelineno-0-110"></a>            <span class="n">api_key</span> <span class="o">=</span> <span class="n">_read_openai_api_key_file</span><span class="p">()</span>
+<a id="__codelineno-0-111" name="__codelineno-0-111"></a>            <span class="k">if</span> <span class="n">api_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-112" name="__codelineno-0-112"></a>                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+<a id="__codelineno-0-113" name="__codelineno-0-113"></a>                    <span class="s2">&quot;No OpenAI API key found. Set the &#39;OPENAI_API_KEY&#39; environment &quot;</span>
+<a id="__codelineno-0-114" name="__codelineno-0-114"></a>                    <span class="sa">f</span><span class="s2">&quot;variable, write the key to &#39;</span><span class="si">{</span><span class="n">_OPENAI_API_KEY_FILE</span><span class="si">}</span><span class="s2">&#39;, or pass &quot;</span>
+<a id="__codelineno-0-115" name="__codelineno-0-115"></a>                    <span class="s2">&quot;&#39;api_key=...&#39; to &#39;llm_client()&#39; directly.&quot;</span>
+<a id="__codelineno-0-116" name="__codelineno-0-116"></a>                <span class="p">)</span>
+<a id="__codelineno-0-117" name="__codelineno-0-117"></a>            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;api_key&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">api_key</span>
+<a id="__codelineno-0-118" name="__codelineno-0-118"></a>        <span class="k">return</span> <span class="n">openai</span><span class="o">.</span><span class="n">OpenAI</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
 
@@ -2101,15 +2143,27 @@ This is used internally by the SDK to authenticate outbound HTTP calls (via the 
   
       <p>Return an OpenAI-compatible client, ready to use.</p>
 <p>This hides the details of how/whether to route completions through a
-LiteLLM proxy from the service code: if the 'LITELLM_PROXY'
-environment variable is set, the returned client is configured with
-'base_url' pointing at that proxy's '/v1' endpoint and a placeholder
-'api_key' (the proxy itself handles authentication/authorization);
-otherwise a plain 'openai.OpenAI()' client is returned, relying on
-the usual 'OPENAI_API_KEY'/'OPENAI_BASE_URL' environment variables.</p>
+LiteLLM proxy from the service code, and resolves the API key in the
+following order (first match wins):</p>
+<ol>
+<li>An explicit 'api_key' kwarg passed in here.</li>
+<li>'LITELLM_PROXY' environment variable - if set, 'base_url' is
+   pointed at that proxy's '/v1' endpoint and a placeholder
+   'api_key' is used (the proxy itself handles
+   authentication/authorization), so no real key is needed.</li>
+<li>'OPENAI_API_KEY' environment variable - the usual variable read
+   by a plain 'openai.OpenAI()' client ('OPENAI_BASE_URL' is used
+   the same way for the endpoint).</li>
+<li>'~/.config/openai/api_key' - a plain text file containing just
+   the key, as a local-development fallback for when you don't want
+   to export environment variables.</li>
+</ol>
+<p>If none of the above yields a key (and 'LITELLM_PROXY' isn't set,
+since no key is needed in that case), a 'RuntimeError' is raised
+with guidance on how to configure one.</p>
 <p>Any 'kwargs' passed in are forwarded to 'openai.OpenAI(...)' and take
-precedence over the LiteLLM-proxy defaults (e.g. pass 'api_key=...'
-to override the placeholder key).</p>
+precedence over everything above (e.g. pass 'base_url=...' to
+override the endpoint too).</p>
 <p>See also 'DEFAULT_LLM_MODEL' for the default model name to pass to
 e.g. 'client.chat.completions.create(model=..., ...)' when the
 caller/request doesn't specify one.</p>
@@ -2117,73 +2171,115 @@ caller/request doesn't specify one.</p>
 
           <details class="quote">
             <summary>Source code in <code>ivcap_service/types.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-44">44</a></span>
-<span class="normal"><a href="#__codelineno-0-45">45</a></span>
-<span class="normal"><a href="#__codelineno-0-46">46</a></span>
-<span class="normal"><a href="#__codelineno-0-47">47</a></span>
-<span class="normal"><a href="#__codelineno-0-48">48</a></span>
-<span class="normal"><a href="#__codelineno-0-49">49</a></span>
-<span class="normal"><a href="#__codelineno-0-50">50</a></span>
-<span class="normal"><a href="#__codelineno-0-51">51</a></span>
-<span class="normal"><a href="#__codelineno-0-52">52</a></span>
-<span class="normal"><a href="#__codelineno-0-53">53</a></span>
-<span class="normal"><a href="#__codelineno-0-54">54</a></span>
-<span class="normal"><a href="#__codelineno-0-55">55</a></span>
-<span class="normal"><a href="#__codelineno-0-56">56</a></span>
-<span class="normal"><a href="#__codelineno-0-57">57</a></span>
-<span class="normal"><a href="#__codelineno-0-58">58</a></span>
-<span class="normal"><a href="#__codelineno-0-59">59</a></span>
-<span class="normal"><a href="#__codelineno-0-60">60</a></span>
-<span class="normal"><a href="#__codelineno-0-61">61</a></span>
-<span class="normal"><a href="#__codelineno-0-62">62</a></span>
-<span class="normal"><a href="#__codelineno-0-63">63</a></span>
-<span class="normal"><a href="#__codelineno-0-64">64</a></span>
-<span class="normal"><a href="#__codelineno-0-65">65</a></span>
-<span class="normal"><a href="#__codelineno-0-66">66</a></span>
-<span class="normal"><a href="#__codelineno-0-67">67</a></span>
-<span class="normal"><a href="#__codelineno-0-68">68</a></span>
-<span class="normal"><a href="#__codelineno-0-69">69</a></span>
-<span class="normal"><a href="#__codelineno-0-70">70</a></span>
-<span class="normal"><a href="#__codelineno-0-71">71</a></span>
-<span class="normal"><a href="#__codelineno-0-72">72</a></span>
-<span class="normal"><a href="#__codelineno-0-73">73</a></span>
-<span class="normal"><a href="#__codelineno-0-74">74</a></span>
-<span class="normal"><a href="#__codelineno-0-75">75</a></span>
-<span class="normal"><a href="#__codelineno-0-76">76</a></span>
-<span class="normal"><a href="#__codelineno-0-77">77</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-44" name="__codelineno-0-44"></a><span class="k">def</span><span class="w"> </span><span class="nf">llm_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;openai.OpenAI&quot;</span><span class="p">:</span>
-<a id="__codelineno-0-45" name="__codelineno-0-45"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return an OpenAI-compatible client, ready to use.</span>
-<a id="__codelineno-0-46" name="__codelineno-0-46"></a>
-<a id="__codelineno-0-47" name="__codelineno-0-47"></a><span class="sd">    This hides the details of how/whether to route completions through a</span>
-<a id="__codelineno-0-48" name="__codelineno-0-48"></a><span class="sd">    LiteLLM proxy from the service code: if the &#39;LITELLM_PROXY&#39;</span>
-<a id="__codelineno-0-49" name="__codelineno-0-49"></a><span class="sd">    environment variable is set, the returned client is configured with</span>
-<a id="__codelineno-0-50" name="__codelineno-0-50"></a><span class="sd">    &#39;base_url&#39; pointing at that proxy&#39;s &#39;/v1&#39; endpoint and a placeholder</span>
-<a id="__codelineno-0-51" name="__codelineno-0-51"></a><span class="sd">    &#39;api_key&#39; (the proxy itself handles authentication/authorization);</span>
-<a id="__codelineno-0-52" name="__codelineno-0-52"></a><span class="sd">    otherwise a plain &#39;openai.OpenAI()&#39; client is returned, relying on</span>
-<a id="__codelineno-0-53" name="__codelineno-0-53"></a><span class="sd">    the usual &#39;OPENAI_API_KEY&#39;/&#39;OPENAI_BASE_URL&#39; environment variables.</span>
-<a id="__codelineno-0-54" name="__codelineno-0-54"></a>
-<a id="__codelineno-0-55" name="__codelineno-0-55"></a><span class="sd">    Any &#39;kwargs&#39; passed in are forwarded to &#39;openai.OpenAI(...)&#39; and take</span>
-<a id="__codelineno-0-56" name="__codelineno-0-56"></a><span class="sd">    precedence over the LiteLLM-proxy defaults (e.g. pass &#39;api_key=...&#39;</span>
-<a id="__codelineno-0-57" name="__codelineno-0-57"></a><span class="sd">    to override the placeholder key).</span>
-<a id="__codelineno-0-58" name="__codelineno-0-58"></a>
-<a id="__codelineno-0-59" name="__codelineno-0-59"></a><span class="sd">    See also &#39;DEFAULT_LLM_MODEL&#39; for the default model name to pass to</span>
-<a id="__codelineno-0-60" name="__codelineno-0-60"></a><span class="sd">    e.g. &#39;client.chat.completions.create(model=..., ...)&#39; when the</span>
-<a id="__codelineno-0-61" name="__codelineno-0-61"></a><span class="sd">    caller/request doesn&#39;t specify one.</span>
-<a id="__codelineno-0-62" name="__codelineno-0-62"></a>
-<a id="__codelineno-0-63" name="__codelineno-0-63"></a><span class="sd">    Requires the optional &#39;openai&#39; package to be installed.</span>
-<a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="sd">    &quot;&quot;&quot;</span>
-<a id="__codelineno-0-65" name="__codelineno-0-65"></a>    <span class="k">try</span><span class="p">:</span>
-<a id="__codelineno-0-66" name="__codelineno-0-66"></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">openai</span>
-<a id="__codelineno-0-67" name="__codelineno-0-67"></a>    <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-<a id="__codelineno-0-68" name="__codelineno-0-68"></a>        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
-<a id="__codelineno-0-69" name="__codelineno-0-69"></a>            <span class="s2">&quot;The &#39;openai&#39; package is required to use JobContext.llm_client(). &quot;</span>
-<a id="__codelineno-0-70" name="__codelineno-0-70"></a>            <span class="s2">&quot;Install it with e.g. &#39;pip install openai&#39;.&quot;</span>
-<a id="__codelineno-0-71" name="__codelineno-0-71"></a>        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
-<a id="__codelineno-0-72" name="__codelineno-0-72"></a>
-<a id="__codelineno-0-73" name="__codelineno-0-73"></a>    <span class="n">base_url</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;LITELLM_PROXY&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-74" name="__codelineno-0-74"></a>    <span class="k">if</span> <span class="n">base_url</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-<a id="__codelineno-0-75" name="__codelineno-0-75"></a>        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;base_url&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_url</span><span class="si">}</span><span class="s2">/v1&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-76" name="__codelineno-0-76"></a>        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;api_key&quot;</span><span class="p">,</span> <span class="s2">&quot;not-needed&quot;</span><span class="p">)</span>
-<a id="__codelineno-0-77" name="__codelineno-0-77"></a>    <span class="k">return</span> <span class="n">openai</span><span class="o">.</span><span class="n">OpenAI</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"><a href="#__codelineno-0-64"> 64</a></span>
+<span class="normal"><a href="#__codelineno-0-65"> 65</a></span>
+<span class="normal"><a href="#__codelineno-0-66"> 66</a></span>
+<span class="normal"><a href="#__codelineno-0-67"> 67</a></span>
+<span class="normal"><a href="#__codelineno-0-68"> 68</a></span>
+<span class="normal"><a href="#__codelineno-0-69"> 69</a></span>
+<span class="normal"><a href="#__codelineno-0-70"> 70</a></span>
+<span class="normal"><a href="#__codelineno-0-71"> 71</a></span>
+<span class="normal"><a href="#__codelineno-0-72"> 72</a></span>
+<span class="normal"><a href="#__codelineno-0-73"> 73</a></span>
+<span class="normal"><a href="#__codelineno-0-74"> 74</a></span>
+<span class="normal"><a href="#__codelineno-0-75"> 75</a></span>
+<span class="normal"><a href="#__codelineno-0-76"> 76</a></span>
+<span class="normal"><a href="#__codelineno-0-77"> 77</a></span>
+<span class="normal"><a href="#__codelineno-0-78"> 78</a></span>
+<span class="normal"><a href="#__codelineno-0-79"> 79</a></span>
+<span class="normal"><a href="#__codelineno-0-80"> 80</a></span>
+<span class="normal"><a href="#__codelineno-0-81"> 81</a></span>
+<span class="normal"><a href="#__codelineno-0-82"> 82</a></span>
+<span class="normal"><a href="#__codelineno-0-83"> 83</a></span>
+<span class="normal"><a href="#__codelineno-0-84"> 84</a></span>
+<span class="normal"><a href="#__codelineno-0-85"> 85</a></span>
+<span class="normal"><a href="#__codelineno-0-86"> 86</a></span>
+<span class="normal"><a href="#__codelineno-0-87"> 87</a></span>
+<span class="normal"><a href="#__codelineno-0-88"> 88</a></span>
+<span class="normal"><a href="#__codelineno-0-89"> 89</a></span>
+<span class="normal"><a href="#__codelineno-0-90"> 90</a></span>
+<span class="normal"><a href="#__codelineno-0-91"> 91</a></span>
+<span class="normal"><a href="#__codelineno-0-92"> 92</a></span>
+<span class="normal"><a href="#__codelineno-0-93"> 93</a></span>
+<span class="normal"><a href="#__codelineno-0-94"> 94</a></span>
+<span class="normal"><a href="#__codelineno-0-95"> 95</a></span>
+<span class="normal"><a href="#__codelineno-0-96"> 96</a></span>
+<span class="normal"><a href="#__codelineno-0-97"> 97</a></span>
+<span class="normal"><a href="#__codelineno-0-98"> 98</a></span>
+<span class="normal"><a href="#__codelineno-0-99"> 99</a></span>
+<span class="normal"><a href="#__codelineno-0-100">100</a></span>
+<span class="normal"><a href="#__codelineno-0-101">101</a></span>
+<span class="normal"><a href="#__codelineno-0-102">102</a></span>
+<span class="normal"><a href="#__codelineno-0-103">103</a></span>
+<span class="normal"><a href="#__codelineno-0-104">104</a></span>
+<span class="normal"><a href="#__codelineno-0-105">105</a></span>
+<span class="normal"><a href="#__codelineno-0-106">106</a></span>
+<span class="normal"><a href="#__codelineno-0-107">107</a></span>
+<span class="normal"><a href="#__codelineno-0-108">108</a></span>
+<span class="normal"><a href="#__codelineno-0-109">109</a></span>
+<span class="normal"><a href="#__codelineno-0-110">110</a></span>
+<span class="normal"><a href="#__codelineno-0-111">111</a></span>
+<span class="normal"><a href="#__codelineno-0-112">112</a></span>
+<span class="normal"><a href="#__codelineno-0-113">113</a></span>
+<span class="normal"><a href="#__codelineno-0-114">114</a></span>
+<span class="normal"><a href="#__codelineno-0-115">115</a></span>
+<span class="normal"><a href="#__codelineno-0-116">116</a></span>
+<span class="normal"><a href="#__codelineno-0-117">117</a></span>
+<span class="normal"><a href="#__codelineno-0-118">118</a></span></pre></div></td><td class="code"><div><pre><span></span><code><a id="__codelineno-0-64" name="__codelineno-0-64"></a><span class="k">def</span><span class="w"> </span><span class="nf">llm_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;openai.OpenAI&quot;</span><span class="p">:</span>
+<a id="__codelineno-0-65" name="__codelineno-0-65"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Return an OpenAI-compatible client, ready to use.</span>
+<a id="__codelineno-0-66" name="__codelineno-0-66"></a>
+<a id="__codelineno-0-67" name="__codelineno-0-67"></a><span class="sd">    This hides the details of how/whether to route completions through a</span>
+<a id="__codelineno-0-68" name="__codelineno-0-68"></a><span class="sd">    LiteLLM proxy from the service code, and resolves the API key in the</span>
+<a id="__codelineno-0-69" name="__codelineno-0-69"></a><span class="sd">    following order (first match wins):</span>
+<a id="__codelineno-0-70" name="__codelineno-0-70"></a>
+<a id="__codelineno-0-71" name="__codelineno-0-71"></a><span class="sd">    1. An explicit &#39;api_key&#39; kwarg passed in here.</span>
+<a id="__codelineno-0-72" name="__codelineno-0-72"></a><span class="sd">    2. &#39;LITELLM_PROXY&#39; environment variable - if set, &#39;base_url&#39; is</span>
+<a id="__codelineno-0-73" name="__codelineno-0-73"></a><span class="sd">       pointed at that proxy&#39;s &#39;/v1&#39; endpoint and a placeholder</span>
+<a id="__codelineno-0-74" name="__codelineno-0-74"></a><span class="sd">       &#39;api_key&#39; is used (the proxy itself handles</span>
+<a id="__codelineno-0-75" name="__codelineno-0-75"></a><span class="sd">       authentication/authorization), so no real key is needed.</span>
+<a id="__codelineno-0-76" name="__codelineno-0-76"></a><span class="sd">    3. &#39;OPENAI_API_KEY&#39; environment variable - the usual variable read</span>
+<a id="__codelineno-0-77" name="__codelineno-0-77"></a><span class="sd">       by a plain &#39;openai.OpenAI()&#39; client (&#39;OPENAI_BASE_URL&#39; is used</span>
+<a id="__codelineno-0-78" name="__codelineno-0-78"></a><span class="sd">       the same way for the endpoint).</span>
+<a id="__codelineno-0-79" name="__codelineno-0-79"></a><span class="sd">    4. &#39;~/.config/openai/api_key&#39; - a plain text file containing just</span>
+<a id="__codelineno-0-80" name="__codelineno-0-80"></a><span class="sd">       the key, as a local-development fallback for when you don&#39;t want</span>
+<a id="__codelineno-0-81" name="__codelineno-0-81"></a><span class="sd">       to export environment variables.</span>
+<a id="__codelineno-0-82" name="__codelineno-0-82"></a>
+<a id="__codelineno-0-83" name="__codelineno-0-83"></a><span class="sd">    If none of the above yields a key (and &#39;LITELLM_PROXY&#39; isn&#39;t set,</span>
+<a id="__codelineno-0-84" name="__codelineno-0-84"></a><span class="sd">    since no key is needed in that case), a &#39;RuntimeError&#39; is raised</span>
+<a id="__codelineno-0-85" name="__codelineno-0-85"></a><span class="sd">    with guidance on how to configure one.</span>
+<a id="__codelineno-0-86" name="__codelineno-0-86"></a>
+<a id="__codelineno-0-87" name="__codelineno-0-87"></a><span class="sd">    Any &#39;kwargs&#39; passed in are forwarded to &#39;openai.OpenAI(...)&#39; and take</span>
+<a id="__codelineno-0-88" name="__codelineno-0-88"></a><span class="sd">    precedence over everything above (e.g. pass &#39;base_url=...&#39; to</span>
+<a id="__codelineno-0-89" name="__codelineno-0-89"></a><span class="sd">    override the endpoint too).</span>
+<a id="__codelineno-0-90" name="__codelineno-0-90"></a>
+<a id="__codelineno-0-91" name="__codelineno-0-91"></a><span class="sd">    See also &#39;DEFAULT_LLM_MODEL&#39; for the default model name to pass to</span>
+<a id="__codelineno-0-92" name="__codelineno-0-92"></a><span class="sd">    e.g. &#39;client.chat.completions.create(model=..., ...)&#39; when the</span>
+<a id="__codelineno-0-93" name="__codelineno-0-93"></a><span class="sd">    caller/request doesn&#39;t specify one.</span>
+<a id="__codelineno-0-94" name="__codelineno-0-94"></a>
+<a id="__codelineno-0-95" name="__codelineno-0-95"></a><span class="sd">    Requires the optional &#39;openai&#39; package to be installed.</span>
+<a id="__codelineno-0-96" name="__codelineno-0-96"></a><span class="sd">    &quot;&quot;&quot;</span>
+<a id="__codelineno-0-97" name="__codelineno-0-97"></a>    <span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-0-98" name="__codelineno-0-98"></a>        <span class="kn">import</span><span class="w"> </span><span class="nn">openai</span>
+<a id="__codelineno-0-99" name="__codelineno-0-99"></a>    <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100"></a>        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+<a id="__codelineno-0-101" name="__codelineno-0-101"></a>            <span class="s2">&quot;The &#39;openai&#39; package is required to use JobContext.llm_client(). &quot;</span>
+<a id="__codelineno-0-102" name="__codelineno-0-102"></a>            <span class="s2">&quot;Install it with e.g. &#39;pip install openai&#39;.&quot;</span>
+<a id="__codelineno-0-103" name="__codelineno-0-103"></a>        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+<a id="__codelineno-0-104" name="__codelineno-0-104"></a>
+<a id="__codelineno-0-105" name="__codelineno-0-105"></a>    <span class="n">base_url</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;LITELLM_PROXY&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106"></a>    <span class="k">if</span> <span class="n">base_url</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-107" name="__codelineno-0-107"></a>        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;base_url&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">base_url</span><span class="si">}</span><span class="s2">/v1&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-108" name="__codelineno-0-108"></a>        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;api_key&quot;</span><span class="p">,</span> <span class="s2">&quot;not-needed&quot;</span><span class="p">)</span>
+<a id="__codelineno-0-109" name="__codelineno-0-109"></a>    <span class="k">elif</span> <span class="s2">&quot;api_key&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;OPENAI_API_KEY&quot;</span><span class="p">):</span>
+<a id="__codelineno-0-110" name="__codelineno-0-110"></a>        <span class="n">api_key</span> <span class="o">=</span> <span class="n">_read_openai_api_key_file</span><span class="p">()</span>
+<a id="__codelineno-0-111" name="__codelineno-0-111"></a>        <span class="k">if</span> <span class="n">api_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<a id="__codelineno-0-112" name="__codelineno-0-112"></a>            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+<a id="__codelineno-0-113" name="__codelineno-0-113"></a>                <span class="s2">&quot;No OpenAI API key found. Set the &#39;OPENAI_API_KEY&#39; environment &quot;</span>
+<a id="__codelineno-0-114" name="__codelineno-0-114"></a>                <span class="sa">f</span><span class="s2">&quot;variable, write the key to &#39;</span><span class="si">{</span><span class="n">_OPENAI_API_KEY_FILE</span><span class="si">}</span><span class="s2">&#39;, or pass &quot;</span>
+<a id="__codelineno-0-115" name="__codelineno-0-115"></a>                <span class="s2">&quot;&#39;api_key=...&#39; to &#39;llm_client()&#39; directly.&quot;</span>
+<a id="__codelineno-0-116" name="__codelineno-0-116"></a>            <span class="p">)</span>
+<a id="__codelineno-0-117" name="__codelineno-0-117"></a>        <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;api_key&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">api_key</span>
+<a id="__codelineno-0-118" name="__codelineno-0-118"></a>    <span class="k">return</span> <span class="n">openai</span><span class="o">.</span><span class="n">OpenAI</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
           </details>
   </div>

@@ -1804,6 +1804,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#openai_api_key-openai_base_url" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OPENAI_API_KEY / OPENAI_BASE_URL
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2625,6 +2636,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#openai_api_key-openai_base_url" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OPENAI_API_KEY / OPENAI_BASE_URL
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3094,6 +3116,20 @@ module for a complete worked example.</p>
   Setting this environment variable overrides the default for an entire
   deployment without any code changes</li>
 <li><strong>Example</strong>: <code>gpt-4o-mini</code></li>
+</ul>
+<h3 id="openai_api_key-openai_base_url">OPENAI_API_KEY / OPENAI_BASE_URL<a class="headerlink" href="#openai_api_key-openai_base_url" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Type</strong>: String</li>
+<li><strong>Default</strong>: unset</li>
+<li><strong>Description</strong>: Standard OpenAI SDK environment variables. When
+  <code>LITELLM_PROXY</code> is not set, <code>JobContext.llm_client()</code> returns a plain
+  <code>openai.OpenAI()</code> client that reads these directly. If <code>OPENAI_API_KEY</code>
+  isn't set, <code>llm_client()</code> falls back to reading <code>~/.config/openai/api_key</code>
+  (a plain text file containing just the key) - handy for local development
+  without exporting environment variables. If no key can be found by any of
+  these means, <code>llm_client()</code> raises a <code>RuntimeError</code> explaining how to
+  configure one.</li>
+<li><strong>Example key file</strong>: <code>echo "sk-..." &gt; ~/.config/openai/api_key</code></li>
 </ul>
 <h2 id="logging-configuration">Logging Configuration<a class="headerlink" href="#logging-configuration" title="Permanent link">&para;</a></h2>
 <h3 id="ivcap_log_level">IVCAP_LOG_LEVEL<a class="headerlink" href="#ivcap_log_level" title="Permanent link">&para;</a></h3>
