@@ -309,6 +309,19 @@ module for a complete worked example.
   deployment without any code changes
 - **Example**: `gpt-4o-mini`
 
+### OPENAI_API_KEY / OPENAI_BASE_URL
+- **Type**: String
+- **Default**: unset
+- **Description**: Standard OpenAI SDK environment variables. When
+  `LITELLM_PROXY` is not set, `JobContext.llm_client()` returns a plain
+  `openai.OpenAI()` client that reads these directly. If `OPENAI_API_KEY`
+  isn't set, `llm_client()` falls back to reading `~/.config/openai/api_key`
+  (a plain text file containing just the key) - handy for local development
+  without exporting environment variables. If no key can be found by any of
+  these means, `llm_client()` raises a `RuntimeError` explaining how to
+  configure one.
+- **Example key file**: `echo "sk-..." > ~/.config/openai/api_key`
+
 ## Logging Configuration
 
 ### IVCAP_LOG_LEVEL

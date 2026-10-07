@@ -8,8 +8,15 @@ from io import BytesIO, StringIO
 from typing import Any
 from unittest.mock import MagicMock
 
+import pytest
+
 from ivcap_service.events import EventReporter
 from ivcap_service.types import BinaryResult, ExecutionError, IvcapResult, JobContext
+
+# 'openai' is an optional dependency of ivcap_service (only required for
+# 'JobContext.llm_client()'); skip just the tests that need it rather than
+# the whole module when it isn't installed.
+openai = pytest.importorskip("openai")
 
 
 def create_job(ctxt: JobContext, service_id: str, props: dict[str, Any]) -> Any:
@@ -137,6 +144,97 @@ def test_job_context_ivcap_private_attr():
     ctx = JobContext(job_id="job-123", report=report)
     # The private attribute should be initialized to None
     assert ctx._ivcap is None
+
+
+def test_llm_client_litellm_proxy_takes_precedence(monkeypatch):
+    """LITELLM_PROXY wins over plain OPENAI_* env vars."""
+    monkeypatch.setenv("LITELLM_PROXY", "http://localhost:4000")
+    monkeypatch.setenv("OPENAI_API_KEY", "env-key")
+
+    report = EventReporter("job-123", "")
+    ctx = JobContext(job_id="job-123", report=report)
+    client = ctx.llm_client()
+
+    assert str(client.base_url).rstrip("/") == "http://localhost:4000/v1"
+    assert client.api_key == "not-needed"
+
+
+def test_llm_client_uses_openai_env_vars_without_proxy(monkeypatch):
+    """Without LITELLM_PROXY, a plain openai.OpenAI() reads OPENAI_* env vars."""
+    monkeypatch.delenv("LITELLM_PROXY", raising=False)
+    monkeypatch.setenv("OPENAI_API_KEY", "env-key")
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://env.example.com")
+
+    report = EventReporter("job-123", "")
+    ctx = JobContext(job_id="job-123", report=report)
+    client = ctx.llm_client()
+
+    assert client.api_key == "env-key"
+    assert str(client.base_url).rstrip("/") == "https://env.example.com"
+
+
+def test_llm_client_kwargs_take_precedence_over_litellm_proxy(monkeypatch):
+    """Explicit kwargs win over the LITELLM_PROXY-derived defaults."""
+    monkeypatch.setenv("LITELLM_PROXY", "http://localhost:4000")
+
+    report = EventReporter("job-123", "")
+    ctx = JobContext(job_id="job-123", report=report)
+    client = ctx.llm_client(api_key="explicit-key")
+
+    assert client.api_key == "explicit-key"
+
+
+def test_llm_client_falls_back_to_api_key_file(monkeypatch, tmp_path):
+    """When OPENAI_API_KEY isn't set, the api_key file is read as a fallback."""
+    import ivcap_service.types as types_module
+
+    key_file = tmp_path / "api_key"
+    key_file.write_text("  file-key  \n")
+
+    monkeypatch.delenv("LITELLM_PROXY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.setattr(types_module, "_OPENAI_API_KEY_FILE", str(key_file))
+
+    report = EventReporter("job-123", "")
+    ctx = JobContext(job_id="job-123", report=report)
+    client = ctx.llm_client()
+
+    assert client.api_key == "file-key"
+
+
+def test_llm_client_env_var_wins_over_api_key_file(monkeypatch, tmp_path):
+    """OPENAI_API_KEY takes precedence over the api_key file fallback."""
+    import ivcap_service.types as types_module
+
+    key_file = tmp_path / "api_key"
+    key_file.write_text("file-key\n")
+
+    monkeypatch.delenv("LITELLM_PROXY", raising=False)
+    monkeypatch.setenv("OPENAI_API_KEY", "env-key")
+    monkeypatch.setattr(types_module, "_OPENAI_API_KEY_FILE", str(key_file))
+
+    report = EventReporter("job-123", "")
+    ctx = JobContext(job_id="job-123", report=report)
+    client = ctx.llm_client()
+
+    assert client.api_key == "env-key"
+
+
+def test_llm_client_raises_when_no_api_key_found(monkeypatch, tmp_path):
+    """No kwarg, no OPENAI_API_KEY, no api_key file -> a clear RuntimeError."""
+    import ivcap_service.types as types_module
+
+    monkeypatch.delenv("LITELLM_PROXY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.setattr(
+        types_module, "_OPENAI_API_KEY_FILE", str(tmp_path / "does-not-exist")
+    )
+
+    report = EventReporter("job-123", "")
+    ctx = JobContext(job_id="job-123", report=report)
+
+    with pytest.raises(RuntimeError, match="No OpenAI API key found"):
+        ctx.llm_client()
 
 
 def test_create_job():

@@ -21,6 +21,26 @@ if TYPE_CHECKING:
 # point a deployment at a different default model without code changes.
 DEFAULT_LLM_MODEL = os.environ.get("DEFAULT_LLM_MODEL", "sciansa-default")
 
+# Local fallback for an OpenAI API key, used by 'JobContext.llm_client()'
+# when 'OPENAI_API_KEY' isn't set (and no 'api_key' kwarg/'LITELLM_PROXY' is
+# in play either) - handy for local development without exporting
+# environment variables. A single plain text file containing just the key,
+# stripped of surrounding whitespace.
+_OPENAI_API_KEY_FILE = os.path.expanduser("~/.config/openai/api_key")
+
+
+def _read_openai_api_key_file() -> str | None:
+    """Read the local OpenAI API key fallback file (see
+    '_OPENAI_API_KEY_FILE'). Returns None (rather than raising) when the
+    file doesn't exist or is empty, so the caller can decide what to do
+    next."""
+    try:
+        with open(_OPENAI_API_KEY_FILE, encoding="utf-8") as f:
+            value = f.read().strip()
+    except OSError:
+        return None
+    return value or None
+
 
 class ExecutionContext:
     pass
@@ -45,16 +65,28 @@ class JobContext(BaseModel):
         """Return an OpenAI-compatible client, ready to use.
 
         This hides the details of how/whether to route completions through a
-        LiteLLM proxy from the service code: if the 'LITELLM_PROXY'
-        environment variable is set, the returned client is configured with
-        'base_url' pointing at that proxy's '/v1' endpoint and a placeholder
-        'api_key' (the proxy itself handles authentication/authorization);
-        otherwise a plain 'openai.OpenAI()' client is returned, relying on
-        the usual 'OPENAI_API_KEY'/'OPENAI_BASE_URL' environment variables.
+        LiteLLM proxy from the service code, and resolves the API key in the
+        following order (first match wins):
+
+        1. An explicit 'api_key' kwarg passed in here.
+        2. 'LITELLM_PROXY' environment variable - if set, 'base_url' is
+           pointed at that proxy's '/v1' endpoint and a placeholder
+           'api_key' is used (the proxy itself handles
+           authentication/authorization), so no real key is needed.
+        3. 'OPENAI_API_KEY' environment variable - the usual variable read
+           by a plain 'openai.OpenAI()' client ('OPENAI_BASE_URL' is used
+           the same way for the endpoint).
+        4. '~/.config/openai/api_key' - a plain text file containing just
+           the key, as a local-development fallback for when you don't want
+           to export environment variables.
+
+        If none of the above yields a key (and 'LITELLM_PROXY' isn't set,
+        since no key is needed in that case), a 'RuntimeError' is raised
+        with guidance on how to configure one.
 
         Any 'kwargs' passed in are forwarded to 'openai.OpenAI(...)' and take
-        precedence over the LiteLLM-proxy defaults (e.g. pass 'api_key=...'
-        to override the placeholder key).
+        precedence over everything above (e.g. pass 'base_url=...' to
+        override the endpoint too).
 
         See also 'DEFAULT_LLM_MODEL' for the default model name to pass to
         e.g. 'client.chat.completions.create(model=..., ...)' when the
@@ -74,6 +106,15 @@ class JobContext(BaseModel):
         if base_url is not None:
             kwargs.setdefault("base_url", f"{base_url}/v1")
             kwargs.setdefault("api_key", "not-needed")
+        elif "api_key" not in kwargs and not os.getenv("OPENAI_API_KEY"):
+            api_key = _read_openai_api_key_file()
+            if api_key is None:
+                raise RuntimeError(
+                    "No OpenAI API key found. Set the 'OPENAI_API_KEY' environment "
+                    f"variable, write the key to '{_OPENAI_API_KEY_FILE}', or pass "
+                    "'api_key=...' to 'llm_client()' directly."
+                )
+            kwargs["api_key"] = api_key
         return openai.OpenAI(**kwargs)
 
 

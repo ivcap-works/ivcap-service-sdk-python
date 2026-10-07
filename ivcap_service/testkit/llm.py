@@ -24,6 +24,11 @@ right endpoint:
   LiteLLM.
 - Otherwise, a standard `openai.OpenAI()` client is returned, relying on
   the usual `OPENAI_API_KEY` / `OPENAI_BASE_URL` environment variables.
+- If `OPENAI_API_KEY` isn't set, `~/.config/openai/api_key` (a plain text
+  file containing just the key) is read as a final fallback - handy for
+  local development where you don't want to export environment variables.
+- If no key can be found by any of the above, `llm_client()` raises a
+  `RuntimeError` explaining how to configure one.
 
 You can override any of these defaults by passing keyword arguments
 straight through to the underlying `openai.OpenAI(...)` constructor, e.g.

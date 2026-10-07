@@ -668,6 +668,12 @@ Common environment variables used by the SDK:
   (defaults to `"sciansa-default"`), the default LLM model name used when
   a caller doesn't specify one explicitly (e.g.
   `ivcap_service.testkit.llm.LlmTester.model`)
+- `OPENAI_API_KEY` / `OPENAI_BASE_URL` - standard OpenAI SDK variables,
+  used by `ctxt.llm_client()` when `LITELLM_PROXY` is not set. If
+  `OPENAI_API_KEY` isn't set either, `ctxt.llm_client()` falls back to
+  reading `~/.config/openai/api_key` (a plain text file containing just the
+  key), and raises a `RuntimeError` with setup instructions if that isn't
+  found either
 
 ### Logging to OpenObserve
 
