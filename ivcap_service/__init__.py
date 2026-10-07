@@ -42,13 +42,21 @@ from .tool_definition import (
     create_tool_definition,
     print_tool_definition,
 )
-from .types import BinaryResult, ExecutionError, IvcapResult, JobContext, with_schema
+from .types import (
+    DEFAULT_LLM_MODEL,
+    BinaryResult,
+    ExecutionError,
+    IvcapResult,
+    JobContext,
+    with_schema,
+)
 from .utils import get_function_return_type, get_input_type
 from .version import __version__, get_version
 
 __all__ = [
     "BaseEvent",
     "BinaryResult",
+    "DEFAULT_LLM_MODEL",
     "EventFactoryF",
     "EventReporter",
     "ExecutionError",

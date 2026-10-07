@@ -1,6 +1,6 @@
 [project]
 name = "ivcap_service"
-version = "0.7.0"
+version = "0.7.1"
 description = "SDK library for building services for the IVCAP platform"
 authors = [
     {name = "Max Ott", email = "max.ott@csiro.au"}

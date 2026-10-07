@@ -498,6 +498,10 @@ documented above to deliver work to the container.
     (none are mandatory), and re-exports the public symbols below
     * `consume_compute.py` - `consume_compute(req, ctxt)` - CPU load test (`req.consume_cpu`)
     * `call.py` - `make_request(req, ctxt)` - generic HTTP call (`req.call`)
-    * `llm.py` - `completion(req)` - LLM completion call (`req.llm`)
+    * `llm.py` - `completion(req, ctxt)` - LLM completion call (`req.llm`), using
+      `ctxt.llm_client()` to obtain an OpenAI-compatible client (transparently
+      routed through a LiteLLM proxy if `LITELLM_PROXY` is set). Defaults to
+      `ivcap_service.DEFAULT_LLM_MODEL` (itself overridable via the
+      `DEFAULT_LLM_MODEL` environment variable) when no model is specified
     * `artifact.py` - `handle_artifact(req, ctxt)` - artifact download/upload (`req.artifact`)
   * progress reporting via `ctxt.report.step(...)`

@@ -278,6 +278,37 @@ Ivcap-Job-Id: urn:ivcap:job:51d29d96-fa70-4125-84ba-4628fda220c3
 > protocol - a generic HTTP forward/CONNECT proxy is **not** a drop-in
 > replacement.
 
+## LLM Client Configuration
+
+These variables configure `JobContext.llm_client()`, which returns a
+ready-to-use `openai.OpenAI`-compatible client from inside a worker
+function (`ctxt.llm_client()`). See the
+[`ivcap_service.testkit.llm`](https://github.com/ivcap-works/ivcap-service-sdk-python/blob/main/ivcap_service/testkit/llm.py)
+module for a complete worked example.
+
+### LITELLM_PROXY
+- **Type**: String
+- **Default**: unset - a plain `openai.OpenAI()` client is returned,
+  relying on the standard `OPENAI_API_KEY` / `OPENAI_BASE_URL` environment
+  variables
+- **Description**: Base URL of a LiteLLM proxy. When set,
+  `JobContext.llm_client()` configures the returned client's `base_url` to
+  `{LITELLM_PROXY}/v1` and uses a placeholder `api_key` (the proxy itself
+  handles authentication/authorization), so your service code never needs
+  to know whether completions are routed through LiteLLM
+- **Example**: `http://litellm.local:4000`
+
+### DEFAULT_LLM_MODEL
+- **Type**: String
+- **Default**: `sciansa-default`
+- **Description**: Default LLM model name, exported as
+  `ivcap_service.DEFAULT_LLM_MODEL`. Used as the default `model` value by
+  `ivcap_service.testkit.llm.LlmTester` (and available for your own
+  request models) when a caller doesn't specify a model explicitly.
+  Setting this environment variable overrides the default for an entire
+  deployment without any code changes
+- **Example**: `gpt-4o-mini`
+
 ## Logging Configuration
 
 ### IVCAP_LOG_LEVEL

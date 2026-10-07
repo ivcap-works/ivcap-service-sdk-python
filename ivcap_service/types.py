@@ -3,13 +3,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file. See the AUTHORS file for names of contributors.
 #
+import os
 from dataclasses import dataclass
-from typing import Any, BinaryIO, cast
+from typing import TYPE_CHECKING, Any, BinaryIO, cast
 
 from ivcap_client.ivcap import IVCAP
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, field_validator
 
 from .events import EventReporter
+
+if TYPE_CHECKING:
+    import openai
+
+# Default LLM model to use when a service/caller doesn't specify one
+# explicitly (e.g. 'LlmTester.model' in 'ivcap_service.testkit.llm'). Can be
+# overridden by setting the 'DEFAULT_LLM_MODEL' environment variable, e.g. to
+# point a deployment at a different default model without code changes.
+DEFAULT_LLM_MODEL = os.environ.get("DEFAULT_LLM_MODEL", "sciansa-default")
 
 
 class ExecutionContext:
@@ -30,6 +40,41 @@ class JobContext(BaseModel):
         if self._ivcap is None:
             self._ivcap = cast(IVCAP, IVCAP())
         return self._ivcap
+
+    def llm_client(self, **kwargs: Any) -> "openai.OpenAI":
+        """Return an OpenAI-compatible client, ready to use.
+
+        This hides the details of how/whether to route completions through a
+        LiteLLM proxy from the service code: if the 'LITELLM_PROXY'
+        environment variable is set, the returned client is configured with
+        'base_url' pointing at that proxy's '/v1' endpoint and a placeholder
+        'api_key' (the proxy itself handles authentication/authorization);
+        otherwise a plain 'openai.OpenAI()' client is returned, relying on
+        the usual 'OPENAI_API_KEY'/'OPENAI_BASE_URL' environment variables.
+
+        Any 'kwargs' passed in are forwarded to 'openai.OpenAI(...)' and take
+        precedence over the LiteLLM-proxy defaults (e.g. pass 'api_key=...'
+        to override the placeholder key).
+
+        See also 'DEFAULT_LLM_MODEL' for the default model name to pass to
+        e.g. 'client.chat.completions.create(model=..., ...)' when the
+        caller/request doesn't specify one.
+
+        Requires the optional 'openai' package to be installed.
+        """
+        try:
+            import openai
+        except ImportError as e:
+            raise ImportError(
+                "The 'openai' package is required to use JobContext.llm_client(). "
+                "Install it with e.g. 'pip install openai'."
+            ) from e
+
+        base_url = os.getenv("LITELLM_PROXY")
+        if base_url is not None:
+            kwargs.setdefault("base_url", f"{base_url}/v1")
+            kwargs.setdefault("api_key", "not-needed")
+        return openai.OpenAI(**kwargs)
 
 
 @dataclass

@@ -660,6 +660,14 @@ Common environment variables used by the SDK:
 - `OPENOBSERVE_USERNAME` - OpenObserve username
 - `OPENOBSERVE_TOKEN` - OpenObserve authentication token
 - `OTEL_EXPORTER_OTLP_ENDPOINT` - OpenTelemetry endpoint
+- `LITELLM_PROXY` - base URL of a LiteLLM proxy; when set,
+  `JobContext.llm_client()` (`ctxt.llm_client()`) routes completions
+  through it instead of talking to `OPENAI_API_KEY`/`OPENAI_BASE_URL`
+  directly
+- `DEFAULT_LLM_MODEL` - overrides `ivcap_service.DEFAULT_LLM_MODEL`
+  (defaults to `"sciansa-default"`), the default LLM model name used when
+  a caller doesn't specify one explicitly (e.g.
+  `ivcap_service.testkit.llm.LlmTester.model`)
 
 ### Logging to OpenObserve
 

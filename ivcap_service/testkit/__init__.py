@@ -30,7 +30,7 @@ that 'from ivcap_service.testkit import ...' works.
 
 import time
 
-from ivcap_service import JobContext, getLogger
+from ivcap_service import DEFAULT_LLM_MODEL, JobContext, getLogger
 
 from .artifact import (
     DEFAULT_ARTIFACT_CHUNK_SIZE_BYTES,
@@ -47,6 +47,7 @@ from .wordle import WordleResult, WordleTester, handle_wordle
 
 __all__ = [
     "DEFAULT_ARTIFACT_CHUNK_SIZE_BYTES",
+    "DEFAULT_LLM_MODEL",
     "ArtifactResult",
     "ArtifactTester",
     "CallTester",
@@ -107,7 +108,7 @@ def process_job(req: Request, ctxt: JobContext) -> Result:
         result.call_result = make_request(req.call, ctxt)
 
     if req.llm is not None:
-        result.llm_result = completion(req.llm)
+        result.llm_result = completion(req.llm, ctxt)
 
     if req.artifact is not None:
         result.artifact_result = handle_artifact(req.artifact, ctxt)
