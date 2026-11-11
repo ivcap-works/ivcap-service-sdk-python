@@ -93,6 +93,31 @@ def test_modify_request_skips_trace_context_for_otel_endpoint(monkeypatch):
     assert "traceparent" not in req.headers
 
 
+def test_modify_request_skips_job_auth_for_openobserve_endpoint(monkeypatch):
+    """The job's JWT must not be attached to OpenObserve export calls, even
+    when the export endpoint comes from OPENOBSERVE_URL rather than
+    OTEL_EXPORTER_OTLP_ENDPOINT (the sidecar adds auth for these calls)."""
+    from types import SimpleNamespace
+
+    monkeypatch.delenv("OTEL_EXPORTER_OTLP_ENDPOINT", raising=False)
+    monkeypatch.setenv("OPENOBSERVE_URL", "http://openobserve.local:8888")
+
+    from ivcap_service.context import _modify_request
+
+    class FakeRequest:
+        def __init__(self, url: str):
+            self.url = url
+            self.headers: dict[str, str] = {}
+
+    ctxt = SimpleNamespace(job_id="urn:ivcap:job:1", job_authorization="Bearer jwt")
+    logger = logging.getLogger("test.context_trace_propagation")
+
+    req = FakeRequest("http://openobserve.local:8888/api/default/v1/traces")
+    _modify_request(req, ctxt, logger)
+
+    assert "Authorization" not in req.headers
+
+
 def test_inject_trace_context_never_raises_without_opentelemetry(monkeypatch):
     """Even if `opentelemetry.propagate` import/injection fails, this must
     be a silent no-op (best-effort) rather than breaking the request."""

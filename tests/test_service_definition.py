@@ -168,6 +168,51 @@ def test_find_resources_file_reads_custom_file(tmp_path, monkeypatch):
     assert resources.requests.cpu == "1"
 
 
+def test_find_resources_file_reads_scratch(tmp_path, monkeypatch):
+    resource_file = tmp_path / "resources.json"
+    resource_file.write_text(json.dumps({"scratch": {"size": "50Gi"}}))
+    monkeypatch.setenv("IVCAP_RESOURCES_FILE", str(resource_file))
+
+    resources = find_resources_file()
+
+    assert resources.scratch is not None
+    assert resources.scratch.size == "50Gi"
+    dumped = resources.model_dump(by_alias=True, exclude_none=True)
+    assert dumped["scratch"] == {"size": "50Gi"}
+
+
+def test_batch_service_definition_includes_scratch_resources(
+    service_description, tmp_path, monkeypatch
+):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("ENTRYPOINT", raising=False)
+    monkeypatch.setenv("DOCKER_IMG", "my-registry/echo:1.0.0")
+    resource_file = tmp_path / "resources.json"
+    resource_file.write_text(
+        json.dumps(
+            {
+                "limits": {"cpu": "1", "memory": "3Gi"},
+                "requests": {"cpu": "500m", "memory": "2Gi"},
+                "scratch": {"size": "50Gi"},
+            }
+        )
+    )
+    monkeypatch.setenv("IVCAP_RESOURCES_FILE", str(resource_file))
+    (tmp_path / "Dockerfile").write_text(
+        'FROM python:3.11-slim\nENTRYPOINT ["python", "batch_service.py"]\n'
+    )
+
+    sd = create_batch_service_definition(service_description, echo)
+    dumped = sd.model_dump(by_alias=True, exclude_none=True)
+
+    print(json.dumps(dumped["controller"], indent=2))
+    assert dumped["controller"]["resources"] == {
+        "limits": {"cpu": "1", "memory": "3Gi"},
+        "requests": {"cpu": "500m", "memory": "2Gi"},
+        "scratch": {"size": "50Gi"},
+    }
+
+
 def test_find_resources_file_exits_when_explicit_file_missing(tmp_path, monkeypatch):
     missing_file = tmp_path / "does-not-exist.json"
     monkeypatch.setenv("IVCAP_RESOURCES_FILE", str(missing_file))

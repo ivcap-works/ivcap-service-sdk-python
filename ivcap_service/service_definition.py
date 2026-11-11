@@ -39,9 +39,14 @@ class ResourceRequirements(BaseModel):
     ephemeral_storage: str | None = None  # Field(default="1Gi")
 
 
+class Scratch(BaseModel):
+    size: str = Field(description="size of the scratch space, e.g. '50Gi'")
+
+
 class Resources(BaseModel):
     limits: ResourceRequirements = Field(default_factory=ResourceRequirements)
     requests: ResourceRequirements = Field(default_factory=ResourceRequirements)
+    scratch: Scratch | None = None
 
 
 class BatchController(BaseModel):

@@ -159,17 +159,16 @@ def _is_otel_endpoint(url: URLx | str) -> bool:
 
     Returns True if the URL matches the OTEL_EXPORTER_OTLP_ENDPOINT.
     """
-    otel_endpoint = os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT")
-    if not otel_endpoint:
-        return False
-
+    otel_endpoints = [
+        os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"),
+        os.environ.get("OPENOBSERVE_OTLP_ENDPOINT"),
+        os.environ.get("OPENOBSERVE_URL"),
+    ]
     try:
-        url_str = str(url)
-        otel_parsed = urlparse(otel_endpoint)
-        url_parsed = urlparse(url_str)
-
-        # Check if the hostnames match
-        return otel_parsed.hostname == url_parsed.hostname
+        url_host = urlparse(str(url)).hostname
+        return any(
+            ep and urlparse(ep).hostname == url_host for ep in otel_endpoints
+        )
     except Exception:
         return False
 
